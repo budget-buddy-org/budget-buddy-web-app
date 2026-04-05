@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { apiClient } from '@/lib/api'
-import type { RegisterRequest } from '@glebremniov/budget-buddy-contracts/models'
+import type { RegisterRequest } from '@glebremniov/budget-buddy-contracts'
 
 export const Route = createFileRoute('/_auth/register')({
   component: RegisterPage,

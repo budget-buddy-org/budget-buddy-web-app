@@ -27,7 +27,7 @@ The `.npmrc` routes `@glebremniov:*` to `npm.pkg.github.com`. In GitHub Actions,
 
 ### Schema Types
 
-All TypeScript types come from `@glebremniov/budget-buddy-contracts/models`:
+All TypeScript types come from `@glebremniov/budget-buddy-contracts`:
 
 ```typescript
 import type { 
@@ -35,7 +35,7 @@ import type {
   Category, CategoryWrite, CategoryUpdate,
   AuthToken, LoginRequest, RegisterRequest,
   PaginatedTransactions, PaginatedCategories
-} from '@glebremniov/budget-buddy-contracts/models'
+} from '@glebremniov/budget-buddy-contracts'
 ```
 
 Types are generated from the OpenAPI spec and published to GitHub Packages. To regenerate:

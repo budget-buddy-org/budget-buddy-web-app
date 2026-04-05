@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateTransaction, useDeleteTransaction, useTransactions } from '@/hooks/useTransactions'
 import { formatCurrency, formatDate, todayIso, toMinorUnits } from '@/lib/formatters'
-import type { TransactionWrite } from '@glebremniov/budget-buddy-contracts/models'
+import type { TransactionWrite } from '@glebremniov/budget-buddy-contracts'
 
 export const Route = createFileRoute('/_app/transactions/')({
   component: TransactionsPage,

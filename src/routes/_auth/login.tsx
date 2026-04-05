@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth.store'
-import type { AuthToken, LoginRequest } from '@glebremniov/budget-buddy-contracts/models'
+import type { AuthToken, LoginRequest } from '@glebremniov/budget-buddy-contracts'
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginPage,
