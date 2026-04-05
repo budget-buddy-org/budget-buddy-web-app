@@ -16,14 +16,33 @@ pnpm type-check   # tsc --noEmit
 
 ## GitHub Packages setup
 
-The app consumes `@budget-buddy/contracts` (TypeScript client). To install it:
+The app consumes `@glebremniov/budget-buddy-contracts` (TypeScript types from OpenAPI spec). To install locally:
 
 ```bash
 export GITHUB_TOKEN=your-personal-access-token  # needs read:packages scope
 pnpm install
 ```
 
-The `.npmrc` routes `@budget-buddy:*` to `npm.pkg.github.com`.
+The `.npmrc` routes `@glebremniov:*` to `npm.pkg.github.com`. In GitHub Actions, the `GITHUB_TOKEN` secret is automatically available.
+
+### Schema Types
+
+All TypeScript types come from `@glebremniov/budget-buddy-contracts/models`:
+
+```typescript
+import type { 
+  Transaction, TransactionWrite, TransactionUpdate,
+  Category, CategoryWrite, CategoryUpdate,
+  AuthToken, LoginRequest, RegisterRequest,
+  PaginatedTransactions, PaginatedCategories
+} from '@glebremniov/budget-buddy-contracts/models'
+```
+
+Types are generated from the OpenAPI spec and published to GitHub Packages. To regenerate:
+```bash
+# In the contracts repo
+pnpm run generate:ts
+```
 
 ## Stack
 
@@ -61,8 +80,6 @@ src/
     query-client.ts # TanStack QueryClient singleton
     formatters.ts   # formatCurrency (minor units), formatDate, toMinorUnits, todayIso
     cn.ts           # clsx + tailwind-merge utility
-  types/
-    api.ts          # TypeScript types derived from openapi.yaml
 ```
 
 ## Auth flow
@@ -75,10 +92,12 @@ src/
 
 ## Adding a new feature
 
-1. Add types to `src/types/api.ts`
-2. Create `src/hooks/use<Feature>.ts` with TanStack Query hooks
-3. Add route file(s) under `src/routes/_app/<feature>/`
-4. Add nav link to `MobileNav.tsx`
+1. Add types to `@glebremniov/budget-buddy-contracts` (in contracts repo)
+2. Publish new version to GitHub Packages
+3. Update web-app: `pnpm add @glebremniov/budget-buddy-contracts@new-version`
+4. Create `src/hooks/use<Feature>.ts` with TanStack Query hooks (import types from contracts)
+5. Add route file(s) under `src/routes/_app/<feature>/`
+6. Add nav link to `MobileNav.tsx`
 
 ## Theming
 
