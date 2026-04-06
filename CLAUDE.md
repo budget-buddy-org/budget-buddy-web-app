@@ -12,19 +12,25 @@ pnpm format       # Biome auto-format
 pnpm test         # Vitest (run once)
 pnpm test:watch   # Vitest (watch mode)
 pnpm type-check   # tsc --noEmit
+
+# Run a single test file
+pnpm test src/hooks/useTransactions.test.ts
+# Run tests matching a name pattern
+pnpm test -- -t "should return transactions"
 ```
 
 ## GitHub Packages setup
 
 The app consumes `@glebremniov/budget-buddy-contracts` (TypeScript types + generated API clients from the OpenAPI spec), published to `npm.pkg.github.com`.
 
-**Local dev:** add the auth token to your global `~/.npmrc` (one-time setup):
+**Local dev:** export your GitHub token so pnpm can read it via the `.npmrc` `${GITHUB_TOKEN}` interpolation:
 
-```
-//npm.pkg.github.com/:_authToken=ghp_<your-token-with-read:packages>
+```bash
+export GITHUB_TOKEN=$(gh auth token)   # or paste your token directly
+pnpm install
 ```
 
-Then run `pnpm install` as normal — no env var needed. The project `.npmrc` only sets the registry scope; the token comes from `~/.npmrc`.
+**CI:** GitHub Actions sets `GITHUB_TOKEN` automatically — no extra configuration needed.
 
 **CI:** GitHub Actions appends the token to `~/.npmrc` automatically using `secrets.GITHUB_TOKEN`.
 
@@ -124,6 +130,18 @@ src/
 4. On refresh failure: clears auth store, redirects to `/login`
 5. Route guard in `_app.tsx` (`beforeLoad`) redirects unauthenticated users to `/login`
 
+## Hook patterns
+
+TanStack Query hooks follow a consistent `KEYS` object pattern for cache key management:
+```typescript
+const KEYS = {
+  all: ['resource'] as const,
+  list: (filters) => ['resource', 'list', filters] as const,
+  detail: (id) => ['resource', id] as const,
+}
+```
+Invalidate `KEYS.all` on mutations to refresh all related queries. `useDeleteTransaction` is the only hook using optimistic updates — it rolls back on error using `onMutate`/`onError`.
+
 ## Adding a new feature
 
 1. Add types + API endpoints to `@glebremniov/budget-buddy-contracts` (in contracts repo), regenerate TS, publish new version
@@ -136,6 +154,27 @@ src/
 ## Theming
 
 Tailwind v4 uses CSS custom properties defined in `src/index.css` under `@theme`. The `dark` class on `<html>` switches all tokens. `theme.store.ts` manages the toggle and persists to localStorage.
+
+## Docker
+
+Multi-stage build: `deps` (pnpm install) → `builder` (Vite build) → `production` (nginx:alpine).
+
+**Build the image:**
+```bash
+# GITHUB_TOKEN must be set — passed as a BuildKit secret, never stored in any image layer
+docker build \
+  --secret id=github_token,env=GITHUB_TOKEN \
+  --build-arg VITE_API_URL=https://api.example.com \
+  -t budget-buddy-web-app .
+```
+
+**Run locally with Docker Compose:**
+```bash
+GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
+# App available at http://localhost:3000
+```
+
+`VITE_API_URL` is baked into the bundle at build time (Vite limitation) — rebuild the image when the API URL changes.
 
 ## API
 

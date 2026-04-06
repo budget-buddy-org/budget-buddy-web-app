@@ -1,0 +1,28 @@
+services:
+  web:
+    build:
+      context: .
+      # Pass the GitHub token as a BuildKit secret so it is never written to
+      # an image layer. Requires GITHUB_TOKEN to be set in the host environment
+      # before running `docker compose build`.
+      secrets:
+        - github_token
+      args:
+        # Vite bakes this URL into the bundle at build time.
+        # Override per environment: VITE_API_URL=https://api.prod.example.com docker compose build
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+secrets:
+  github_token:
+    # Docker Compose reads GITHUB_TOKEN from the host environment and exposes
+    # it as a secret to the build process. It is never stored in the image.
+    environment: GITHUB_TOKEN

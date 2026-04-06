@@ -1,0 +1,28 @@
+# Dependencies — reinstalled inside the container
+node_modules
+
+# Compiled output — rebuilt inside the container
+dist
+
+# Version control
+.git
+.gitignore
+
+# Editor and OS artefacts
+.DS_Store
+*.local
+.env*.local
+.idea
+.vscode
+
+# Test output
+coverage
+
+# Docker files themselves (not needed in the build context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs
+docs
+*.md
