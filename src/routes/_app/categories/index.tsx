@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/hooks/useCategories'
 
 export const Route = createFileRoute('/_app/categories/')({
@@ -50,7 +51,11 @@ function CategoriesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <p className="px-6 py-4 text-sm text-muted-foreground">Loading…</p>
+            <div className="space-y-px p-2">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-11 rounded-sm" />
+              ))}
+            </div>
           ) : categories.length === 0 ? (
             <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>
           ) : (
