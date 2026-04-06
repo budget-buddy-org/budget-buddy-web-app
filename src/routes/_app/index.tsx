@@ -4,6 +4,7 @@ import { ArrowDownRight, ArrowUpRight, Wallet } from 'lucide-react'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useTransactions } from '@/hooks/useTransactions'
 import { formatCurrency, formatDate } from '@/lib/formatters'
 
@@ -11,8 +12,12 @@ export const Route = createFileRoute('/_app/')({
   component: DashboardPage,
 })
 
+const SUMMARY_LIMIT = 50
+
 function DashboardPage() {
-  const { data, isLoading } = useTransactions({ limit: 50, sort: 'desc' })
+  const { data, isLoading } = useTransactions({ limit: SUMMARY_LIMIT, sort: 'desc' })
+
+  if (isLoading) return <DashboardSkeleton />
 
   const transactions = data?.items ?? []
 
@@ -43,11 +48,12 @@ function DashboardPage() {
 
   const recent = transactions.slice(0, 8)
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>
-
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} transactions</span>
+      </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -134,9 +140,24 @@ function DashboardPage() {
   )
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-7 w-32" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <Skeleton className="col-span-2 h-24 md:col-span-1" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
+      </div>
+      <Skeleton className="h-52" />
+      <Skeleton className="h-64" />
+    </div>
+  )
+}
+
 function CardDescription({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <p className={`text-xs text-muted-foreground flex items-center gap-1 ${className ?? ''}`}>
+    <p className={`flex items-center gap-1 text-xs text-muted-foreground ${className ?? ''}`}>
       {children}
     </p>
   )
