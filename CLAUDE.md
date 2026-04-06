@@ -32,8 +32,6 @@ pnpm install
 
 **CI:** GitHub Actions sets `GITHUB_TOKEN` automatically — no extra configuration needed.
 
-**CI:** GitHub Actions appends the token to `~/.npmrc` automatically using `secrets.GITHUB_TOKEN`.
-
 ### Contracts package — types and API clients
 
 `@glebremniov/budget-buddy-contracts` exports both model types and fully-typed axios API client classes generated from the OpenAPI spec.
