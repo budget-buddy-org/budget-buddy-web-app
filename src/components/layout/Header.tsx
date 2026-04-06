@@ -1,9 +1,6 @@
-import { useMutation } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
 import { Moon, Sun, Monitor, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api'
-import { useAuthStore } from '@/stores/auth.store'
+import { useLogout } from '@/hooks/useLogout'
 import { type Theme, useThemeStore } from '@/stores/theme.store'
 
 const THEME_ICONS: Record<Theme, typeof Sun> = {
@@ -19,18 +16,9 @@ const NEXT_THEME: Record<Theme, Theme> = {
 }
 
 export function Header() {
-  const navigate = useNavigate()
   const { theme, setTheme } = useThemeStore()
-  const clearAuth = useAuthStore((s) => s.clearAuth)
   const ThemeIcon = THEME_ICONS[theme]
-
-  const logout = useMutation({
-    mutationFn: () => apiClient.post('/v1/auth/logout'),
-    onSettled: () => {
-      clearAuth()
-      navigate({ to: '/login' })
-    },
-  })
+  const logout = useLogout()
 
   return (
     <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
