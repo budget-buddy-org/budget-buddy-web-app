@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(gh api:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/glebremniov/.claude/commands"
+    ]
+  }
+}

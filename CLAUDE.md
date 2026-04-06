@@ -54,6 +54,16 @@ import type {
 } from '@glebremniov/budget-buddy-contracts'
 ```
 
+**Looking up available API methods:** the top-level `dist/api.d.ts` is a re-export barrel and does not list method signatures. Read the per-resource files instead:
+
+```
+node_modules/@glebremniov/budget-buddy-contracts/dist/api/auth-api.d.ts
+node_modules/@glebremniov/budget-buddy-contracts/dist/api/categories-api.d.ts
+node_modules/@glebremniov/budget-buddy-contracts/dist/api/transactions-api.d.ts
+```
+
+Model types live under `dist/model/<name>.d.ts` (e.g. `dist/model/auth-token.d.ts`).
+
 To regenerate after an OpenAPI spec change:
 ```bash
 # In the contracts repo
@@ -90,6 +100,7 @@ src/
   hooks/
     useTransactions.ts   # TanStack Query hooks for /v1/transactions
     useCategories.ts     # TanStack Query hooks for /v1/categories
+    useLogout.ts         # Logout mutation: calls authApi.logoutUser(), clears auth + query cache, redirects
   stores/
     auth.store.ts   # Zustand: accessToken (memory) + refreshToken (localStorage)
     theme.store.ts  # Zustand: light/dark/system preference (localStorage)
