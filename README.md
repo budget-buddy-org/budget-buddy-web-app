@@ -42,6 +42,10 @@ pnpm type-check   # tsc --noEmit
 - **Biome** — lint + format
 - **Vitest** + **Testing Library** — unit tests
 
+## Deployment
+
+See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for production deployment instructions and environment setup.
+
 ## Architecture notes
 
 See [CLAUDE.md](./CLAUDE.md) for detailed guidance on the project structure, auth flow, adding features, and conventions.
