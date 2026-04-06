@@ -97,6 +97,7 @@ src/
   components/
     ui/             # shadcn/ui primitives (Button, Input, Card, Badge, Separator, Select, Skeleton)
     layout/         # AppShell, Header, MobileNav + SidebarNav
+    ErrorBoundary.tsx  # React class error boundary — wraps subtrees; logs via error-logger; accepts optional `fallback` prop
   hooks/
     useTransactions.ts        # TanStack Query hooks for /v1/transactions
     useCategories.ts          # TanStack Query hooks for /v1/categories
@@ -107,9 +108,10 @@ src/
     theme.store.ts  # Zustand: light/dark/system preference (localStorage)
   lib/
     api.ts          # Axios instance + authApi / categoriesApi / transactionsApi instances
-    query-client.ts # TanStack QueryClient singleton
+    query-client.ts # TanStack QueryClient singleton — logs query/mutation errors via error-logger
     formatters.ts   # formatCurrency (minor units), formatDate, toMinorUnits, todayIso
     cn.ts           # clsx + tailwind-merge utility
+    error-logger.ts # logError(error, context?) — structured console logging; extend for remote reporting
   test/
     setup.ts        # Vitest setup: @testing-library/jest-dom + localStorage mock for Zustand persist
 ```
