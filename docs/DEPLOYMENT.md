@@ -75,53 +75,41 @@ Add a `netlify.toml` at the repo root for SPA routing:
 
 Use this option when you need a containerised deployment (Kubernetes, self-hosted VPS, etc.).
 
-### Dockerfile
+The repo includes a production-ready `Dockerfile` and `docker-compose.yml`. The build uses four stages:
 
-```dockerfile
-# Build stage
-FROM node:22-alpine AS builder
-WORKDIR /app
+| Stage | Base | Purpose |
+|---|---|---|
+| `base` | node:22-alpine | Shared pnpm setup |
+| `deps` | base | Install packages (BuildKit secret + pnpm store cache) |
+| `builder` | base | `pnpm build` — Vite SPA bundle |
+| `production` | nginx:1.27-alpine | Serve static assets; includes security headers and SPA fallback |
 
-COPY package.json pnpm-lock.yaml .npmrc ./
-RUN corepack enable && pnpm install --frozen-lockfile
-
-COPY . .
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-RUN pnpm build
-
-# Serve stage
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-```
-
-### nginx.conf (SPA fallback)
-
-```nginx
-server {
-    listen 80;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+`GITHUB_TOKEN` is passed as a [BuildKit secret](https://docs.docker.com/build/secrets/) — it is mounted at build time only and never written to any image layer or visible in `docker history`.
 
 ### Build and run
 
+**Standalone:**
+
 ```bash
-# GitHub token needed at build time to install the contracts package
 docker build \
+  --secret id=github_token,env=GITHUB_TOKEN \
   --build-arg VITE_API_URL=https://api.yourdomain.com \
-  --secret id=npm_token,src=<(echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}") \
   -t budget-buddy-web-app .
 
-docker run -p 8080:80 budget-buddy-web-app
+docker run -p 3000:80 budget-buddy-web-app
+```
+
+**Docker Compose (recommended for local testing):**
+
+```bash
+GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
+# App available at http://localhost:3000
+```
+
+`WEB_PORT` overrides the host port (default: `3000`):
+
+```bash
+WEB_PORT=8081 GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
 ```
 
 For production, push the image to a registry and deploy from there.

@@ -42,6 +42,23 @@ pnpm type-check   # tsc --noEmit
 - **Biome** — lint + format
 - **Vitest** + **Testing Library** — unit tests
 
+## Docker
+
+Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.27-alpine).
+
+```bash
+# Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
+docker build \
+  --secret id=github_token,env=GITHUB_TOKEN \
+  --build-arg VITE_API_URL=https://api.example.com \
+  -t budget-buddy-web-app .
+
+# Run locally with Docker Compose (app available at http://localhost:3000)
+GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
+```
+
+`VITE_API_URL` is baked into the bundle at build time — rebuild the image when the API URL changes.
+
 ## Deployment
 
 See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for production deployment instructions and environment setup.

@@ -4,7 +4,8 @@
       "Bash(gh repo:*)",
       "Bash(pnpm lint:*)",
       "Bash(git commit -m ':*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(pnpm build:*)"
     ],
     "additionalDirectories": [
       "/Users/glebremniov/.claude/commands"
