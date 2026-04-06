@@ -16,32 +16,50 @@ pnpm type-check   # tsc --noEmit
 
 ## GitHub Packages setup
 
-The app consumes `@glebremniov/budget-buddy-contracts` (TypeScript types from OpenAPI spec). To install locally:
+The app consumes `@glebremniov/budget-buddy-contracts` (TypeScript types + generated API clients from the OpenAPI spec), published to `npm.pkg.github.com`.
 
-```bash
-export GITHUB_TOKEN=your-personal-access-token  # needs read:packages scope
-pnpm install
+**Local dev:** add the auth token to your global `~/.npmrc` (one-time setup):
+
+```
+//npm.pkg.github.com/:_authToken=ghp_<your-token-with-read:packages>
 ```
 
-The `.npmrc` routes `@glebremniov:*` to `npm.pkg.github.com`. In GitHub Actions, the `GITHUB_TOKEN` secret is automatically available.
+Then run `pnpm install` as normal — no env var needed. The project `.npmrc` only sets the registry scope; the token comes from `~/.npmrc`.
 
-### Schema Types
+**CI:** GitHub Actions appends the token to `~/.npmrc` automatically using `secrets.GITHUB_TOKEN`.
 
-All TypeScript types come from `@glebremniov/budget-buddy-contracts/models`:
+### Contracts package — types and API clients
+
+`@glebremniov/budget-buddy-contracts` exports both model types and fully-typed axios API client classes generated from the OpenAPI spec.
+
+**Import API client instances** (from `src/lib/api.ts`):
 
 ```typescript
-import type { 
+import { authApi, categoriesApi, transactionsApi } from '@/lib/api'
+
+// Usage — typed, no URL strings
+const { data } = await transactionsApi.listTransactions({ limit: 20, sort: 'desc' })
+const { data } = await categoriesApi.createCategory({ categoryWrite: body })
+const { data } = await authApi.loginUser({ loginRequest: { username, password } })
+```
+
+**Import types directly** when needed:
+
+```typescript
+import type {
   Transaction, TransactionWrite, TransactionUpdate,
   Category, CategoryWrite, CategoryUpdate,
   AuthToken, LoginRequest, RegisterRequest,
   PaginatedTransactions, PaginatedCategories
-} from '@glebremniov/budget-buddy-contracts/models'
+} from '@glebremniov/budget-buddy-contracts'
 ```
 
-Types are generated from the OpenAPI spec and published to GitHub Packages. To regenerate:
+To regenerate after an OpenAPI spec change:
 ```bash
 # In the contracts repo
 pnpm run generate:ts
+# Then publish a new version and update the dep here:
+pnpm add @glebremniov/budget-buddy-contracts@new-version
 ```
 
 ## Stack
@@ -76,7 +94,7 @@ src/
     auth.store.ts   # Zustand: accessToken (memory) + refreshToken (localStorage)
     theme.store.ts  # Zustand: light/dark/system preference (localStorage)
   lib/
-    api.ts          # Axios instance with auth interceptor + automatic token refresh
+    api.ts          # Axios instance + authApi / categoriesApi / transactionsApi instances
     query-client.ts # TanStack QueryClient singleton
     formatters.ts   # formatCurrency (minor units), formatDate, toMinorUnits, todayIso
     cn.ts           # clsx + tailwind-merge utility
@@ -92,10 +110,10 @@ src/
 
 ## Adding a new feature
 
-1. Add types to `@glebremniov/budget-buddy-contracts` (in contracts repo)
-2. Publish new version to GitHub Packages
-3. Update web-app: `pnpm add @glebremniov/budget-buddy-contracts@new-version`
-4. Create `src/hooks/use<Feature>.ts` with TanStack Query hooks (import types from contracts)
+1. Add types + API endpoints to `@glebremniov/budget-buddy-contracts` (in contracts repo), regenerate TS, publish new version
+2. Update web-app: `pnpm add @glebremniov/budget-buddy-contracts@new-version`
+3. Add a new API instance to `src/lib/api.ts` (e.g. `export const budgetApi = new BudgetApi(config, BASE_URL, apiClient)`)
+4. Create `src/hooks/use<Feature>.ts` — call the typed API instance methods, wrap with TanStack Query
 5. Add route file(s) under `src/routes/_app/<feature>/`
 6. Add nav link to `MobileNav.tsx`
 

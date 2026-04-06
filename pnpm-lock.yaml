@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@glebremniov/budget-buddy-contracts':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@radix-ui/react-avatar':
         specifier: ^1.1.11
         version: 1.1.11(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -575,6 +578,9 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@glebremniov/budget-buddy-contracts@1.0.1':
+    resolution: {integrity: sha512-/PzfE4wjkIViuBVj3il03Y47FKRYAhzllWeOi6xxFYbrnxSCqUisIW4/s89KYiZrcR1JoF9tRw2sznOYB9S49A==, tarball: https://npm.pkg.github.com/download/@glebremniov/budget-buddy-contracts/1.0.1/9bea61d504ba915cf63deb1805c4ad4e5621919f}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -3243,6 +3249,12 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@glebremniov/budget-buddy-contracts@1.0.1':
+    dependencies:
+      axios: 1.14.0
+    transitivePeerDependencies:
+      - debug
 
   '@humanfs/core@0.19.1': {}
 

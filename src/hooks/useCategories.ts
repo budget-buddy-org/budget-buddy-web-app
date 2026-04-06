@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/lib/api'
-import type { Category, CategoryUpdate, CategoryWrite, PaginatedCategories } from '@glebremniov/budget-buddy-contracts/models'
+import { categoriesApi } from '@/lib/api'
+import type { CategoryUpdate, CategoryWrite, PaginatedCategories } from '@glebremniov/budget-buddy-contracts'
 
 const KEYS = {
   all: ['categories'] as const,
@@ -12,9 +12,7 @@ export function useCategories(limit = 200, offset = 0) {
   return useQuery({
     queryKey: KEYS.list(limit, offset),
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedCategories>('/v1/categories', {
-        params: { limit, offset },
-      })
+      const { data } = await categoriesApi.listCategories({ limit, offset })
       return data
     },
   })
@@ -24,7 +22,7 @@ export function useCategory(id: string) {
   return useQuery({
     queryKey: KEYS.detail(id),
     queryFn: async () => {
-      const { data } = await apiClient.get<Category>(`/v1/categories/${id}`)
+      const { data } = await categoriesApi.getCategory({ categoryId: id })
       return data
     },
     enabled: Boolean(id),
@@ -35,7 +33,7 @@ export function useCreateCategory() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: CategoryWrite) => {
-      const { data } = await apiClient.post<Category>('/v1/categories', body)
+      const { data } = await categoriesApi.createCategory({ categoryWrite: body })
       return data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
@@ -46,7 +44,7 @@ export function useUpdateCategory(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: CategoryUpdate) => {
-      const { data } = await apiClient.patch<Category>(`/v1/categories/${id}`, body)
+      const { data } = await categoriesApi.updateCategory({ categoryId: id, categoryUpdate: body })
       return data
     },
     onSuccess: () => {
@@ -60,7 +58,7 @@ export function useDeleteCategory() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/v1/categories/${id}`)
+      await categoriesApi.deleteCategory({ categoryId: id })
       return id
     },
     onMutate: async (id) => {

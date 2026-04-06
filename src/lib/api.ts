@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { AuthApi, CategoriesApi, Configuration, TransactionsApi } from '@glebremniov/budget-buddy-contracts'
 import { useAuthStore } from '@/stores/auth.store'
-import type { AuthToken } from '@glebremniov/budget-buddy-contracts/models'
+import type { AuthToken } from '@glebremniov/budget-buddy-contracts'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
@@ -79,3 +80,8 @@ apiClient.interceptors.response.use(
     }
   },
 )
+
+const config = new Configuration({ basePath: BASE_URL })
+export const authApi = new AuthApi(config, BASE_URL, apiClient)
+export const categoriesApi = new CategoriesApi(config, BASE_URL, apiClient)
+export const transactionsApi = new TransactionsApi(config, BASE_URL, apiClient)

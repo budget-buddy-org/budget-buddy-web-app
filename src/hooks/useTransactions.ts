@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/lib/api'
-import type { PaginatedTransactions, Transaction, TransactionUpdate, TransactionWrite } from '@glebremniov/budget-buddy-contracts/models'
+import { transactionsApi } from '@/lib/api'
+import type { PaginatedTransactions, TransactionUpdate, TransactionWrite } from '@glebremniov/budget-buddy-contracts'
 
 export interface TransactionFilters {
   limit?: number
@@ -21,9 +21,7 @@ export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: KEYS.list(filters),
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedTransactions>('/v1/transactions', {
-        params: { limit: 20, sort: 'desc', ...filters },
-      })
+      const { data } = await transactionsApi.listTransactions({ limit: 20, sort: 'desc', ...filters })
       return data
     },
   })
@@ -33,7 +31,7 @@ export function useTransaction(id: string) {
   return useQuery({
     queryKey: KEYS.detail(id),
     queryFn: async () => {
-      const { data } = await apiClient.get<Transaction>(`/v1/transactions/${id}`)
+      const { data } = await transactionsApi.getTransaction({ transactionId: id })
       return data
     },
     enabled: Boolean(id),
@@ -44,7 +42,7 @@ export function useCreateTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: TransactionWrite) => {
-      const { data } = await apiClient.post<Transaction>('/v1/transactions', body)
+      const { data } = await transactionsApi.createTransaction({ transactionWrite: body })
       return data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
@@ -55,7 +53,7 @@ export function useUpdateTransaction(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: TransactionUpdate) => {
-      const { data } = await apiClient.patch<Transaction>(`/v1/transactions/${id}`, body)
+      const { data } = await transactionsApi.updateTransaction({ transactionId: id, transactionUpdate: body })
       return data
     },
     onSuccess: () => {
@@ -69,7 +67,7 @@ export function useDeleteTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/v1/transactions/${id}`)
+      await transactionsApi.deleteTransaction({ transactionId: id })
       return id
     },
     onMutate: async (id) => {

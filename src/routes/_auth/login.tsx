@@ -3,9 +3,9 @@ import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { apiClient } from '@/lib/api'
+import { authApi } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth.store'
-import type { AuthToken, LoginRequest } from '@glebremniov/budget-buddy-contracts/models'
+import type { AuthToken, LoginRequest } from '@glebremniov/budget-buddy-contracts'
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginPage,
@@ -19,8 +19,8 @@ function LoginPage() {
 
   const login = useMutation({
     mutationFn: async (body: LoginRequest) => {
-      const { data } = await apiClient.post<AuthToken>('/v1/auth/login', body)
-      return data
+      const { data } = await authApi.loginUser({ loginRequest: body })
+      return data as AuthToken
     },
     onSuccess: (data) => {
       setAuth(data.access_token, data.refresh_token)
