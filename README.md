@@ -44,7 +44,7 @@ pnpm type-check   # tsc --noEmit
 
 ## Docker
 
-Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.27-alpine).
+Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.29-alpine).
 
 ```bash
 # Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
