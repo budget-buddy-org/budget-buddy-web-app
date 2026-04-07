@@ -51,8 +51,9 @@ jobs:
     permissions:
       contents: read
       packages: write
-      attestations: write  # for SBOM/provenance
-      id-token: write      # for keyless Cosign signing via OIDC
+      attestations: write    # for SBOM/provenance
+      id-token: write        # for keyless Cosign signing via OIDC
+      security-events: write # for uploading SARIF scan results
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -83,7 +84,8 @@ jobs:
             type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
 
       # Build a single-platform (amd64) image locally so we can scan it
-      # before pushing anything to the registry.
+      # before pushing anything to the registry. Reuse GHA cache to avoid
+      # rebuilding layers that haven't changed since the last push.
       - name: Build image for scanning (amd64, no push)
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
@@ -94,17 +96,27 @@ jobs:
           tags: ghcr.io/glebremniov/budget-buddy-web-app:scan
           build-args: VITE_API_URL=${{ vars.VITE_API_URL }}
           secrets: github_token=${{ secrets.GITHUB_TOKEN }}
+          cache-from: type=gha
 
-      # Scan for vulnerabilities — fail on unfixed CRITICAL/HIGH findings
-      # before any image reaches the registry.
-      - name: Scan image with Trivy
+      # Scan the amd64 image for vulnerabilities before any push.
+      # Output as SARIF so results appear in the repo's Security tab.
+      # exit-code 1 blocks the push on unfixed CRITICAL/HIGH findings.
+      - name: Scan image with Trivy (amd64)
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           image-ref: ghcr.io/glebremniov/budget-buddy-web-app:scan
-          format: table
+          format: sarif
+          output: trivy-amd64.sarif
           exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+
+      - name: Upload amd64 scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        if: always() # upload even if the scan step failed
+        with:
+          sarif_file: trivy-amd64.sarif
+          category: trivy-amd64
 
       # Build the final multi-platform image and push it. SBOM and provenance
       # attestations are attached automatically by build-push-action.
@@ -123,6 +135,31 @@ jobs:
           provenance: mode=max
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Scan the arm64 image by digest from the registry to catch arch-specific
+      # vulnerabilities in base image packages that may differ from amd64.
+      # Non-blocking (continue-on-error) — arm64-only findings become visible in
+      # the Security tab without blocking the release pipeline.
+      - name: Scan image with Trivy (arm64)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        continue-on-error: true
+        with:
+          image-ref: ghcr.io/glebremniov/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
+          format: sarif
+          output: trivy-arm64.sarif
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          image-config-scanners: ''
+        env:
+          TRIVY_PLATFORM: linux/arm64
+
+      - name: Upload arm64 scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        if: always()
+        with:
+          sarif_file: trivy-arm64.sarif
+          category: trivy-arm64
 
       # Install Cosign for keyless image signing (GitHub OIDC — no long-lived key).
       - name: Install Cosign
