@@ -118,7 +118,13 @@ jobs:
           category: trivy-amd64
 
       # Blocking gate — fails the job only on unfixed CRITICAL CVEs.
-      # HIGH and below are visible in the Security tab but do not block pushes.
+      #
+      # Deliberate policy: HIGH vulnerabilities do not block pushes.
+      # Rationale: nginx:1.29-alpine ships with 3 unfixed HIGH CVEs in base
+      # Alpine packages that have no upstream fix yet. Blocking on HIGH would
+      # permanently halt the pipeline for issues outside our control. CRITICAL
+      # CVEs represent a meaningfully higher risk bar and are always blocked.
+      # HIGH findings remain fully visible in the repo's Security tab.
       - name: Block on CRITICAL vulnerabilities (amd64)
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
