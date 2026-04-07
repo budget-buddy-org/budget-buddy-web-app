@@ -138,8 +138,9 @@ jobs:
 
       # Scan the arm64 image by digest from the registry to catch arch-specific
       # vulnerabilities in base image packages that may differ from amd64.
-      # Non-blocking (continue-on-error) — arm64-only findings become visible in
-      # the Security tab without blocking the release pipeline.
+      # Intentionally non-blocking (continue-on-error: true, no exit-code) —
+      # findings are surfaced in the Security tab for visibility without gating
+      # releases on arch-specific vulns that may not be fixable upstream.
       - name: Scan image with Trivy (arm64)
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         continue-on-error: true
@@ -147,7 +148,6 @@ jobs:
           image-ref: ghcr.io/glebremniov/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
           format: sarif
           output: trivy-arm64.sarif
-          exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           image-config-scanners: ''
