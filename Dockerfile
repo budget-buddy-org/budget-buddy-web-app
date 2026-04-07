@@ -70,13 +70,16 @@ FROM nginx:1.29-alpine AS production
 
 LABEL org.opencontainers.image.source="https://github.com/glebremniov/budget-buddy-web-app"
 
-# Upgrade all packages to pick up security patches not yet in the base image tag.
-RUN apk upgrade --no-cache
+# Upgrade all packages to pick up security patches not yet baked into the base
+# image tag. Trade-off: introduces non-determinism between rebuilds. Remove this
+# once upstream ships a clean Alpine tag with no unfixed CRITICAL/HIGH CVEs.
+# Merged with mkdir to keep the layer count low.
+RUN apk upgrade --no-cache \
+    && mkdir -p /etc/nginx/snippets
 
 # Create the snippets directory and copy the shared security-headers snippet.
 # nginx's add_header is not inherited by child location blocks that define their
 # own add_header, so the snippet is included explicitly inside each location.
-RUN mkdir -p /etc/nginx/snippets
 COPY --link nginx.security-headers.conf /etc/nginx/snippets/security-headers.conf
 
 # Replace default config with our SPA-aware configuration.
