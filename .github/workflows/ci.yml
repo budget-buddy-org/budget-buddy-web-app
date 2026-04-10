@@ -47,11 +47,48 @@ jobs:
       - name: Test
         run: pnpm test
 
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Authenticate with GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Release
+        run: pnpm exec semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish:
     needs: ci
     runs-on: ubuntu-latest
-    # Only run on push to main or on a published release — not on PRs
-    if: github.event_name != 'pull_request'
+    # Only run on a published release (created by semantic-release) — not on PRs or direct pushes
+    if: github.event_name == 'release' && github.event.action == 'published'
     permissions:
       contents: read
       packages: write
@@ -81,11 +118,9 @@ jobs:
         with:
           images: ghcr.io/budget-buddy-org/budget-buddy-web-app
           tags: |
-            # Push to main → latest + sha-<short-sha>
-            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
-            type=sha,prefix=sha-,format=short,enable=${{ github.event_name == 'push' }}
-            # Published release → v<version>
-            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
 
       # Build a single-platform (amd64) image locally so we can scan it
       # before pushing anything to the registry. Reuse GHA cache to avoid
