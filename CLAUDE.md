@@ -72,3 +72,18 @@ Vitest + Testing Library, jsdom environment. Setup file at `src/test/setup.ts` p
 ### Linting / Formatting
 
 Biome handles both lint and format (single quotes, 2-space indent, 100 char line width). ESLint is also present for React-specific rules. Run `pnpm lint` before committing.
+
+### Commits and Releases
+
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/). A `commit-msg` husky hook enforces this locally via commitlint.
+
+Required format: `type(scope): subject` — scope is optional.
+
+| Type | When to use | Release bump |
+|---|---|---|
+| `feat` | new user-facing feature | minor |
+| `fix` | bug fix | patch |
+| `feat!` / `BREAKING CHANGE:` footer | breaking API change | major |
+| `chore`, `docs`, `test`, `refactor`, `style`, `perf`, `build`, `ci` | everything else | none |
+
+**Releases are fully automated.** Merging to `main` triggers semantic-release in CI, which analyzes commits since the last release, bumps the version, writes `CHANGELOG.md`, and publishes a GitHub release. That release event then triggers the Docker image build and push to GHCR with proper semver tags.
