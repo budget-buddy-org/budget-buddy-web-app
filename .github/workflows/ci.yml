@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   ci:
@@ -26,10 +27,13 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Authenticate with GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint
         run: pnpm lint
@@ -75,7 +79,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
-          images: ghcr.io/glebremniov/budget-buddy-web-app
+          images: ghcr.io/budget-buddy-org/budget-buddy-web-app
           tags: |
             # Push to main → latest + sha-<short-sha>
             type=raw,value=latest,enable=${{ github.event_name == 'push' }}
@@ -93,7 +97,7 @@ jobs:
           platforms: linux/amd64
           push: false
           load: true
-          tags: ghcr.io/glebremniov/budget-buddy-web-app:scan
+          tags: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
           build-args: VITE_API_URL=${{ vars.VITE_API_URL }}
           secrets: github_token=${{ secrets.GITHUB_TOKEN }}
           cache-from: type=gha
@@ -103,7 +107,7 @@ jobs:
       - name: Scan image with Trivy (amd64, SARIF)
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
-          image-ref: ghcr.io/glebremniov/budget-buddy-web-app:scan
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
           format: sarif
           output: trivy-amd64.sarif
           exit-code: '0'
@@ -128,7 +132,7 @@ jobs:
       - name: Block on CRITICAL vulnerabilities (amd64)
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
-          image-ref: ghcr.io/glebremniov/budget-buddy-web-app:scan
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
           format: table
           exit-code: '1'
           severity: CRITICAL
@@ -162,12 +166,11 @@ jobs:
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         continue-on-error: true
         with:
-          image-ref: ghcr.io/glebremniov/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
           format: sarif
           output: trivy-arm64.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          image-config-scanners: ''
         env:
           TRIVY_PLATFORM: linux/arm64
 
@@ -189,4 +192,4 @@ jobs:
       - name: Sign image with Cosign (keyless)
         run: |
           cosign sign --yes \
-            ghcr.io/glebremniov/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
+            ghcr.io/budget-buddy-org/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}

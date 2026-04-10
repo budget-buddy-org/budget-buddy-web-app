@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { AuthToken } from '@glebremniov/budget-buddy-contracts'
+import type { AuthToken } from '@budget-buddy-org/budget-buddy-contracts'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth.store'
 

@@ -16,7 +16,7 @@ import {
   useUpdateTransaction,
 } from '@/hooks/useTransactions'
 import { formatCurrency, formatDate, todayIso, toMinorUnits } from '@/lib/formatters'
-import type { Transaction, TransactionWrite } from '@glebremniov/budget-buddy-contracts'
+import type { Transaction, TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts'
 
 export const Route = createFileRoute('/_app/transactions/')({
   component: TransactionsPage,

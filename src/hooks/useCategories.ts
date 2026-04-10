@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { categoriesApi } from '@/lib/api'
-import type { CategoryUpdate, CategoryWrite, PaginatedCategories } from '@glebremniov/budget-buddy-contracts'
+import type { CategoryUpdate, CategoryWrite, PaginatedCategories } from '@budget-buddy-org/budget-buddy-contracts'
 
 const KEYS = {
   all: ['categories'] as const,

@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { AuthApi, CategoriesApi, Configuration, TransactionsApi } from '@glebremniov/budget-buddy-contracts'
+import { AuthApi, CategoriesApi, Configuration, TransactionsApi } from '@budget-buddy-org/budget-buddy-contracts'
 import { useAuthStore } from '@/stores/auth.store'
-import type { AuthToken } from '@glebremniov/budget-buddy-contracts'
+import type { AuthToken } from '@budget-buddy-org/budget-buddy-contracts'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 

@@ -7,7 +7,7 @@ React 19 frontend for the Budget Buddy personal finance app. Tracks transactions
 - Node.js 20+
 - pnpm
 - A running [budget-buddy-api](../budget-buddy-api/) instance (or `VITE_API_URL` pointed elsewhere)
-- GitHub Packages read access for `@glebremniov/budget-buddy-contracts`
+- GitHub Packages read access for `@budget-buddy-org/budget-buddy-contracts`
 
 ## Setup
 
@@ -59,7 +59,7 @@ GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose 
 
 `VITE_API_URL` is baked into the bundle at build time — rebuild the image when the API URL changes.
 
-Pre-built images are published to `ghcr.io/glebremniov/budget-buddy-web-app` on every merge to `main` and every GitHub Release.
+Pre-built images are published to `ghcr.io/budget-buddy-org/budget-buddy-web-app` on every merge to `main` and every GitHub Release.
 
 ## Deployment
 
@@ -69,4 +69,4 @@ See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for production deployment instruc
 
 See [CLAUDE.md](./CLAUDE.md) for detailed guidance on the project structure, auth flow, adding features, and conventions.
 
-The app consumes `@glebremniov/budget-buddy-contracts` for typed API clients and model types. Currency amounts are stored as **minor units** (`1299` = €12.99).
+The app consumes `@budget-buddy-org/budget-buddy-contracts` for typed API clients and model types. Currency amounts are stored as **minor units** (`1299` = €12.99).

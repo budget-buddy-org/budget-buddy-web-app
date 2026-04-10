@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { transactionsApi } from '@/lib/api'
-import type { PaginatedTransactions, TransactionUpdate, TransactionWrite } from '@glebremniov/budget-buddy-contracts'
+import type { PaginatedTransactions, TransactionUpdate, TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts'
 
 export interface TransactionFilters {
   limit?: number

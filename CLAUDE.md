@@ -5,181 +5,70 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm dev          # start Vite dev server (http://localhost:5173)
-pnpm build        # type-check + production build
-pnpm lint         # Biome lint check
-pnpm format       # Biome auto-format
-pnpm test         # Vitest (run once)
-pnpm test:watch   # Vitest (watch mode)
-pnpm type-check   # tsc --noEmit
+# One-time setup: add GitHub token to ~/.npmrc for private package access
+echo "//npm.pkg.github.com/:_authToken=ghp_<your-token>" >> ~/.npmrc
 
-# Run a single test file
-pnpm test src/hooks/useTransactions.test.ts
-# Run tests matching a name pattern
-pnpm test -- -t "should return transactions"
-```
-
-## GitHub Packages setup
-
-The app consumes `@glebremniov/budget-buddy-contracts` (TypeScript types + generated API clients from the OpenAPI spec), published to `npm.pkg.github.com`.
-
-**Local dev:** export your GitHub token so pnpm can read it via the `.npmrc` `${GITHUB_TOKEN}` interpolation:
-
-```bash
-export GITHUB_TOKEN=$(gh auth token)   # or paste your token directly
 pnpm install
+cp .env.example .env.local   # set VITE_API_URL if needed
+
+pnpm dev           # Vite dev server at http://localhost:5173
+pnpm build         # type-check + production build
+pnpm lint          # Biome lint
+pnpm format        # Biome auto-format (writes files)
+pnpm test          # Vitest run once
+pnpm test:watch    # Vitest watch mode
+pnpm type-check    # tsc --noEmit
 ```
 
-**CI:** GitHub Actions sets `GITHUB_TOKEN` automatically — no extra configuration needed.
-
-### Contracts package — types and API clients
-
-`@glebremniov/budget-buddy-contracts` exports both model types and fully-typed axios API client classes generated from the OpenAPI spec.
-
-**Import API client instances** (from `src/lib/api.ts`):
-
-```typescript
-import { authApi, categoriesApi, transactionsApi } from '@/lib/api'
-
-// Usage — typed, no URL strings
-const { data } = await transactionsApi.listTransactions({ limit: 20, sort: 'desc' })
-const { data } = await categoriesApi.createCategory({ categoryWrite: body })
-const { data } = await authApi.loginUser({ loginRequest: { username, password } })
-```
-
-**Import types directly** when needed:
-
-```typescript
-import type {
-  Transaction, TransactionWrite, TransactionUpdate,
-  Category, CategoryWrite, CategoryUpdate,
-  AuthToken, LoginRequest, RegisterRequest,
-  PaginatedTransactions, PaginatedCategories
-} from '@glebremniov/budget-buddy-contracts'
-```
-
-**Looking up available API methods:** the top-level `dist/api.d.ts` is a re-export barrel and does not list method signatures. Read the per-resource files instead:
-
-```
-node_modules/@glebremniov/budget-buddy-contracts/dist/api/auth-api.d.ts
-node_modules/@glebremniov/budget-buddy-contracts/dist/api/categories-api.d.ts
-node_modules/@glebremniov/budget-buddy-contracts/dist/api/transactions-api.d.ts
-```
-
-Model types live under `dist/model/<name>.d.ts` (e.g. `dist/model/auth-token.d.ts`).
-
-To regenerate after an OpenAPI spec change:
+Run a single test file:
 ```bash
-# In the contracts repo
-pnpm run generate:ts
-# Then publish a new version and update the dep here:
-pnpm add @glebremniov/budget-buddy-contracts@new-version
+pnpm vitest run src/hooks/useTransactions.test.ts
 ```
 
-## Stack
+## Architecture
 
-- **Vite** + **React 19** + **TypeScript** (strict)
-- **TanStack Router v1** — file-based routing in `src/routes/`
-- **TanStack Query v5** — all server state (caching, mutations)
-- **Zustand v5** — auth token (in-memory) + theme preference (localStorage)
-- **shadcn/ui** (Radix UI + Tailwind v4) — copy-paste components in `src/components/ui/`
-- **Biome** — replaces ESLint + Prettier
-- **Vitest** + **Testing Library** — unit/component tests
+### Routing
 
-## Project structure
+TanStack Router v1 with file-based routing. Routes live in `src/routes/`. The route tree is auto-generated into `src/routeTree.gen.ts` by the Vite plugin — never edit that file by hand.
 
-```
-src/
-  routes/           # TanStack Router file-based routes (auto-generates routeTree.gen.ts)
-    __root.tsx      # Root layout — mounts QueryClient devtools
-    _auth.tsx       # Pathless layout: redirect to / if authenticated
-    _auth/login.tsx, register.tsx
-    _app.tsx        # Pathless layout: redirect to /login if not authenticated + AppShell
-    _app/index.tsx  # Dashboard (/)
-    _app/transactions/index.tsx
-    _app/categories/index.tsx
-  components/
-    ui/             # shadcn/ui primitives (Button, Input, Card, Badge, Separator, Select, Skeleton)
-    layout/         # AppShell, Header, MobileNav + SidebarNav
-    ErrorBoundary.tsx  # React class error boundary — wraps subtrees; logs via error-logger; accepts optional `fallback` prop
-  hooks/
-    useTransactions.ts        # TanStack Query hooks for /v1/transactions
-    useCategories.ts          # TanStack Query hooks for /v1/categories
-    useLogout.ts              # Logout mutation: calls authApi.logoutUser(), clears auth + query cache, redirects
-    useTabVisibilityRefresh.ts  # Proactively refreshes auth token on tab visibility if token is ≥6 days old
-  stores/
-    auth.store.ts   # Zustand: accessToken (memory) + refreshToken + refreshTokenObtainedAt (localStorage)
-    theme.store.ts  # Zustand: light/dark/system preference (localStorage)
-  lib/
-    api.ts          # Axios instance + authApi / categoriesApi / transactionsApi instances
-    query-client.ts # TanStack QueryClient singleton — logs query/mutation errors via error-logger
-    formatters.ts   # formatCurrency (minor units), formatDate, toMinorUnits, todayIso
-    cn.ts           # clsx + tailwind-merge utility
-    error-logger.ts # logError(error, context?) — structured console logging; extend for remote reporting
-  test/
-    setup.ts        # Vitest setup: @testing-library/jest-dom + localStorage mock for Zustand persist
-```
+Two layout routes act as auth guards:
+- `_app.tsx` — requires authentication (`isAuthenticated()`); redirects to `/login` if not. Wraps pages in `AppShell`.
+- `_auth.tsx` — redirects already-authenticated users to `/`.
 
-## Auth flow
+Child routes are nested under these layouts by naming convention (`_app/`, `_auth/`).
 
-1. **Access token** — stored in Zustand (in-memory only, cleared on page refresh)
-2. **Refresh token** — persisted to `localStorage` (API requires it in request body)
-3. On 401: `api.ts` interceptor calls `POST /v1/auth/refresh` automatically, retries the original request, queues concurrent 401s
-4. On refresh failure: clears auth store, redirects to `/login`
-5. Route guard in `_app.tsx` (`beforeLoad`) redirects unauthenticated users to `/login`
+### API Client
 
-## Hook patterns
+`src/lib/api.ts` creates a single Axios instance (`apiClient`) used by all API calls. It:
+- Attaches the access token from Zustand to every request
+- On 401: queues concurrent requests, attempts a token refresh via `/v1/auth/refresh`, then replays queued requests; on refresh failure, clears auth and redirects to `/login`
 
-TanStack Query hooks follow a consistent `KEYS` object pattern for cache key management:
-```typescript
-const KEYS = {
-  all: ['resource'] as const,
-  list: (filters) => ['resource', 'list', filters] as const,
-  detail: (id) => ['resource', id] as const,
-}
-```
-Invalidate `KEYS.all` on mutations to refresh all related queries. `useDeleteTransaction` is the only hook using optimistic updates — it rolls back on error using `onMutate`/`onError`.
+Typed API clients (`authApi`, `categoriesApi`, `transactionsApi`) are instantiated from `@budget-buddy-org/budget-buddy-contracts` and share the same Axios instance.
 
-## Adding a new feature
+### Server State
 
-1. Add types + API endpoints to `@glebremniov/budget-buddy-contracts` (in contracts repo), regenerate TS, publish new version
-2. Update web-app: `pnpm add @glebremniov/budget-buddy-contracts@new-version`
-3. Add a new API instance to `src/lib/api.ts` (e.g. `export const budgetApi = new BudgetApi(config, BASE_URL, apiClient)`)
-4. Create `src/hooks/use<Feature>.ts` — call the typed API instance methods, wrap with TanStack Query
-5. Add route file(s) under `src/routes/_app/<feature>/`
-6. Add nav link to `MobileNav.tsx`
+TanStack Query v5. All query/mutation logic lives in hooks under `src/hooks/`. Each domain hook file (e.g. `useTransactions.ts`, `useCategories.ts`) exports a `KEYS` object for consistent cache key management, plus hooks for list, detail, create, update, and delete. Delete mutations use optimistic updates with rollback via `onMutate`/`onError`.
 
-## Theming
+Global error logging is wired into `QueryCache` and `MutationCache` in `src/lib/query-client.ts` — don't add duplicate error reporting inside individual hooks.
 
-Tailwind v4 uses CSS custom properties defined in `src/index.css` under `@theme`. The `dark` class on `<html>` switches all tokens. `theme.store.ts` manages the toggle and persists to localStorage.
+Default query `staleTime` is 1 minute; `retry` is 1.
 
-## Docker
+### Auth State
 
-Multi-stage build: `deps` (pnpm install) → `builder` (Vite build) → `production` (nginx:alpine).
+Zustand store in `src/stores/auth.store.ts` with `persist` middleware. Only `refreshToken` and `refreshTokenObtainedAt` are persisted to `localStorage` under the key `budget-buddy-auth`. The `accessToken` lives in memory only and is re-obtained via refresh on page load.
 
-**Build the image:**
-```bash
-# GITHUB_TOKEN must be set — passed as a BuildKit secret, never stored in any image layer
-docker build \
-  --secret id=github_token,env=GITHUB_TOKEN \
-  --build-arg VITE_API_URL=https://api.example.com \
-  -t budget-buddy-web-app .
-```
+### UI Components
 
-**Run locally with Docker Compose:**
-```bash
-GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
-# App available at http://localhost:3000
-```
+shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in `src/components/ui/`. Layout components (`AppShell`, `Header`, `MobileNav`) are in `src/components/layout/`. The `@` alias maps to `src/`.
 
-`VITE_API_URL` is baked into the bundle at build time (Vite limitation) — rebuild the image when the API URL changes.
+### Data Conventions
 
-**CI publishing:** The `publish` job in `.github/workflows/ci.yml` automatically builds and pushes to `ghcr.io/glebremniov/budget-buddy-web-app` after every merge to `main` (`latest` + `sha-<sha>` tags) and every GitHub Release (`v<version>` tag). Multi-platform (`linux/amd64` + `linux/arm64`), with SBOM/provenance attestations and keyless Cosign signing.
+Currency amounts are stored and sent as **minor units** (integers). `1299` = €12.99. Use `src/lib/formatters.ts` for display formatting.
 
-Prerequisite: set `VITE_API_URL` as a **repository variable** in GitHub Settings → Secrets and variables → Actions → Variables before the first publish run.
+### Tests
 
-## API
+Vitest + Testing Library, jsdom environment. Setup file at `src/test/setup.ts` provides a `localStorage` mock for Zustand persist. Tests are colocated with their source files (e.g. `useTransactions.test.ts` next to `useTransactions.ts`).
 
-Proxied to `VITE_API_URL` (default: `http://localhost:8080`). Copy `.env.example` to `.env.local` to configure. The Budget Buddy API requires `spring.profiles.active=dev` to auto-start PostgreSQL.
+### Linting / Formatting
 
-Currency amounts are **minor units** (integer): `1299` = €12.99. Use `formatCurrency(minorUnits)` to display and `toMinorUnits(decimal)` when writing.
+Biome handles both lint and format (single quotes, 2-space indent, 100 char line width). ESLint is also present for React-specific rules. Run `pnpm lint` before committing.
