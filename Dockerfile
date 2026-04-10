@@ -39,9 +39,10 @@ COPY .npmrc package.json pnpm-lock.yaml ./
 # 4. pnpm install --offline creates node_modules purely from the local store.
 RUN --mount=type=secret,id=github_token \
     --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    export GITHUB_TOKEN="$(cat /run/secrets/github_token)" \
+    echo "//npm.pkg.github.com/:_authToken=$(cat /run/secrets/github_token)" >> ~/.npmrc \
     && pnpm fetch \
-    && pnpm install --frozen-lockfile --offline
+    && pnpm install --frozen-lockfile --offline \
+    && sed -i '/npm\.pkg\.github\.com/d' ~/.npmrc
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — builder: compile the Vite SPA
