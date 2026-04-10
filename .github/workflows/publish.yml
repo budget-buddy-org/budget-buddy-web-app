@@ -1,0 +1,149 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write    # for SBOM/provenance
+  id-token: write        # for keyless Cosign signing via OIDC
+  security-events: write # for uploading SARIF scan results
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up QEMU (multi-platform emulation)
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        with:
+          images: ghcr.io/budget-buddy-org/budget-buddy-web-app
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      # Build a single-platform (amd64) image locally so we can scan it
+      # before pushing anything to the registry. Reuse GHA cache to avoid
+      # rebuilding layers that haven't changed since the last push.
+      - name: Build image for scanning (amd64, no push)
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
+          build-args: VITE_API_URL=${{ vars.VITE_API_URL }}
+          secrets: github_token=${{ secrets.GITHUB_TOKEN }}
+          cache-from: type=gha
+
+      # Scan CRITICAL+HIGH findings and upload to the Security tab for full
+      # visibility. Non-blocking — HIGH findings appear as warnings only.
+      - name: Scan image with Trivy (amd64, SARIF)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
+          format: sarif
+          output: trivy-amd64.sarif
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload amd64 scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        if: always()
+        with:
+          sarif_file: trivy-amd64.sarif
+          category: trivy-amd64
+
+      # Blocking gate — fails the job only on unfixed CRITICAL CVEs.
+      #
+      # Deliberate policy: HIGH vulnerabilities do not block pushes.
+      # Rationale: nginx:1.29-alpine ships with 3 unfixed HIGH CVEs in base
+      # Alpine packages that have no upstream fix yet. Blocking on HIGH would
+      # permanently halt the pipeline for issues outside our control. CRITICAL
+      # CVEs represent a meaningfully higher risk bar and are always blocked.
+      # HIGH findings remain fully visible in the repo's Security tab.
+      - name: Block on CRITICAL vulnerabilities (amd64)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app:scan
+          format: table
+          exit-code: '1'
+          severity: CRITICAL
+          ignore-unfixed: true
+
+      # Build the final multi-platform image and push it. SBOM and provenance
+      # attestations are attached automatically by build-push-action.
+      - name: Build and push multi-platform image
+        id: build-push
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: VITE_API_URL=${{ vars.VITE_API_URL }}
+          secrets: github_token=${{ secrets.GITHUB_TOKEN }}
+          sbom: true
+          provenance: mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Scan the arm64 image by digest from the registry to catch arch-specific
+      # vulnerabilities in base image packages that may differ from amd64.
+      # Intentionally non-blocking (continue-on-error: true, no exit-code) —
+      # findings are surfaced in the Security tab for visibility without gating
+      # releases on arch-specific vulns that may not be fixable upstream.
+      - name: Scan image with Trivy (arm64)
+        id: trivy-arm64
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        continue-on-error: true
+        with:
+          image-ref: ghcr.io/budget-buddy-org/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
+          format: sarif
+          output: trivy-arm64.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+        env:
+          TRIVY_PLATFORM: linux/arm64
+
+      - name: Upload arm64 scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        # Guard on the scan step's own outcome rather than build-push so this
+        # remains correct if the arm64 scan is ever decoupled from build-push.
+        if: always() && steps.trivy-arm64.outcome != 'skipped'
+        with:
+          sarif_file: trivy-arm64.sarif
+          category: trivy-arm64
+
+      # Install Cosign for keyless image signing (GitHub OIDC — no long-lived key).
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+
+      # Sign the published image digest with Cosign. Uses GitHub's OIDC token
+      # so no signing key needs to be stored or rotated.
+      - name: Sign image with Cosign (keyless)
+        run: |
+          cosign sign --yes \
+            ghcr.io/budget-buddy-org/budget-buddy-web-app@${{ steps.build-push.outputs.digest }}
