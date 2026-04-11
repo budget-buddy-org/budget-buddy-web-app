@@ -1,5 +1,4 @@
 import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts'
-// @ts-ignore - The package might not export these from root, but we need them for configuration
 import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen'
 import { useAuthStore } from '@/stores/auth.store'
 
