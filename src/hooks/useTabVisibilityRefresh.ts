@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { AuthToken } from '@budget-buddy-org/budget-buddy-contracts'
-import { apiClient } from '@/lib/api'
+import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts'
 import { useAuthStore } from '@/stores/auth.store'
 
 const SIX_DAYS_MS = 6 * 24 * 60 * 60 * 1000
@@ -29,10 +28,12 @@ export function useTabVisibilityRefresh() {
 
       isRefreshingRef.current = true
       try {
-        const { data } = await apiClient.post<AuthToken>('/v1/auth/refresh', {
-          refresh_token: refreshToken,
+        const { data } = await refreshAction({
+          body: { refresh_token: refreshToken },
         })
-        setAuth(data.access_token, data.refresh_token)
+        if (data) {
+          setAuth(data.access_token, data.refresh_token)
+        }
       } catch {
         // Network/transient errors are silently ignored so the user is not interrupted.
         // If the refresh token is expired (server returns 401), the response interceptor

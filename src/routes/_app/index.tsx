@@ -15,7 +15,7 @@ export const Route = createFileRoute('/_app/')({
 const SUMMARY_LIMIT = 50
 
 function DashboardPage() {
-  const { data, isLoading } = useTransactions({ limit: SUMMARY_LIMIT, sort: 'desc' })
+  const { data, isLoading } = useTransactions({ size: SUMMARY_LIMIT, sort: 'desc' })
 
   if (isLoading) return <DashboardSkeleton />
 
@@ -52,7 +52,7 @@ function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-baseline justify-between">
         <h1 className="text-xl font-semibold">Dashboard</h1>
-        <span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} transactions</span>
+        <span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} items</span>
       </div>
 
       {/* Summary cards */}
