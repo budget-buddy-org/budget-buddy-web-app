@@ -2,16 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { logoutUser } from '@budget-buddy-org/budget-buddy-contracts'
 
 const mockNavigate = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => mockNavigate,
 }))
 
-vi.mock('@/lib/api', () => ({
-  authApi: {
-    logoutUser: vi.fn(),
-  },
+vi.mock('@budget-buddy-org/budget-buddy-contracts', () => ({
+  logoutUser: vi.fn(),
 }))
 
 vi.mock('@/lib/query-client', () => ({
@@ -27,7 +26,6 @@ vi.mock('@/stores/auth.store', () => ({
 
 const mockClearAuth = vi.fn()
 
-const { authApi } = await import('@/lib/api')
 const { queryClient } = await import('@/lib/query-client')
 const { useLogout } = await import('./useLogout')
 
@@ -43,7 +41,7 @@ describe('useLogout', () => {
   })
 
   it('calls the logout endpoint, clears auth, clears query cache, and navigates to /login on success', async () => {
-    vi.mocked(authApi.logoutUser).mockResolvedValue({ data: undefined } as never)
+    vi.mocked(logoutUser).mockResolvedValue({ data: undefined } as any)
 
     const { result } = renderHook(() => useLogout(), { wrapper: makeWrapper() })
 
@@ -51,14 +49,14 @@ describe('useLogout', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(authApi.logoutUser).toHaveBeenCalledOnce()
+    expect(logoutUser).toHaveBeenCalledOnce()
     expect(mockClearAuth).toHaveBeenCalledOnce()
     expect(queryClient.clear).toHaveBeenCalledOnce()
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' })
   })
 
   it('still clears auth, query cache, and navigates even when the backend call fails', async () => {
-    vi.mocked(authApi.logoutUser).mockRejectedValue(new Error('network error'))
+    vi.mocked(logoutUser).mockRejectedValue(new Error('network error'))
 
     const { result } = renderHook(() => useLogout(), { wrapper: makeWrapper() })
 

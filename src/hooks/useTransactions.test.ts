@@ -3,18 +3,19 @@ import { renderHook, waitFor } from '@testing-library/react'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCreateTransaction, useDeleteTransaction, useTransactions } from './useTransactions'
+import {
+  listTransactions,
+  createTransaction,
+  deleteTransaction,
+} from '@budget-buddy-org/budget-buddy-contracts'
 
-vi.mock('@/lib/api', () => ({
-  transactionsApi: {
-    listTransactions: vi.fn(),
-    getTransaction: vi.fn(),
-    createTransaction: vi.fn(),
-    updateTransaction: vi.fn(),
-    deleteTransaction: vi.fn(),
-  },
+vi.mock('@budget-buddy-org/budget-buddy-contracts', () => ({
+  listTransactions: vi.fn(),
+  getTransaction: vi.fn(),
+  createTransaction: vi.fn(),
+  updateTransaction: vi.fn(),
+  deleteTransaction: vi.fn(),
 }))
-
-const { transactionsApi } = await import('@/lib/api')
 
 const mockPage = {
   items: [
@@ -32,8 +33,8 @@ const mockPage = {
     },
   ],
   total: 1,
-  limit: 20,
-  offset: 0,
+  size: 20,
+  page: 0,
 }
 
 function makeWrapper() {
@@ -48,7 +49,7 @@ describe('useTransactions', () => {
   })
 
   it('returns fetched transactions', async () => {
-    vi.mocked(transactionsApi.listTransactions).mockResolvedValue({ data: mockPage } as never)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
 
     const { result } = renderHook(() => useTransactions(), { wrapper: makeWrapper() })
 
@@ -58,16 +59,16 @@ describe('useTransactions', () => {
   })
 
   it('passes filters to the API', async () => {
-    vi.mocked(transactionsApi.listTransactions).mockResolvedValue({ data: mockPage } as never)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
 
-    const { result } = renderHook(
-      () => useTransactions({ categoryId: 'cat-1', sort: 'asc', limit: 10 }),
+    renderHook(
+      () => useTransactions({ categoryId: 'cat-1', sort: 'asc', size: 10 }),
       { wrapper: makeWrapper() },
     )
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(transactionsApi.listTransactions).toHaveBeenCalledWith(
-      expect.objectContaining({ categoryId: 'cat-1', sort: 'asc', limit: 10 }),
+    await waitFor(() => expect(listTransactions).toHaveBeenCalled())
+    expect(listTransactions).toHaveBeenCalledWith(
+      expect.objectContaining({ query: expect.objectContaining({ categoryId: 'cat-1', sort: 'asc', size: 10 }) }),
     )
   })
 })
@@ -79,8 +80,8 @@ describe('useCreateTransaction', () => {
 
   it('calls createTransaction and invalidates queries on success', async () => {
     const created = { ...mockPage.items[0] }
-    vi.mocked(transactionsApi.createTransaction).mockResolvedValue({ data: created } as never)
-    vi.mocked(transactionsApi.listTransactions).mockResolvedValue({ data: mockPage } as never)
+    vi.mocked(createTransaction).mockResolvedValue({ data: created } as any)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
 
     const { result } = renderHook(() => useCreateTransaction(), { wrapper: makeWrapper() })
 
@@ -94,7 +95,7 @@ describe('useCreateTransaction', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(transactionsApi.createTransaction).toHaveBeenCalledOnce()
+    expect(createTransaction).toHaveBeenCalledOnce()
   })
 })
 
@@ -104,14 +105,14 @@ describe('useDeleteTransaction', () => {
   })
 
   it('calls deleteTransaction and invalidates queries on success', async () => {
-    vi.mocked(transactionsApi.deleteTransaction).mockResolvedValue({ data: undefined } as never)
-    vi.mocked(transactionsApi.listTransactions).mockResolvedValue({ data: mockPage } as never)
+    vi.mocked(deleteTransaction).mockResolvedValue({ data: undefined } as any)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
 
     const { result } = renderHook(() => useDeleteTransaction(), { wrapper: makeWrapper() })
 
     result.current.mutate('tx-1')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(transactionsApi.deleteTransaction).toHaveBeenCalledWith({ transactionId: 'tx-1' })
+    expect(deleteTransaction).toHaveBeenCalledWith({ path: { transactionId: 'tx-1' } })
   })
 })

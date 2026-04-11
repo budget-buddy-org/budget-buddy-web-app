@@ -3,7 +3,7 @@ import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { authApi } from '@/lib/api'
+import { loginUser } from '@budget-buddy-org/budget-buddy-contracts'
 import { useAuthStore } from '@/stores/auth.store'
 import type { AuthToken, LoginRequest } from '@budget-buddy-org/budget-buddy-contracts'
 
@@ -19,7 +19,7 @@ function LoginPage() {
 
   const login = useMutation({
     mutationFn: async (body: LoginRequest) => {
-      const { data } = await authApi.loginUser({ loginRequest: body })
+      const { data } = await loginUser({ body })
       return data as AuthToken
     },
     onSuccess: (data) => {

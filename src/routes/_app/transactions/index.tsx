@@ -57,11 +57,11 @@ function TransactionsPage() {
   const [filterStart, setFilterStart] = useState('')
   const [filterEnd, setFilterEnd] = useState('')
   const [filterSort, setFilterSort] = useState<'asc' | 'desc'>('desc')
-  const [limit, setLimit] = useState(PAGE_SIZE)
+  const [size, setSize] = useState(PAGE_SIZE)
 
   const txFilters: TransactionFilters = {
     sort: filterSort,
-    limit,
+    size,
     ...(filterCategory ? { categoryId: filterCategory } : {}),
     ...(filterStart ? { start: filterStart } : {}),
     ...(filterEnd ? { end: filterEnd } : {}),
@@ -70,7 +70,7 @@ function TransactionsPage() {
   const { data, isLoading, isFetching } = useTransactions(txFilters)
 
   const transactions = data?.items ?? []
-  const hasMore = transactions.length === limit
+  const hasMore = transactions.length === size
   const categories = categoriesData?.items ?? []
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]))
 
@@ -79,12 +79,12 @@ function TransactionsPage() {
     setFilterStart('')
     setFilterEnd('')
     setFilterSort('desc')
-    setLimit(PAGE_SIZE)
+    setSize(PAGE_SIZE)
   }
 
   function handleFilterChange(update: () => void) {
     update()
-    setLimit(PAGE_SIZE)
+    setSize(PAGE_SIZE)
   }
 
   const handleCreate = (e: React.FormEvent) => {
@@ -354,7 +354,7 @@ function TransactionsPage() {
                 size="sm"
                 className="w-full text-muted-foreground"
                 disabled={isFetching}
-                onClick={() => setLimit((l) => l + PAGE_SIZE)}
+                onClick={() => setSize((l) => l + PAGE_SIZE)}
               >
                 {isFetching ? 'Loading…' : 'Load more'}
               </Button>
