@@ -48,7 +48,7 @@ Child routes are nested under these layouts by naming convention (`_app/`, `_aut
 ### API Client
 
 `src/lib/api.ts` configures the OpenAPI Fetch-based client from `@budget-buddy-org/budget-buddy-contracts`. It:
-- Uses `getConfig().VITE_API_URL` for the base URL, which is loaded at runtime.
+- Uses `client.setConfig` only in `src/main.tsx` after the configuration is loaded. The `src/lib/api.ts` module only registers interceptors.
 - Attaches the access token from Zustand to every request via interceptors
 - On 401: queues concurrent requests, attempts a token refresh via `refreshToken()`, then replays queued requests; on refresh failure, clears auth and redirects to `/login`
 

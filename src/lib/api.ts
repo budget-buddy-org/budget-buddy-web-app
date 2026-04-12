@@ -1,13 +1,6 @@
 import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts'
 import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen'
 import { useAuthStore } from '@/stores/auth.store'
-import { getConfig } from './config'
-
-const { VITE_API_URL } = getConfig()
-
-client.setConfig({
-  baseUrl: VITE_API_URL,
-})
 
 // Attach access token to every outgoing request
 client.interceptors.request.use((request: Request) => {
