@@ -47,3 +47,8 @@
 - Component: Use `ConfirmationDialog` for all destructive actions like deleting data.
 - Styling: The confirm button should use `variant="destructive"` to provide visual warning.
 - Content: Always clearly state what is being deleted and that the action cannot be undone.
+
+### Authentication Conventions
+#### Token Lifecycle
+- Proactive Refresh: Re-authenticate during the bootstrap phase in `src/main.tsx` if a `refreshToken` exists but an `accessToken` is missing. This maintains session continuity across page reloads.
+- Centralized Refresh: Use the `refreshAuth` function in `src/lib/api.ts` for both the `401` response interceptor and manual/proactive refresh calls.
