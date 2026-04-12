@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.0.0...v2.0.1) (2026-04-12)
+
+### Performance Improvements
+
+* route-based code splitting and vendor chunking ([#44](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/44)) ([e55f916](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e55f9160e8acdf4d0a6505b67657d9bb5aff121a)), closes [#4](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/4)
+
 ## [2.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v1.1.2...v2.0.0) (2026-04-12)
 
 ### ⚠ BREAKING CHANGES
