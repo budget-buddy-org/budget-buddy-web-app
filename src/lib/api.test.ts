@@ -143,8 +143,6 @@ describe('API response interceptor', () => {
     expect(hrefSetter).toHaveBeenCalledWith('/login')
   })
 
-  // This test MUST run last in this describe block: the early return in api.ts (no refresh
-  // token path) sets isRefreshing=true without resetting it, which would stall subsequent tests.
   it('clears auth and redirects to /login when there is no refresh token', async () => {
     mockAuthState.refreshToken = null
 
@@ -159,5 +157,26 @@ describe('API response interceptor', () => {
 
     expect(mockAuthState.clearAuth).toHaveBeenCalled()
     expect(hrefSetter).toHaveBeenCalledWith('/login')
+  })
+
+  it('does not leave isRefreshing=true after the no-refresh-token path (regression)', async () => {
+    // First 401 with no refresh token — previously left isRefreshing=true
+    mockAuthState.refreshToken = null
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, set href(_v: string) {} },
+    })
+    await responseInterceptor!(makeResponse(401), makeRequest(), {})
+
+    // Second 401 — now has a refresh token; must attempt refresh, not hang
+    mockAuthState.refreshToken = 'rt-valid'
+    vi.mocked(refreshToken).mockResolvedValue({
+      data: { access_token: 'at-new', refresh_token: 'rt-new' },
+    } as any)
+    mockClientRequest.mockResolvedValue({ response: makeResponse(200) })
+
+    await responseInterceptor!(makeResponse(401), makeRequest(), { headers: new Headers() })
+
+    expect(refreshToken).toHaveBeenCalledOnce()
   })
 })
