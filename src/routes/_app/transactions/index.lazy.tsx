@@ -47,6 +47,8 @@ function TransactionsPage() {
     categoryId: '',
   })
   const createTx = useCreateTransaction()
+  const createFieldErrors = (createTx.error as any)?.errors as Array<{ field: string; message: string }> | undefined
+  const getCreateFieldError = (field: string) => createFieldErrors?.find((e) => e.field === field)?.message
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -201,7 +203,11 @@ function TransactionsPage() {
                     placeholder="Coffee, salary…"
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    className={getCreateFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                   />
+                  {getCreateFieldError('description') && (
+                    <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('description')}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -214,7 +220,11 @@ function TransactionsPage() {
                     value={form.amount}
                     onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                     required
+                    className={getCreateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                   />
+                  {getCreateFieldError('amount') && (
+                    <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('amount')}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -224,10 +234,14 @@ function TransactionsPage() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, type: e.target.value as 'EXPENSE' | 'INCOME' }))
                     }
+                    className={getCreateFieldError('type') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                   >
                     <option value="EXPENSE">Expense</option>
                     <option value="INCOME">Income</option>
                   </Select>
+                  {getCreateFieldError('type') && (
+                    <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('type')}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -235,6 +249,7 @@ function TransactionsPage() {
                   <Select
                     value={form.currency}
                     onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+                    className={getCreateFieldError('currency') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                   >
                     {CURRENCIES.map((c) => (
                       <option key={c} value={c}>
@@ -242,6 +257,9 @@ function TransactionsPage() {
                       </option>
                     ))}
                   </Select>
+                  {getCreateFieldError('currency') && (
+                    <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('currency')}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -251,7 +269,11 @@ function TransactionsPage() {
                     value={form.date}
                     onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
                     required
+                    className={getCreateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                   />
+                  {getCreateFieldError('date') && (
+                    <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('date')}</p>
+                  )}
                 </div>
 
                 {categories.length > 0 && (
@@ -260,6 +282,7 @@ function TransactionsPage() {
                     <Select
                       value={form.categoryId}
                       onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                      className={getCreateFieldError('categoryId') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                     >
                       <option value="">No category</option>
                       {categories.map((c) => (
@@ -268,11 +291,14 @@ function TransactionsPage() {
                         </option>
                       ))}
                     </Select>
+                    {getCreateFieldError('categoryId') && (
+                      <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('categoryId')}</p>
+                    )}
                   </div>
                 )}
               </div>
 
-              {createTx.isError && (
+              {createTx.isError && !createFieldErrors?.length && (
                 <p className="text-sm text-destructive">Failed to create transaction.</p>
               )}
 
@@ -378,6 +404,9 @@ function TransactionEditRow({
   onDone: () => void
 }) {
   const update = useUpdateTransaction(transaction.id)
+  const updateFieldErrors = (update.error as any)?.errors as Array<{ field: string; message: string }> | undefined
+  const getUpdateFieldError = (field: string) => updateFieldErrors?.find((e) => e.field === field)?.message
+
   const [form, setForm] = useState({
     description: transaction.description ?? '',
     amount: (transaction.amount / 100).toFixed(2),
@@ -406,49 +435,78 @@ function TransactionEditRow({
     <li className="px-4 py-3">
       <form onSubmit={handleSave} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
-          <div className="col-span-2">
+          <div className="col-span-2 space-y-1">
             <Input
               placeholder="Description"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              className={getUpdateFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
             />
+            {getUpdateFieldError('description') && (
+              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('description')}</p>
+            )}
           </div>
-          <Input
-            type="number"
-            step="0.01"
-            min="0.01"
-            value={form.amount}
-            onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-            required
-          />
-          <Select
-            value={form.type}
-            onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as 'EXPENSE' | 'INCOME' }))}
-          >
-            <option value="EXPENSE">Expense</option>
-            <option value="INCOME">Income</option>
-          </Select>
-          <Select
-            value={form.currency}
-            onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </Select>
-          <Input
-            type="date"
-            value={form.date}
-            onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-            required
-          />
+          <div className="space-y-1">
+            <Input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={form.amount}
+              onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+              required
+              className={getUpdateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+            />
+            {getUpdateFieldError('amount') && (
+              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('amount')}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Select
+              value={form.type}
+              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as 'EXPENSE' | 'INCOME' }))}
+              className={getUpdateFieldError('type') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+            >
+              <option value="EXPENSE">Expense</option>
+              <option value="INCOME">Income</option>
+            </Select>
+            {getUpdateFieldError('type') && (
+              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('type')}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Select
+              value={form.currency}
+              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+              className={getUpdateFieldError('currency') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+            {getUpdateFieldError('currency') && (
+              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('currency')}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+              required
+              className={getUpdateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+            />
+            {getUpdateFieldError('date') && (
+              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('date')}</p>
+            )}
+          </div>
           {categories.length > 0 && (
-            <div className="col-span-2">
+            <div className="col-span-2 space-y-1">
               <Select
                 value={form.categoryId}
                 onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                className={getUpdateFieldError('categoryId') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               >
                 <option value="">No category</option>
                 {categories.map((c) => (
@@ -457,11 +515,14 @@ function TransactionEditRow({
                   </option>
                 ))}
               </Select>
+              {getUpdateFieldError('categoryId') && (
+                <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('categoryId')}</p>
+              )}
             </div>
           )}
         </div>
 
-        {update.isError && (
+        {update.isError && !updateFieldErrors?.length && (
           <p className="text-xs text-destructive">Failed to save changes.</p>
         )}
 

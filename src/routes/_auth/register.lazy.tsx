@@ -17,12 +17,16 @@ function RegisterPage() {
 
   const register = useMutation({
     mutationFn: async (body: RegisterRequest) => {
-      await registerUser({ body })
+      const { error } = await registerUser({ body })
+      if (error) throw error
     },
     onSuccess: () => {
       navigate({ to: '/login' })
     },
   })
+
+  const fieldErrors = (register.error as any)?.errors as Array<{ field: string; message: string }> | undefined
+  const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message
 
   return (
     <div className="space-y-4">
@@ -51,7 +55,11 @@ function RegisterPage() {
             minLength={3}
             maxLength={50}
             required
+            className={getFieldError('username') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
           />
+          {getFieldError('username') && (
+            <p className="text-sm font-medium text-destructive">{getFieldError('username')}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -66,10 +74,14 @@ function RegisterPage() {
             autoComplete="new-password"
             minLength={8}
             required
+            className={getFieldError('password') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
           />
+          {getFieldError('password') && (
+            <p className="text-sm font-medium text-destructive">{getFieldError('password')}</p>
+          )}
         </div>
 
-        {register.isError && (
+        {register.isError && !fieldErrors?.length && (
           <p className="text-sm text-destructive">
             Registration failed. The username may already be taken.
           </p>

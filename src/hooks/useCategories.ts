@@ -47,9 +47,10 @@ export function useCreateCategory() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: CategoryWrite) => {
-      const { data } = await createCategory({
+      const { data, error } = await createCategory({
         body,
       })
+      if (error) throw error
       return data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
@@ -60,10 +61,11 @@ export function useUpdateCategory(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: CategoryUpdate) => {
-      const { data } = await updateCategory({
+      const { data, error } = await updateCategory({
         path: { categoryId: id },
         body,
       })
+      if (error) throw error
       return data
     },
     onSuccess: () => {

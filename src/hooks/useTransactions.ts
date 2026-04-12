@@ -60,9 +60,10 @@ export function useCreateTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: TransactionWrite) => {
-      const { data } = await createTransaction({
+      const { data, error } = await createTransaction({
         body,
       })
+      if (error) throw error
       return data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
@@ -73,10 +74,11 @@ export function useUpdateTransaction(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (body: TransactionUpdate) => {
-      const { data } = await updateTransaction({
+      const { data, error } = await updateTransaction({
         path: { transactionId: id },
         body,
       })
+      if (error) throw error
       return data
     },
     onSuccess: () => {

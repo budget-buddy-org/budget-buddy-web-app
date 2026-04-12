@@ -19,7 +19,8 @@ function LoginPage() {
 
   const login = useMutation({
     mutationFn: async (body: LoginRequest) => {
-      const { data } = await loginUser({ body })
+      const { data, error } = await loginUser({ body })
+      if (error) throw error
       return data as AuthToken
     },
     onSuccess: (data) => {
@@ -27,6 +28,9 @@ function LoginPage() {
       navigate({ to: '/' })
     },
   })
+
+  const fieldErrors = (login.error as any)?.errors as Array<{ field: string; message: string }> | undefined
+  const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message
 
   return (
     <div className="space-y-4">
@@ -53,7 +57,11 @@ function LoginPage() {
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
             required
+            className={getFieldError('username') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
           />
+          {getFieldError('username') && (
+            <p className="text-sm font-medium text-destructive">{getFieldError('username')}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -67,10 +75,14 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             required
+            className={getFieldError('password') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
           />
+          {getFieldError('password') && (
+            <p className="text-sm font-medium text-destructive">{getFieldError('password')}</p>
+          )}
         </div>
 
-        {login.isError && (
+        {login.isError && !fieldErrors?.length && (
           <p className="text-sm text-destructive">Invalid credentials. Please try again.</p>
         )}
 

@@ -29,10 +29,17 @@ export function Header() {
           size="icon"
           onClick={() => setTheme(NEXT_THEME[theme])}
           title={`Switch theme (current: ${theme})`}
+          aria-label={`Switch theme (current: ${theme})`}
         >
           <ThemeIcon className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => logout.mutate()} title="Log out">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => logout.mutate()}
+          title="Log out"
+          aria-label="Log out"
+        >
           <LogOut className="h-4 w-4" />
         </Button>
       </div>

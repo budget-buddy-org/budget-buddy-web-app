@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/hooks/useCategories'
+import { cn } from '@/lib/cn'
 
 export const Route = createLazyFileRoute('/_app/categories/')({
   component: CategoriesPage,
@@ -19,6 +20,8 @@ function CategoriesPage() {
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+
+  const createFieldError = (createCategory.error as any)?.errors?.[0]?.message
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,17 +38,23 @@ function CategoriesPage() {
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Categories</h1>
 
-      <form onSubmit={handleCreate} className="flex gap-2">
-        <Input
-          placeholder="New category name…"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          maxLength={255}
-        />
-        <Button type="submit" size="sm" disabled={createCategory.isPending || !newName.trim()}>
-          <Plus className="h-4 w-4" />
-          Add
-        </Button>
+      <form onSubmit={handleCreate} className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Input
+            placeholder="New category name…"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            maxLength={255}
+            className={createFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+          />
+          <Button type="submit" size="sm" disabled={createCategory.isPending || !newName.trim()}>
+            <Plus className="h-4 w-4" />
+            Add
+          </Button>
+        </div>
+        {createFieldError && (
+          <p className="text-sm font-medium text-destructive">{createFieldError}</p>
+        )}
       </form>
 
       <Card>
@@ -108,6 +117,7 @@ function CategoryRow({
 }) {
   const updateCategory = useUpdateCategory(id)
   const isEditing = editingId === id
+  const updateFieldError = (updateCategory.error as any)?.errors?.[0]?.message
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,12 +130,12 @@ function CategoryRow({
 
   if (isEditing) {
     return (
-      <li className="flex items-center gap-2 px-4 py-2">
+      <li className="flex flex-col gap-1 px-4 py-2">
         <form onSubmit={handleSave} className="flex flex-1 items-center gap-2">
           <Input
             value={editName}
             onChange={(e) => onEditName(e.target.value)}
-            className="h-8"
+            className={cn('h-8', updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : '')}
             autoFocus
             maxLength={255}
           />
@@ -136,6 +146,9 @@ function CategoryRow({
             Cancel
           </Button>
         </form>
+        {updateFieldError && (
+          <p className="text-sm font-medium text-destructive">{updateFieldError}</p>
+        )}
       </li>
     )
   }
@@ -155,6 +168,7 @@ function CategoryRow({
         className="h-8 w-8 text-muted-foreground hover:text-destructive"
         onClick={onDelete}
         disabled={isDeleting}
+        aria-label="Delete category"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
