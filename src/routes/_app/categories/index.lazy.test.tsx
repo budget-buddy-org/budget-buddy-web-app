@@ -1,0 +1,190 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import React from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@tanstack/react-router', () => ({
+  createLazyFileRoute: () => (opts: any) => ({ options: opts }),
+}))
+
+const mockCreateCategory = { mutate: vi.fn(), isPending: false }
+const mockDeleteCategory = { mutate: vi.fn(), isPending: false }
+const mockUpdateCategory = { mutate: vi.fn(), isPending: false }
+
+vi.mock('@/hooks/useCategories', () => ({
+  useCategories: vi.fn(),
+  useCreateCategory: () => mockCreateCategory,
+  useDeleteCategory: () => mockDeleteCategory,
+  useUpdateCategory: () => mockUpdateCategory,
+}))
+
+// Stub UI primitives
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, disabled, type, onClick, variant, size, className }: any) =>
+    React.createElement('button', { disabled, type, onClick, 'data-variant': variant, 'data-size': size, className }, children),
+}))
+vi.mock('@/components/ui/card', () => ({
+  Card: ({ children, className }: any) => React.createElement('div', { className }, children),
+  CardContent: ({ children, className }: any) => React.createElement('div', { className }, children),
+}))
+vi.mock('@/components/ui/input', () => ({
+  Input: ({ value, onChange, placeholder, className, autoFocus, maxLength }: any) =>
+    React.createElement('input', { value, onChange, placeholder, className, autoFocus, maxLength }),
+}))
+vi.mock('@/components/ui/skeleton', () => ({
+  Skeleton: ({ className }: any) => React.createElement('div', { 'data-testid': 'skeleton', className }),
+}))
+vi.mock('lucide-react', () => ({
+  Plus: () => React.createElement('span', null, '+'),
+  Trash2: () => React.createElement('span', null, 'delete'),
+}))
+
+const { useCategories } = await import('@/hooks/useCategories')
+const { Route } = await import('./index.lazy')
+const CategoriesPage = Route.options.component as React.ComponentType
+
+function renderPage() {
+  return render(React.createElement(CategoriesPage))
+}
+
+describe('CategoriesPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockCreateCategory.isPending = false
+    mockDeleteCategory.isPending = false
+    mockUpdateCategory.isPending = false
+  })
+
+  it('shows loading skeletons while data is loading', () => {
+    vi.mocked(useCategories).mockReturnValue({ data: undefined, isLoading: true } as any)
+    renderPage()
+    expect(screen.getAllByTestId('skeleton')).toHaveLength(4)
+  })
+
+  it('shows an empty state message when there are no categories', () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [], total: 0, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    expect(screen.getByText(/no categories yet/i)).toBeInTheDocument()
+  })
+
+  it('renders a list of categories', () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: {
+        items: [
+          { id: 'cat-1', name: 'Groceries' },
+          { id: 'cat-2', name: 'Transport' },
+        ],
+        total: 2,
+        size: 200,
+        page: 0,
+      },
+      isLoading: false,
+    } as any)
+    renderPage()
+    expect(screen.getByText('Groceries')).toBeInTheDocument()
+    expect(screen.getByText('Transport')).toBeInTheDocument()
+  })
+
+  it('calls createCategory.mutate when the create form is submitted', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [], total: 0, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.type(screen.getByPlaceholderText(/new category name/i), 'Food')
+    await user.click(screen.getByRole('button', { name: /add/i }))
+
+    expect(mockCreateCategory.mutate).toHaveBeenCalledWith(
+      { name: 'Food' },
+      expect.any(Object),
+    )
+  })
+
+  it('does not submit create form when input is empty', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [], total: 0, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+
+    // Submit without typing anything
+    const addButton = screen.getByRole('button', { name: /add/i })
+    expect(addButton).toBeDisabled()
+    expect(mockCreateCategory.mutate).not.toHaveBeenCalled()
+  })
+
+  it('enters edit mode when a category name is clicked', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: 'Groceries' }))
+
+    // Should now show an input with the category name and Save/Cancel buttons
+    expect(screen.getByDisplayValue('Groceries')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+  })
+
+  it('calls updateCategory.mutate when the edit form is saved', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: 'Groceries' }))
+
+    const editInput = screen.getByDisplayValue('Groceries')
+    await user.clear(editInput)
+    await user.type(editInput, 'Food')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(mockUpdateCategory.mutate).toHaveBeenCalledWith(
+      { name: 'Food' },
+      expect.any(Object),
+    )
+  })
+
+  it('cancels edit mode without mutating when Cancel is clicked', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: 'Groceries' }))
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+    expect(mockUpdateCategory.mutate).not.toHaveBeenCalled()
+    // The category name button should be visible again
+    expect(screen.getByRole('button', { name: 'Groceries' })).toBeInTheDocument()
+  })
+
+  it('calls deleteCategory.mutate when the delete button is clicked', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    // The delete button contains the Trash2 icon text "delete"
+    const deleteButtons = screen.getAllByRole('button')
+    const deleteBtn = deleteButtons.find((btn) => btn.querySelector('span')?.textContent === 'delete')
+    expect(deleteBtn).toBeDefined()
+    await user.click(deleteBtn!)
+
+    expect(mockDeleteCategory.mutate).toHaveBeenCalledWith('cat-1')
+  })
+})
