@@ -13,7 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <main className="flex-1 overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
           <div className="mx-auto max-w-2xl px-4 py-6 animate-fade-in md:max-w-4xl md:px-6">{children}</div>
         </main>
       </div>

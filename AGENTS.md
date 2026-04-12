@@ -24,10 +24,14 @@
 - Headings: Ensure heading levels are progressive (e.g., `h1` must be followed by `h2`, not `h3`).
 - Interactive Elements: All icon-only buttons must include a descriptive `aria-label`.
 - Semantics: Use semantic HTML elements wherever possible.
-- Mobile Compatibility: Input/Select components must use `text-base` (16px) to prevent iOS auto-zoom.
+- Mobile Compatibility: Input/Select components must use `text-base` (16px) to prevent iOS auto-zoom. Hide scrollbars globally via `src/index.css` for a cleaner app-like experience.
 - Form Indicators: Mark required fields with `*` using `<span className="text-destructive">*</span>` inside labels.
-- iOS Safety: Use `viewport-fit=cover` in `index.html` and safe area insets (e.g., `pb-[env(safe-area-inset-bottom)]`) for mobile-only sticky elements.
+- iOS Safety: Use `viewport-fit=cover` in `index.html` and safe area insets (e.g., `pb-[env(safe-area-inset-bottom)]`) for mobile-only sticky elements. The tab bar (MobileNav) should have a content height of 50px to match standard iOS height (total 83px-84px with safe area).
 - Desktop UX: Ensure all interactive elements (buttons, selects, clickable list items) use `cursor-pointer` to provide clear feedback on hover.
+
+### Component Organization
+- **Page-Specific Components**: Move sub-components for specific pages out of `src/routes/` and into `src/components/{page-name}/` to prevent TanStack Router from scanning them as potential routes.
+- **Shared UI**: Keep generic primitives in `src/components/ui/`.
 
 ### Versioning
 - App version: Injected at build time via Vite `define` as `__APP_VERSION__`. Display in the `Header` component.

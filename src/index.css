@@ -64,6 +64,14 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   font-size: 16px;
+  /* Hide scrollbar by default for a cleaner look, especially on iOS */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+body::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes fade-in {

@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCategories } from '@/hooks/useCategories'
 import { useTransactions } from '@/hooks/useTransactions'
-import { TransactionFilters } from './components/TransactionFilters'
-import { TransactionForm } from './components/TransactionForm'
-import { TransactionList } from './components/TransactionList'
+import { TransactionFilters } from '@/components/transactions/TransactionFilters'
+import { TransactionForm } from '@/components/transactions/TransactionForm'
+import { TransactionList } from '@/components/transactions/TransactionList'
 
 export const Route = createLazyFileRoute('/_app/transactions/')({
   component: TransactionsPage,

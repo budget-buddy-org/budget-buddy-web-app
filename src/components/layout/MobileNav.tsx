@@ -11,17 +11,17 @@ const NAV_ITEMS = [
 export function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
-      <div className="flex h-16 items-center">
+      <div className="flex h-[50px] items-center">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="flex flex-1 flex-col items-center gap-1 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             activeProps={{ className: 'text-primary font-semibold' }}
             activeOptions={{ exact: to === '/' }}
           >
             <Icon className="h-5 w-5" />
-            {label}
+            <span className="text-[10px]">{label}</span>
           </Link>
         ))}
       </div>
