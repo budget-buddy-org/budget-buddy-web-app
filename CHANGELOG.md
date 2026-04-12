@@ -1,3 +1,9 @@
+## [2.0.4](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.0.3...v2.0.4) (2026-04-12)
+
+### Bug Fixes
+
+* harden error fallbacks with generic message and details toggle (closes [#18](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/18)) ([#49](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/49)) ([7c1ef96](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7c1ef9673a7f66b5386513765f82b624f3d314e2))
+
 ## [2.0.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.0.2...v2.0.3) (2026-04-12)
 
 ### Bug Fixes
