@@ -1,3 +1,9 @@
+## [2.5.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.4.0...v2.5.0) (2026-04-12)
+
+### Features
+
+* implement notification system, confirmation dialogs, and transactions refactor ([bd48bdc](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/bd48bdccfe9cbfe2edb2e8c32b0a49b310331995))
+
 ## [2.4.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.3.0...v2.4.0) (2026-04-12)
 
 ### Features
