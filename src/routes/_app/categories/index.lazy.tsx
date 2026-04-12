@@ -1,0 +1,163 @@
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/hooks/useCategories'
+
+export const Route = createLazyFileRoute('/_app/categories/')({
+  component: CategoriesPage,
+})
+
+function CategoriesPage() {
+  const { data, isLoading } = useCategories()
+  const createCategory = useCreateCategory()
+  const deleteCategory = useDeleteCategory()
+
+  const [newName, setNewName] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newName.trim()) return
+    createCategory.mutate(
+      { name: newName.trim() },
+      { onSuccess: () => setNewName('') },
+    )
+  }
+
+  const categories = data?.items ?? []
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Categories</h1>
+
+      <form onSubmit={handleCreate} className="flex gap-2">
+        <Input
+          placeholder="New category name…"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          maxLength={255}
+        />
+        <Button type="submit" size="sm" disabled={createCategory.isPending || !newName.trim()}>
+          <Plus className="h-4 w-4" />
+          Add
+        </Button>
+      </form>
+
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="space-y-px p-2">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-11 rounded-sm" />
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>
+          ) : (
+            <ul className="divide-y">
+              {categories.map((c) => (
+                <CategoryRow
+                  key={c.id}
+                  id={c.id}
+                  name={c.name}
+                  editingId={editingId}
+                  editName={editName}
+                  onStartEdit={() => {
+                    setEditingId(c.id)
+                    setEditName(c.name)
+                  }}
+                  onEditName={setEditName}
+                  onCancelEdit={() => setEditingId(null)}
+                  onDelete={() => deleteCategory.mutate(c.id)}
+                  isDeleting={deleteCategory.isPending}
+                />
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function CategoryRow({
+  id,
+  name,
+  editingId,
+  editName,
+  onStartEdit,
+  onEditName,
+  onCancelEdit,
+  onDelete,
+  isDeleting,
+}: {
+  id: string
+  name: string
+  editingId: string | null
+  editName: string
+  onStartEdit: () => void
+  onEditName: (v: string) => void
+  onCancelEdit: () => void
+  onDelete: () => void
+  isDeleting: boolean
+}) {
+  const updateCategory = useUpdateCategory(id)
+  const isEditing = editingId === id
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editName.trim()) return
+    updateCategory.mutate(
+      { name: editName.trim() },
+      { onSuccess: onCancelEdit },
+    )
+  }
+
+  if (isEditing) {
+    return (
+      <li className="flex items-center gap-2 px-4 py-2">
+        <form onSubmit={handleSave} className="flex flex-1 items-center gap-2">
+          <Input
+            value={editName}
+            onChange={(e) => onEditName(e.target.value)}
+            className="h-8"
+            autoFocus
+            maxLength={255}
+          />
+          <Button type="submit" size="sm" disabled={updateCategory.isPending}>
+            Save
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={onCancelEdit}>
+            Cancel
+          </Button>
+        </form>
+      </li>
+    )
+  }
+
+  return (
+    <li className="flex items-center justify-between px-4 py-3">
+      <button
+        type="button"
+        className="flex-1 text-left text-sm font-medium hover:text-muted-foreground"
+        onClick={onStartEdit}
+      >
+        {name}
+      </button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        onClick={onDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </li>
+  )
+}

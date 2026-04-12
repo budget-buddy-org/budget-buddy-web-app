@@ -25,6 +25,11 @@ Run a single test file:
 pnpm vitest run src/hooks/useTransactions.test.ts
 ```
 
+Coverage report:
+```bash
+pnpm test:coverage   # HTML report in coverage/
+```
+
 ## Architecture
 
 ### Routing
@@ -32,10 +37,12 @@ pnpm vitest run src/hooks/useTransactions.test.ts
 TanStack Router v1 with file-based routing. Routes live in `src/routes/`. The route tree is auto-generated into `src/routeTree.gen.ts` by the Vite plugin — never edit that file by hand.
 
 Two layout routes act as auth guards:
-- `_app.tsx` — requires authentication (`isAuthenticated()`); redirects to `/login` if not. Wraps pages in `AppShell`.
+- `_app.tsx` — requires authentication (`isAuthenticated()`); redirects to `/login` if not. Wraps pages in `AppShell` and mounts `useTabVisibilityRefresh`.
 - `_auth.tsx` — redirects already-authenticated users to `/`.
 
 Child routes are nested under these layouts by naming convention (`_app/`, `_auth/`).
+
+**Code splitting:** Page components live in `.lazy.tsx` siblings (e.g. `_app/index.lazy.tsx`) using `createLazyFileRoute`. The plain `.tsx` file keeps only the `createFileRoute` stub (for loaders/beforeLoad). The Vite plugin handles the dynamic import automatically. Add new pages with the same split — never put a component in the route definition file.
 
 ### API Client
 
@@ -55,11 +62,15 @@ Default query `staleTime` is 1 minute; `retry` is 1.
 
 ### Auth State
 
-Zustand store in `src/stores/auth.store.ts` with `persist` middleware. Only `refreshToken` and `refreshTokenObtainedAt` are persisted to `localStorage` under the key `budget-buddy-auth`. The `accessToken` lives in memory only and is re-obtained via refresh on page load.
+Two Zustand stores:
+- `src/stores/auth.store.ts` — persists `refreshToken` + `refreshTokenObtainedAt` to `localStorage` (`budget-buddy-auth`). `accessToken` is memory-only; re-obtained via refresh on page load.
+- `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`) to `localStorage` (`budget-buddy-theme`). Applies `dark` class to `<html>` on rehydration.
+
+`useTabVisibilityRefresh` (mounted in `_app.tsx`) proactively refreshes the auth token on tab focus when the refresh token is older than 6 days, preventing expiry mid-session.
 
 ### UI Components
 
-shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in `src/components/ui/`. Layout components (`AppShell`, `Header`, `MobileNav`) are in `src/components/layout/`. The `@` alias maps to `src/`.
+shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in `src/components/ui/`. Layout components (`AppShell`, `Header`, `MobileNav`) are in `src/components/layout/`. Charts use `recharts`. The `@` alias maps to `src/`.
 
 ### Data Conventions
 
