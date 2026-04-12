@@ -4,11 +4,12 @@
 #
 #   docker build \
 #     --secret id=github_token,env=GITHUB_TOKEN \
-#     --build-arg VITE_API_URL=https://api.example.com \
 #     -t budget-buddy-web-app .
 #
-# The GITHUB_TOKEN secret is mounted at build time only and never written
-# to any image layer or appears in `docker history`.
+# The VITE_API_URL is no longer injected at build time. Pass it as a runtime
+# environment variable to the container instead:
+#
+#   docker run -e VITE_API_URL=https://api.example.com -p 8080:80 budget-buddy-web-app
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
@@ -55,13 +56,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# VITE_API_URL is injected at build time because Vite replaces import.meta.env.*
-# references during bundling — there is no runtime configuration for these values.
-# Pass the target API base URL when building for each environment, e.g.:
-#   --build-arg VITE_API_URL=https://api.production.example.com
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
 RUN pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -84,7 +78,17 @@ COPY --link nginx.conf /etc/nginx/conf.d/default.conf
 # so it can be cached independently.
 COPY --link --from=builder /app/dist /usr/share/nginx/html
 
+# Install gettext for envsubst
+RUN apk add --no-cache gettext
+
+# Copy and set the entrypoint for runtime configuration injection
+COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
 
 # Lightweight liveness check — wget is already included in nginx:alpine.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

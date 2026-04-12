@@ -7,10 +7,10 @@ services:
       # before running `docker compose build`.
       secrets:
         - github_token
-      args:
-        # Vite bakes this URL into the bundle at build time.
-        # Override per environment: VITE_API_URL=https://api.prod.example.com docker compose build
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    environment:
+      # Inject the API URL at runtime via the docker-entrypoint.sh script.
+      # Default to localhost if not specified in the environment.
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
     ports:
       - "${WEB_PORT:-3000}:80"
     healthcheck:
