@@ -24,3 +24,9 @@
 - Headings: Ensure heading levels are progressive (e.g., `h1` must be followed by `h2`, not `h3`).
 - Interactive Elements: All icon-only buttons must include a descriptive `aria-label`.
 - Semantics: Use semantic HTML elements wherever possible.
+- Mobile Compatibility: Input/Select components must use `text-base` (16px) to prevent iOS auto-zoom.
+- Form Indicators: Mark required fields with `*` using `<span className="text-destructive">*</span>` inside labels.
+- iOS Safety: Use `viewport-fit=cover` in `index.html` and safe area insets (e.g., `pb-[env(safe-area-inset-bottom)]`) for mobile-only sticky elements.
+
+### Versioning
+- App version: Injected at build time via Vite `define` as `__APP_VERSION__`. Display in the `Header` component.

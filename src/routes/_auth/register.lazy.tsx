@@ -44,7 +44,7 @@ function RegisterPage() {
       >
         <div className="space-y-1">
           <label className="text-sm font-medium" htmlFor="username">
-            Username
+            Username <span className="text-destructive">*</span>
           </label>
           <Input
             id="username"
@@ -64,7 +64,7 @@ function RegisterPage() {
 
         <div className="space-y-1">
           <label className="text-sm font-medium" htmlFor="password">
-            Password
+            Password <span className="text-destructive">*</span>
           </label>
           <Input
             id="password"
