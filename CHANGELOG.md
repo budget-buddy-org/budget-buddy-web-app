@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v1.1.1...v1.1.2) (2026-04-12)
+
+### Bug Fixes
+
+* **ci:** approve esbuild build scripts for pnpm v10 ([#41](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/41)) ([29b34d4](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/29b34d4258383a609da94b28d02ccc3c8e3af71a))
+* permissions in ci ([d1b3352](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/d1b3352d4b67f6f38eb9952eade083f91bba7a25))
+
 ## [1.1.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v1.1.1...v1.1.2) (2026-04-11)
 
 ### Bug Fixes
