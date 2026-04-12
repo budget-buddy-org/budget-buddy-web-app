@@ -42,9 +42,6 @@ client.interceptors.response.use(async (response: Response, _request: Request, o
     })
   }
 
-  options._retry = true
-  isRefreshing = true
-
   const refreshTokenValue = useAuthStore.getState().refreshToken
   if (!refreshTokenValue) {
     useAuthStore.getState().clearAuth()
@@ -53,6 +50,9 @@ client.interceptors.response.use(async (response: Response, _request: Request, o
     }
     return response
   }
+
+  options._retry = true
+  isRefreshing = true
 
   try {
     const { data } = await refreshAction({
