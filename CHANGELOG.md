@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v1.1.2...v2.0.0) (2026-04-12)
+
+### ⚠ BREAKING CHANGES
+
+* update @budget-buddy-org/budget-buddy-contracts to v2.1.2 (#43)
+
+### Miscellaneous Chores
+
+* update @budget-buddy-org/budget-buddy-contracts to v2.1.2 ([#43](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/43)) ([34de246](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/34de246fa38ea666f29fd8e13f863007c84f4a1d))
+
 ## [1.1.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v1.1.1...v1.1.2) (2026-04-12)
 
 ### Bug Fixes
