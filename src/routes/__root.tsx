@@ -36,12 +36,12 @@ function ErrorComponent({ error }: { error: Error }) {
 
       <div className="flex flex-col gap-2">
         <div className="flex justify-center gap-4">
-          <button type="button" className="text-sm underline" onClick={() => router.invalidate()}>
+          <button type="button" className="text-sm underline cursor-pointer" onClick={() => router.invalidate()}>
             Try again
           </button>
           <button
             type="button"
-            className="text-sm underline"
+            className="text-sm underline cursor-pointer"
             onClick={() => setShowDetails(!showDetails)}
           >
             {showDetails ? 'Hide details' : 'Show details'}
