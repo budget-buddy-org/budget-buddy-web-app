@@ -1,11 +1,12 @@
 import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts'
 import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen'
 import { useAuthStore } from '@/stores/auth.store'
+import { getConfig } from './config'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const { VITE_API_URL } = getConfig()
 
 client.setConfig({
-  baseUrl: BASE_URL,
+  baseUrl: VITE_API_URL,
 })
 
 // Attach access token to every outgoing request

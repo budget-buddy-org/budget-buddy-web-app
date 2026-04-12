@@ -48,6 +48,7 @@ Child routes are nested under these layouts by naming convention (`_app/`, `_aut
 ### API Client
 
 `src/lib/api.ts` configures the OpenAPI Fetch-based client from `@budget-buddy-org/budget-buddy-contracts`. It:
+- Uses `getConfig().VITE_API_URL` for the base URL, which is loaded at runtime.
 - Attaches the access token from Zustand to every request via interceptors
 - On 401: queues concurrent requests, attempts a token refresh via `refreshToken()`, then replays queued requests; on refresh failure, clears auth and redirects to `/login`
 
@@ -68,6 +69,15 @@ Two Zustand stores:
 - `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`) to `localStorage` (`budget-buddy-theme`). Applies `dark` class to `<html>` on rehydration.
 
 `useTabVisibilityRefresh` (mounted in `_app.tsx`) proactively refreshes the auth token on tab focus when the refresh token is older than 6 days, preventing expiry mid-session.
+
+### Runtime Configuration
+
+The application uses a runtime configuration pattern to allow environment-specific settings (like `VITE_API_URL`) to be changed without rebuilding the Docker image.
+
+- **Storage:** `public/config.json.template` defines the available settings with placeholders.
+- **Injection:** In Docker, `docker/docker-entrypoint.sh` uses `envsubst` to replace placeholders with environment variables and writes the result to `/usr/share/nginx/html/config.json`.
+- **Loading:** `src/lib/config.ts` fetches `/config.json` at runtime. During development, it falls back to `import.meta.env` values.
+- **Bootstrap:** `src/main.tsx` awaits `loadConfig()` before initializing the API client and rendering the app.
 
 ### Error Handling
 

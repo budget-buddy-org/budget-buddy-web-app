@@ -4,6 +4,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
 import { queryClient } from './lib/query-client'
+import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen'
+import { loadConfig } from './lib/config'
 import './lib/api'
 import './index.css'
 
@@ -18,10 +20,17 @@ declare module '@tanstack/react-router' {
 const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('Root element not found')
 
-createRoot(rootEl).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  </StrictMode>,
-)
+// Bootstrapping: Load runtime config, update the API client, then render the app.
+loadConfig().then((config) => {
+  client.setConfig({
+    baseUrl: config.VITE_API_URL,
+  })
+
+  createRoot(rootEl).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </StrictMode>,
+  )
+})

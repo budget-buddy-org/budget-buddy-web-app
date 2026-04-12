@@ -47,18 +47,20 @@ pnpm type-check   # tsc --noEmit
 
 Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.29-alpine).
 
+Runtime configuration is injected via `docker-entrypoint.sh` from environment variables using `envsubst`.
+
 ```bash
 # Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
 docker build \
   --secret id=github_token,env=GITHUB_TOKEN \
-  --build-arg VITE_API_URL=https://api.example.com \
   -t budget-buddy-web-app .
 
 # Run locally with Docker Compose (app available at http://localhost:3000)
+# VITE_API_URL is injected into the container at runtime
 GITHUB_TOKEN=$(gh auth token) VITE_API_URL=http://localhost:8080 docker compose up --build
 ```
 
-`VITE_API_URL` is baked into the bundle at build time — rebuild the image when the API URL changes.
+`VITE_API_URL` is injected into the container at runtime — no need to rebuild the image when the API URL changes.
 
 Pre-built images are published to `ghcr.io/budget-buddy-org/budget-buddy-web-app` on every merge to `main` and every GitHub Release.
 

@@ -1,3 +1,11 @@
+### Configuration Conventions
+
+#### Runtime Configuration
+- Pattern: The application uses a runtime configuration injection pattern via `/config.json`.
+- Environment Variables: All frontend environment variables (starting with `VITE_`) must be injected at runtime using `envsubst` within the Docker entrypoint.
+- Fallback: The `src/lib/config.ts` module handles both runtime loading and local development fallbacks.
+- Initialization: Configuration must be loaded during the application bootstrap in `src/main.tsx` before the UI is rendered.
+
 ### Error Handling Conventions
 
 #### Error Fallbacks
