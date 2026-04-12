@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.3.0'),
+  },
   plugins: [
     TanStackRouterVite({
       routesDirectory: './src/routes',

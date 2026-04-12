@@ -47,7 +47,7 @@ function CategoriesPage() {
             maxLength={255}
             className={createFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
           />
-          <Button type="submit" size="sm" disabled={createCategory.isPending || !newName.trim()}>
+          <Button type="submit" disabled={createCategory.isPending || !newName.trim()}>
             <Plus className="h-4 w-4" />
             Add
           </Button>
@@ -130,12 +130,12 @@ function CategoryRow({
 
   if (isEditing) {
     return (
-      <li className="flex flex-col gap-1 px-4 py-2">
+      <li className="flex flex-col gap-1 bg-muted/20 px-4 py-2">
         <form onSubmit={handleSave} className="flex flex-1 items-center gap-2">
           <Input
             value={editName}
             onChange={(e) => onEditName(e.target.value)}
-            className={cn('h-8', updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : '')}
+            className={cn('h-9', updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : '')}
             autoFocus
             maxLength={255}
           />
@@ -154,10 +154,10 @@ function CategoryRow({
   }
 
   return (
-    <li className="flex items-center justify-between px-4 py-3">
+    <li className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer">
       <button
         type="button"
-        className="flex-1 text-left text-sm font-medium hover:text-muted-foreground"
+        className="flex-1 text-left text-sm font-medium focus-visible:outline-none cursor-pointer"
         onClick={onStartEdit}
       >
         {name}
@@ -165,12 +165,12 @@ function CategoryRow({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        className="h-9 w-9 text-muted-foreground hover:text-destructive"
         onClick={onDelete}
         disabled={isDeleting}
         aria-label="Delete category"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </Button>
     </li>
   )

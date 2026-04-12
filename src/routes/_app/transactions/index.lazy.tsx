@@ -115,7 +115,6 @@ function TransactionsPage() {
         <h1 className="text-xl font-semibold">Transactions</h1>
         <div className="flex items-center gap-2">
           <Button
-            size="sm"
             variant={showFilters ? 'secondary' : 'outline'}
             onClick={() => setShowFilters((v) => !v)}
             aria-label="Toggle filters"
@@ -123,7 +122,7 @@ function TransactionsPage() {
             <Filter className="h-4 w-4" />
             {hasActiveFilters && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
           </Button>
-          <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+          <Button onClick={() => setShowForm((v) => !v)}>
             <Plus className="h-4 w-4" />
             Add
           </Button>
@@ -134,7 +133,7 @@ function TransactionsPage() {
       {showFilters && (
         <Card>
           <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Category</label>
                 <Select
@@ -195,9 +194,9 @@ function TransactionsPage() {
       {showForm && (
         <Card>
           <CardContent className="pt-4">
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 space-y-1">
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2 space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Description</label>
                   <Input
                     placeholder="Coffee, salary…"
@@ -211,7 +210,9 @@ function TransactionsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Amount</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Amount <span className="text-destructive">*</span>
+                  </label>
                   <Input
                     type="number"
                     step="0.01"
@@ -263,7 +264,9 @@ function TransactionsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Date</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Date <span className="text-destructive">*</span>
+                  </label>
                   <Input
                     type="date"
                     value={form.date}
@@ -277,7 +280,7 @@ function TransactionsPage() {
                 </div>
 
                 {categories.length > 0 && (
-                  <div className="col-span-2 space-y-1">
+                  <div className="sm:col-span-2 space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">Category</label>
                     <Select
                       value={form.categoryId}
@@ -303,13 +306,12 @@ function TransactionsPage() {
               )}
 
               <div className="flex gap-2">
-                <Button type="submit" size="sm" disabled={createTx.isPending}>
+                <Button type="submit" disabled={createTx.isPending}>
                   {createTx.isPending ? 'Saving…' : 'Save'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() => setShowForm(false)}
                 >
                   Cancel
@@ -342,10 +344,13 @@ function TransactionsPage() {
                     onDone={() => setEditingId(null)}
                   />
                 ) : (
-                  <li key={t.id} className="flex items-center gap-3 px-4 py-3">
+                  <li
+                    key={t.id}
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer"
+                  >
                     <button
                       type="button"
-                      className="min-w-0 flex-1 text-left"
+                      className="min-w-0 flex-1 text-left focus-visible:outline-none cursor-pointer"
                       onClick={() => setEditingId(t.id)}
                     >
                       <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
@@ -432,10 +437,10 @@ function TransactionEditRow({
   }
 
   return (
-    <li className="px-4 py-3">
-      <form onSubmit={handleSave} className="space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="col-span-2 space-y-1">
+    <li className="bg-muted/20 px-4 py-3 sm:rounded-md">
+      <form onSubmit={handleSave} className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2 space-y-1">
             <Input
               placeholder="Description"
               value={form.description}
@@ -502,7 +507,7 @@ function TransactionEditRow({
             )}
           </div>
           {categories.length > 0 && (
-            <div className="col-span-2 space-y-1">
+            <div className="sm:col-span-2 space-y-1">
               <Select
                 value={form.categoryId}
                 onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
@@ -527,10 +532,10 @@ function TransactionEditRow({
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" size="sm" disabled={update.isPending}>
+          <Button type="submit" disabled={update.isPending}>
             {update.isPending ? 'Saving…' : 'Save'}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onDone}>
+          <Button type="button" variant="outline" onClick={onDone}>
             Cancel
           </Button>
         </div>

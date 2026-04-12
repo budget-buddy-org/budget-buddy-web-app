@@ -22,7 +22,10 @@ export function Header() {
 
   return (
     <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
-      <span className="font-semibold tracking-tight">Budget Buddy</span>
+      <span className="font-semibold tracking-tight">
+        Budget Buddy
+        <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>
+      </span>
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
