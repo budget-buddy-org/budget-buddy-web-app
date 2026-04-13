@@ -48,7 +48,7 @@ function LoginPage() {
       >
         <div className="space-y-1">
           <label className="text-sm font-medium" htmlFor="username">
-            Username <span className="text-destructive">*</span>
+            Username
           </label>
           <Input
             id="username"
@@ -66,7 +66,7 @@ function LoginPage() {
 
         <div className="space-y-1">
           <label className="text-sm font-medium" htmlFor="password">
-            Password <span className="text-destructive">*</span>
+            Password
           </label>
           <Input
             id="password"

@@ -38,6 +38,11 @@ vi.mock('@/hooks/useTransactions', () => ({
           categoryId: '1',
         },
       ],
+      meta: {
+        total: 1,
+        page: 0,
+        size: 20,
+      },
     },
     isLoading: false,
     isFetching: false,

@@ -85,7 +85,7 @@ export function TransactionForm({
                 className={getCreateFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               />
               {getCreateFieldError('description') && (
-                <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('description')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('description')}</p>
               )}
             </div>
 
@@ -104,7 +104,7 @@ export function TransactionForm({
                 className={getCreateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               />
               {getCreateFieldError('amount') && (
-                <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('amount')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('amount')}</p>
               )}
             </div>
 
@@ -121,7 +121,7 @@ export function TransactionForm({
                 <option value="INCOME">Income</option>
               </Select>
               {getCreateFieldError('type') && (
-                <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('type')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('type')}</p>
               )}
             </div>
 
@@ -139,7 +139,7 @@ export function TransactionForm({
                 ))}
               </Select>
               {getCreateFieldError('currency') && (
-                <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('currency')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('currency')}</p>
               )}
             </div>
 
@@ -155,7 +155,7 @@ export function TransactionForm({
                 className={getCreateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               />
               {getCreateFieldError('date') && (
-                <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('date')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('date')}</p>
               )}
             </div>
 
@@ -175,7 +175,7 @@ export function TransactionForm({
                   ))}
                 </Select>
                 {getCreateFieldError('categoryId') && (
-                  <p className="text-[10px] font-medium text-destructive">{getCreateFieldError('categoryId')}</p>
+                  <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('categoryId')}</p>
                 )}
               </div>
             )}

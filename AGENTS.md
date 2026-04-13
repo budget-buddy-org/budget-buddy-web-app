@@ -48,7 +48,20 @@
 - Styling: The confirm button should use `variant="destructive"` to provide visual warning.
 - Content: Always clearly state what is being deleted and that the action cannot be undone.
 
+### Pagination Conventions
+#### Page-Based Navigation
+- Implementation: Use the `Pagination` component from `src/components/ui/pagination.tsx`.
+- Data Source: Always use `meta.total` from the API response for calculating the total number of pages.
+- Navigation: Provide clear "Previous" and "Next" buttons along with current page and total count info.
+- Reset Logic: Ensure pagination state resets to the first page when active filters change.
+
 ### Authentication Conventions
 #### Token Lifecycle
 - Proactive Refresh: Re-authenticate during the bootstrap phase in `src/main.tsx` if a `refreshToken` exists but an `accessToken` is missing. This maintains session continuity across page reloads.
 - Centralized Refresh: Use the `refreshAuth` function in `src/lib/api.ts` for both the `401` response interceptor and manual/proactive refresh calls.
+
+### Theming Conventions
+#### Configurable UI
+- Primary Color: Allow users to customize the primary color through a `primaryHue` setting (0-360), applied via CSS variables.
+- Scaling: Support global font size adjustments (12-24px), using `rem` units for component scaling to ensure consistency.
+- Accessibility: Ensure customized colors maintain appropriate contrast ratios in both light and dark modes.
