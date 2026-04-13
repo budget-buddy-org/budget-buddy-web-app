@@ -226,7 +226,7 @@ function TransactionEditRow({
               autoFocus
             />
             {getUpdateFieldError('description') && (
-              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('description')}</p>
+              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('description')}</p>
             )}
           </div>
           <div className="space-y-1">
@@ -240,7 +240,7 @@ function TransactionEditRow({
               className={getUpdateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
             />
             {getUpdateFieldError('amount') && (
-              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('amount')}</p>
+              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('amount')}</p>
             )}
           </div>
           <div className="space-y-1">
@@ -253,7 +253,7 @@ function TransactionEditRow({
               <option value="INCOME">Income</option>
             </Select>
             {getUpdateFieldError('type') && (
-              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('type')}</p>
+              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('type')}</p>
             )}
           </div>
           <div className="space-y-1">
@@ -269,7 +269,7 @@ function TransactionEditRow({
               ))}
             </Select>
             {getUpdateFieldError('currency') && (
-              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('currency')}</p>
+              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('currency')}</p>
             )}
           </div>
           <div className="space-y-1">
@@ -281,7 +281,7 @@ function TransactionEditRow({
               className={getUpdateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
             />
             {getUpdateFieldError('date') && (
-              <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('date')}</p>
+              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('date')}</p>
             )}
           </div>
           {categories.length > 0 && (
@@ -299,7 +299,7 @@ function TransactionEditRow({
                 ))}
               </Select>
               {getUpdateFieldError('categoryId') && (
-                <p className="text-[10px] font-medium text-destructive">{getUpdateFieldError('categoryId')}</p>
+                <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('categoryId')}</p>
               )}
             </div>
           )}

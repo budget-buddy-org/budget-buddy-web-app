@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, Tag, ArrowLeftRight } from 'lucide-react'
+import { LayoutDashboard, Tag, ArrowLeftRight, Settings } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
   { to: '/categories', label: 'Categories', icon: Tag },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ] as const
 
 export function MobileNav() {
@@ -21,7 +22,7 @@ export function MobileNav() {
             activeOptions={{ exact: to === '/' }}
           >
             <Icon className="h-5 w-5" />
-            <span className="text-[10px]">{label}</span>
+            <span className="text-[0.625rem]">{label}</span>
           </Link>
         ))}
       </div>
