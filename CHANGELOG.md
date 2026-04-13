@@ -1,3 +1,13 @@
+## [2.7.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.6.0...v2.7.0) (2026-04-13)
+
+### Features
+
+* enhance UI with notifications, theme customization, and pagination ([#59](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/59)) ([648efa5](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/648efa5163e706758681bd4e7a237a7258b1710d))
+
+### Bug Fixes
+
+* remove unused isFetching variable causing CI failure ([#60](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/60)) ([6d96bbd](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/6d96bbd620273f6ea4ddf06df7b2c7f13a9bc41f))
+
 ## [2.6.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.5.1...v2.6.0) (2026-04-12)
 
 ### Features
