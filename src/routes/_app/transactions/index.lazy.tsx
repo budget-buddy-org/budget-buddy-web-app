@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCategories } from '@/hooks/useCategories'
 import { useTransactions } from '@/hooks/useTransactions'
+import { Pagination } from '@/components/ui/pagination'
 import { TransactionFilters } from '@/components/transactions/TransactionFilters'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { TransactionList } from '@/components/transactions/TransactionList'
@@ -35,10 +36,12 @@ function TransactionsPage() {
     search: '',
   })
 
-  const [size, setSize] = useState(PAGE_SIZE)
+  const [page, setPage] = useState(0)
+  const size = PAGE_SIZE
 
   const queryFilters = {
     ...filters,
+    page,
     size,
     categoryId: filters.categoryId || undefined,
     start: filters.start || undefined,
@@ -48,7 +51,7 @@ function TransactionsPage() {
 
   const { data, isLoading, isFetching } = useTransactions(queryFilters)
   const transactions = data?.items ?? []
-  const hasMore = transactions.length === size
+  const total = data?.meta?.total ?? 0
 
   const hasActiveFilters =
     filters.categoryId ||
@@ -65,12 +68,12 @@ function TransactionsPage() {
       sort: 'desc',
       search: '',
     })
-    setSize(PAGE_SIZE)
+    setPage(0)
   }
 
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters)
-    setSize(PAGE_SIZE)
+    setPage(0)
   }
 
   return (
@@ -114,10 +117,16 @@ function TransactionsPage() {
         transactions={transactions}
         categories={categories}
         isLoading={isLoading}
-        hasMore={hasMore}
-        isFetching={isFetching}
-        onLoadMore={() => setSize((s) => s + PAGE_SIZE)}
       />
+
+      {!isLoading && transactions.length > 0 && (
+        <Pagination
+          page={page}
+          total={total}
+          size={size}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   )
 }

@@ -32,9 +32,11 @@ const mockPage = {
       updatedAt: '2024-01-10T08:00:00Z',
     },
   ],
-  total: 1,
-  size: 20,
-  page: 0,
+  meta: {
+    total: 1,
+    size: 20,
+    page: 0,
+  },
 }
 
 function makeWrapper() {

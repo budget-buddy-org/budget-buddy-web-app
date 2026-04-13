@@ -18,18 +18,12 @@ interface TransactionListProps {
   transactions: Transaction[]
   categories: { id: string; name: string }[]
   isLoading: boolean
-  hasMore: boolean
-  isFetching: boolean
-  onLoadMore: () => void
 }
 
 export function TransactionList({
   transactions,
   categories,
   isLoading,
-  hasMore,
-  isFetching,
-  onLoadMore,
 }: TransactionListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -122,20 +116,6 @@ export function TransactionList({
                 )
               )}
             </ul>
-          )}
-
-          {hasMore && (
-            <div className="border-t px-4 py-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground"
-                disabled={isFetching}
-                onClick={onLoadMore}
-              >
-                {isFetching ? 'Loading…' : 'Load more'}
-              </Button>
-            </div>
           )}
         </CardContent>
       </Card>

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/hooks/useCategories'
+import { Pagination } from '@/components/ui/pagination'
 import { cn } from '@/lib/cn'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmationDialog } from '@/components/ConfirmationDialog'
@@ -14,8 +15,13 @@ export const Route = createLazyFileRoute('/_app/categories/')({
   component: CategoriesPage,
 })
 
+const PAGE_SIZE = 20
+
 function CategoriesPage() {
-  const { data, isLoading } = useCategories()
+  const [page, setPage] = useState(0)
+  const size = PAGE_SIZE
+  const { data, isLoading } = useCategories(size, page)
+  const total = data?.meta?.total ?? 0
   const { toast } = useToast()
   const createCategory = useCreateCategory()
   const deleteCategory = useDeleteCategory()
@@ -35,6 +41,7 @@ function CategoriesPage() {
       {
         onSuccess: () => {
           setNewName('')
+          setPage(0)
           toast({
             title: 'Category created',
             description: 'Your new category has been added successfully.',
@@ -131,6 +138,15 @@ function CategoriesPage() {
           )}
         </CardContent>
       </Card>
+
+      {!isLoading && categories.length > 0 && (
+        <Pagination
+          page={page}
+          total={total}
+          size={size}
+          onPageChange={setPage}
+        />
+      )}
 
       <ConfirmationDialog
         isOpen={!!deleteId}

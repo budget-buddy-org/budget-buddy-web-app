@@ -51,6 +51,9 @@ vi.mock('@/components/ui/skeleton', () => ({
 vi.mock('lucide-react', () => ({
   Plus: () => React.createElement('span', null, '+'),
   Trash2: () => React.createElement('span', null, 'delete'),
+  ChevronLeft: () => React.createElement('span', null, '<'),
+  ChevronRight: () => React.createElement('span', null, '>'),
+  Filter: () => React.createElement('span', null, 'filter'),
 }))
 
 const { useCategories } = await import('@/hooks/useCategories')
@@ -77,7 +80,7 @@ describe('CategoriesPage', () => {
 
   it('shows an empty state message when there are no categories', () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], total: 0, size: 200, page: 0 },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -91,9 +94,11 @@ describe('CategoriesPage', () => {
           { id: 'cat-1', name: 'Groceries' },
           { id: 'cat-2', name: 'Transport' },
         ],
-        total: 2,
-        size: 200,
-        page: 0,
+        meta: {
+          total: 2,
+          size: 200,
+          page: 0,
+        },
       },
       isLoading: false,
     } as any)
@@ -104,7 +109,7 @@ describe('CategoriesPage', () => {
 
   it('calls createCategory.mutate when the create form is submitted', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], total: 0, size: 200, page: 0 },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -121,7 +126,7 @@ describe('CategoriesPage', () => {
 
   it('does not submit create form when input is empty', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], total: 0, size: 200, page: 0 },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -134,7 +139,7 @@ describe('CategoriesPage', () => {
 
   it('enters edit mode when a category name is clicked', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -150,7 +155,7 @@ describe('CategoriesPage', () => {
 
   it('calls updateCategory.mutate when the edit form is saved', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -171,7 +176,7 @@ describe('CategoriesPage', () => {
 
   it('cancels edit mode without mutating when Cancel is clicked', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()
@@ -187,7 +192,7 @@ describe('CategoriesPage', () => {
 
   it('calls deleteCategory.mutate when the delete button is clicked and confirmed', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], total: 1, size: 200, page: 0 },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as any)
     renderPage()

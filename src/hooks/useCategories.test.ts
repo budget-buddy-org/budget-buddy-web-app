@@ -35,9 +35,11 @@ const mockCategory = {
 
 const mockPage = {
   items: [mockCategory],
-  total: 1,
-  size: 200,
-  page: 0,
+  meta: {
+    total: 1,
+    size: 200,
+    page: 0,
+  },
 }
 
 function makeWrapper() {

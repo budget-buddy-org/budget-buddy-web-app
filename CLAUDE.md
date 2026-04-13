@@ -66,7 +66,7 @@ Default query `staleTime` is 1 minute; `retry` is 1.
 
 Two Zustand stores:
 - `src/stores/auth.store.ts` — persists `refreshToken` + `refreshTokenObtainedAt` to `localStorage` (`budget-buddy-auth`). `accessToken` is memory-only; re-obtained via refresh on page load.
-- `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`) to `localStorage` (`budget-buddy-theme`). Applies `dark` class to `<html>` on rehydration.
+- `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`), `primaryHue` (0-360), and `fontSize` (12-24) to `localStorage` (`budget-buddy-theme`). Applies CSS variables to `:root` on rehydration.
 
 `useTabVisibilityRefresh` (mounted in `_app.tsx`) proactively refreshes the auth token on tab focus when the refresh token is older than 6 days, preventing expiry mid-session.
 
@@ -92,6 +92,13 @@ shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in 
 ### Data Conventions
 
 Currency amounts are stored and sent as **minor units** (integers). `1299` = €12.99. Use `src/lib/formatters.ts` for display formatting.
+
+### Pagination
+
+We use page-based pagination for transactions and categories.
+- UI: Reusable `Pagination` component in `src/components/ui/pagination.tsx`.
+- API: Consumes `meta.total` for correct item count and page calculation.
+- State: Managed at the page level via `useState` and passed to domain hooks.
 
 ### Accessibility Testing
 
