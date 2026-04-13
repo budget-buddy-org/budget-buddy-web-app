@@ -49,7 +49,7 @@ function TransactionsPage() {
     search: filters.search || undefined,
   }
 
-  const { data, isLoading, isFetching } = useTransactions(queryFilters)
+  const { data, isLoading } = useTransactions(queryFilters)
   const transactions = data?.items ?? []
   const total = data?.meta?.total ?? 0
 
