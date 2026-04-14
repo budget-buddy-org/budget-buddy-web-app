@@ -1,3 +1,13 @@
+## [3.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.12.0...v3.0.0) (2026-04-14)
+
+### ⚠ BREAKING CHANGES
+
+* dashboard and transaction improvements, bug fixes, and accessibility enhancements (#70)
+
+### Features
+
+* dashboard and transaction improvements, bug fixes, and accessibility enhancements ([#70](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/70)) ([254b105](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/254b105cb031c4abaceeb44629dd24adfa8d2a12))
+
 ## [2.12.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.11.0...v2.12.0) (2026-04-14)
 
 ### Features
