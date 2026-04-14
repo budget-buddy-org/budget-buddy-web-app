@@ -22,7 +22,7 @@ export function Header() {
   const logout = useLogout()
 
   return (
-    <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
+    <header className="flex h-14 md:h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 bg-background/95 backdrop-blur z-50">
       <Link to="/" className="font-semibold tracking-tight hover:opacity-80 transition-opacity">
         Budget Buddy
         <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>

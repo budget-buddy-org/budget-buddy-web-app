@@ -88,7 +88,7 @@ function DashboardPage() {
 
       {/* Chart */}
       {chartData.length > 0 && (
-        <Card>
+        <Card className="hidden md:block">
           <CardHeader>
             <CardTitle className="text-sm font-medium" as="h2">Monthly overview</CardTitle>
           </CardHeader>
@@ -163,7 +163,7 @@ function DashboardSkeleton() {
         <Skeleton className="h-24" />
         <Skeleton className="h-24" />
       </div>
-      <Skeleton className="h-52" />
+      <Skeleton className="hidden h-52 md:block" />
       <Skeleton className="h-64" />
     </div>
   )

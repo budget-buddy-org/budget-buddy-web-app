@@ -72,6 +72,27 @@ body {
   /* Hide scrollbar by default for a cleaner look, especially on iOS */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+  /* Prevent pull-to-refresh and bounce effect on mobile */
+  overscroll-behavior-y: none;
+  /* Enable smooth scrolling */
+  scroll-behavior: smooth;
+  /* Remove tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve button/link responsiveness on mobile */
+button,
+a,
+select,
+input {
+  touch-action: manipulation;
+}
+
+/* Ensure consistent base font size for inputs on iOS to prevent auto-zoom */
+input,
+select,
+textarea {
+  font-size: 16px !important;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
