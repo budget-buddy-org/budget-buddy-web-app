@@ -122,7 +122,10 @@ describe('API response interceptor', () => {
 
     await responseInterceptor!(res, makeRequest(), opts)
 
-    expect(refreshToken).toHaveBeenCalledWith({ body: { refresh_token: 'rt-current' } })
+    expect(refreshToken).toHaveBeenCalledWith({
+      body: { refresh_token: 'rt-current' },
+      _isRefresh: true,
+    })
     expect(mockAuthState.setAuth).toHaveBeenCalledWith('at-new', 'rt-new')
     expect(mockClientRequest).toHaveBeenCalled()
   })
