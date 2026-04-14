@@ -31,7 +31,8 @@ export async function refreshAuth() {
   try {
     const { data } = await refreshAction({
       body: { refresh_token: refreshTokenValue },
-    })
+      _isRefresh: true,
+    } as any)
 
     if (!data) {
       throw new Error('Refresh failed')
@@ -51,7 +52,7 @@ export async function refreshAuth() {
 
 // On 401: attempt refresh → retry; on refresh failure → clear auth + redirect to login
 client.interceptors.response.use(async (response: Response, _request: Request, options: any) => {
-  if (response.status !== 401 || options._retry) {
+  if (response.status !== 401 || options._retry || options._isRefresh) {
     return response
   }
 
