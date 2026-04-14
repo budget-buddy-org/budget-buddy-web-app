@@ -1,19 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { Route } from './index.lazy'
+import { DashboardPage } from '@/components/dashboard/DashboardPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type React from 'react'
+import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: any) => ({ options }),
+  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
   useNavigate: vi.fn(),
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }))
 
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Bar: () => null,
   XAxis: () => null,
   YAxis: () => null,
@@ -77,14 +77,12 @@ describe('DashboardPage', () => {
   })
 
   it('calculates totals based on current month only', async () => {
-    ;(useAllTransactions as any).mockReturnValue({
+    vi.mocked(useAllTransactions).mockReturnValue({
       data: {
         items: mockTransactions,
       },
       isLoading: false,
-    })
-
-    const DashboardPage = (Route as any).options.component as React.ElementType
+    } as ReturnType<typeof useAllTransactions>)
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -110,15 +108,13 @@ describe('DashboardPage', () => {
 
   it('navigates to transaction list on click', async () => {
     const mockNavigate = vi.fn()
-    ;(useNavigate as any).mockReturnValue(mockNavigate)
-    ;(useAllTransactions as any).mockReturnValue({
+    vi.mocked(useNavigate).mockReturnValue(mockNavigate)
+    vi.mocked(useAllTransactions).mockReturnValue({
       data: {
         items: mockTransactions,
       },
       isLoading: false,
-    })
-
-    const DashboardPage = (Route as any).options.component as React.ElementType
+    } as ReturnType<typeof useAllTransactions>)
 
     render(
       <QueryClientProvider client={queryClient}>

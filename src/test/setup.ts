@@ -6,8 +6,12 @@ import { expect } from 'vitest'
 expect.extend(axeMatchers)
 
 declare module 'vitest' {
-  export interface Assertion<T = any> extends axeMatchers.AxeMatchers {}
-  export interface AsymmetricMatchersContaining extends axeMatchers.AxeMatchers {}
+  export interface Assertion<T = unknown> extends axeMatchers.AxeMatchers {
+    T: T
+  }
+  export interface AsymmetricMatchersContaining extends axeMatchers.AxeMatchers {
+    _branded: true
+  }
 }
 
 // Provide localStorage for Zustand persist middleware in jsdom

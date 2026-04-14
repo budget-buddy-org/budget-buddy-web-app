@@ -15,7 +15,7 @@ interface TransactionFiltersProps {
     sort: 'asc' | 'desc'
     search: string
   }
-  onFilterChange: (filters: any) => void
+  onFilterChange: (filters: TransactionFiltersProps['filters']) => void
   onReset: () => void
   onClose: () => void
 }
@@ -28,15 +28,19 @@ export function TransactionFilters({
   onClose,
 }: TransactionFiltersProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search)
+  const [prevSearch, setPrevSearch] = useState(filters.search)
   const debouncedSearch = useDebounce(searchTerm)
 
-  useEffect(() => {
+  if (filters.search !== prevSearch) {
     setSearchTerm(filters.search)
-  }, [filters.search])
+    setPrevSearch(filters.search)
+  }
 
   useEffect(() => {
-    onFilterChange({ ...filters, search: debouncedSearch })
-  }, [debouncedSearch])
+    if (debouncedSearch !== filters.search) {
+      onFilterChange({ ...filters, search: debouncedSearch })
+    }
+  }, [debouncedSearch, filters, onFilterChange])
 
   const hasActiveFilters =
     filters.categoryId ||

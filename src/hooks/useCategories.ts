@@ -23,7 +23,7 @@ export function useCategories(size = 200, page = 0, search?: string) {
     queryKey: KEYS.list(size, page, search),
     queryFn: async () => {
       const { data, error } = await listCategories({
-        query: { size, page, search: undefined } as any, // Clear search from API call
+        query: { size, page },
       })
       if (error) throw error
 

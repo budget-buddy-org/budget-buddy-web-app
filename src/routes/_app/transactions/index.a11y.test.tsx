@@ -2,12 +2,12 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import 'vitest-axe/extend-expect'
 import { axe } from 'vitest-axe'
 import { describe, expect, it, vi } from 'vitest'
-import { Route } from './index.lazy'
+import { TransactionsPage } from '@/components/transactions/TransactionsPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type React from 'react'
+import React from 'react'
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: any) => ({ options }),
+  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
   useNavigate: () => vi.fn(),
   useSearch: () => ({ add: undefined }),
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
@@ -64,8 +64,6 @@ describe('TransactionsPage a11y', () => {
   })
 
   it('should have no accessibility violations', async () => {
-    const TransactionsPage = (Route as any).options.component as React.ElementType
-    
     const { container } = render(
       <QueryClientProvider client={queryClient}>
         <TransactionsPage />
@@ -77,8 +75,6 @@ describe('TransactionsPage a11y', () => {
   })
 
   it('should have no accessibility violations when filters dialog is open', async () => {
-    const TransactionsPage = (Route as any).options.component as React.ElementType
-    
     render(
       <QueryClientProvider client={queryClient}>
         <TransactionsPage />

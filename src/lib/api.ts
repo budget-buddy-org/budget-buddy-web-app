@@ -1,6 +1,7 @@
 import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts'
 import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen'
 import { useAuthStore } from '@/stores/auth.store'
+import type { ResolvedRequestOptions } from '@budget-buddy-org/budget-buddy-contracts'
 
 // Queue of requests waiting for a token refresh to complete
 let refreshPromise: Promise<string | null> | null = null
@@ -26,8 +27,9 @@ export function refreshAuth() {
     try {
       const { data } = await refreshAction({
         body: { refresh_token: refreshTokenValue },
+        // @ts-expect-error Internal refresh flag
         _isRefresh: true,
-      } as any)
+      })
 
       if (!data) {
         throw new Error('Refresh failed')
@@ -49,13 +51,14 @@ export function refreshAuth() {
 }
 
 // On 401: attempt refresh → retry; on refresh failure → clear auth + redirect to login
-client.interceptors.response.use(async (response: Response, _request: Request, options: any) => {
+client.interceptors.response.use(async (response: Response, _request: Request, options: ResolvedRequestOptions) => {
+  const opts = options as ResolvedRequestOptions & { _retry?: boolean; _isRefresh?: boolean }
   if (
     response.status !== 401 ||
-    options._retry ||
-    options._isRefresh ||
-    options.url?.includes('/auth/login') ||
-    options.url?.includes('/auth/register')
+    opts._retry ||
+    opts._isRefresh ||
+    opts.url?.includes('/auth/login') ||
+    opts.url?.includes('/auth/register')
   ) {
     return response
   }
@@ -64,13 +67,13 @@ client.interceptors.response.use(async (response: Response, _request: Request, o
     return new Promise<string>((resolve, reject) => {
       pendingQueue.push({ resolve, reject })
     }).then(async (token) => {
-      const newHeaders = new Headers(options.headers)
+      const newHeaders = new Headers(opts.headers as HeadersInit)
       newHeaders.set('Authorization', `Bearer ${token}`)
-      return client.request({ ...options, headers: newHeaders } as any).then((r: any) => r.response)
+      return client.request({ ...opts, headers: newHeaders }).then((r) => r.response)
     })
   }
 
-  options._retry = true
+  opts._retry = true
   const token = await refreshAuth()
 
   if (!token) {
@@ -84,7 +87,7 @@ client.interceptors.response.use(async (response: Response, _request: Request, o
     return response
   }
 
-  const newHeaders = new Headers(options.headers)
+  const newHeaders = new Headers(opts.headers as HeadersInit)
   newHeaders.set('Authorization', `Bearer ${token}`)
-  return client.request({ ...options, headers: newHeaders } as any).then((r: any) => r.response)
+  return client.request({ ...opts, headers: newHeaders }).then((r) => r.response)
 })

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ResolvedRequestOptions } from '@budget-buddy-org/budget-buddy-contracts'
 
 // Capture interceptors registered during module init
-let requestInterceptor: ((req: Request) => Request) | undefined
 let responseInterceptor:
-  | ((res: Response, req: Request, opts: any) => Promise<Response>)
+  | ((res: Response, req: Request, opts: ResolvedRequestOptions) => Promise<Response>)
   | undefined
+
+type RefreshTokenResult = Awaited<ReturnType<typeof refreshToken>>
 
 const mockClientRequest = vi.fn()
 
@@ -13,12 +15,10 @@ vi.mock('@budget-buddy-org/budget-buddy-contracts/client.gen', () => ({
     setConfig: vi.fn(),
     interceptors: {
       request: {
-        use: vi.fn((fn: (req: Request) => Request) => {
-          requestInterceptor = fn
-        }),
+        use: vi.fn(),
       },
       response: {
-        use: vi.fn((fn: (res: Response, req: Request, opts: any) => Promise<Response>) => {
+        use: vi.fn((fn: (res: Response, req: Request, opts: ResolvedRequestOptions) => Promise<Response>) => {
           responseInterceptor = fn
         }),
       },
@@ -84,8 +84,9 @@ describe('API response interceptor', () => {
 
   it('attempts token refresh on 401 and retries the original request', async () => {
     vi.mocked(refreshToken).mockResolvedValue({
-      data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600 },
-    } as any)
+      data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600, token_type: 'Bearer' },
+      error: undefined,
+    } as unknown as RefreshTokenResult)
     mockClientRequest.mockResolvedValue({ response: makeResponse(200) })
 
     const res = makeResponse(401)
@@ -135,9 +136,9 @@ describe('API response interceptor', () => {
 
   it('queues concurrent 401s and replays them once the refresh resolves', async () => {
     // Hold the refresh response until we choose to release it
-    let resolveRefresh!: (v: any) => void
+    let resolveRefresh!: (v: RefreshTokenResult) => void
     vi.mocked(refreshToken).mockReturnValue(
-      new Promise((res) => { resolveRefresh = res }) as any,
+      new Promise((res) => { resolveRefresh = res }) as unknown as ReturnType<typeof refreshToken>,
     )
     mockClientRequest.mockResolvedValue({ response: makeResponse(200) })
 
@@ -148,7 +149,7 @@ describe('API response interceptor', () => {
     const second = responseInterceptor!(makeResponse(401), makeRequest(), { headers: new Headers() })
 
     // Now let the refresh complete
-    resolveRefresh({ data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600 } })
+    resolveRefresh({ data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600, token_type: 'Bearer' }, error: undefined } as unknown as RefreshTokenResult)
 
     await Promise.all([first, second])
 
@@ -158,7 +159,7 @@ describe('API response interceptor', () => {
   })
 
   it('treats a refresh response with no data as a failure and clears auth', async () => {
-    vi.mocked(refreshToken).mockResolvedValue({ data: undefined } as any)
+    vi.mocked(refreshToken).mockResolvedValue({ data: undefined, error: undefined } as unknown as RefreshTokenResult)
 
     const hrefSetter = vi.fn()
     Object.defineProperty(window, 'location', {
@@ -184,8 +185,9 @@ describe('API response interceptor', () => {
     // Second 401 — now has a refresh token; must attempt refresh, not hang
     mockAuthState.refreshToken = 'rt-valid'
     vi.mocked(refreshToken).mockResolvedValue({
-      data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600 },
-    } as any)
+      data: { access_token: 'at-new', refresh_token: 'rt-new', expires_in: 3600, token_type: 'Bearer' },
+      error: undefined,
+    } as unknown as RefreshTokenResult)
     mockClientRequest.mockResolvedValue({ response: makeResponse(200) })
 
     await responseInterceptor!(makeResponse(401), makeRequest(), { headers: new Headers() })

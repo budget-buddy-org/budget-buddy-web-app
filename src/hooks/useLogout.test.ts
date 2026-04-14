@@ -41,7 +41,8 @@ describe('useLogout', () => {
   })
 
   it('calls the logout endpoint, clears auth, clears query cache, and navigates to /login on success', async () => {
-    vi.mocked(logoutUser).mockResolvedValue({ data: undefined } as any)
+    type LogoutResult = Awaited<ReturnType<typeof logoutUser>>
+    vi.mocked(logoutUser).mockResolvedValue({ data: undefined, error: undefined } as unknown as LogoutResult)
 
     const { result } = renderHook(() => useLogout(), { wrapper: makeWrapper() })
 

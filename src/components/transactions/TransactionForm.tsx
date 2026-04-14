@@ -8,7 +8,7 @@ import { useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from
 import { useCreateCategory } from '@/hooks/useCategories'
 import { useToast } from '@/hooks/use-toast'
 import { toMinorUnits, todayIso } from '@/lib/formatters'
-import type { Transaction, TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts'
+import type { Transaction, TransactionWrite, Problem, FieldError } from '@budget-buddy-org/budget-buddy-contracts'
 import { Check, X, Plus, RotateCcw, MoreVertical, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { ConfirmationDialog } from '@/components/ConfirmationDialog'
@@ -67,10 +67,7 @@ export function TransactionForm({
     form.categoryId !== (transaction?.categoryId ?? '') ||
     (isAddingCategory && !!newCategoryName)
 
-  const fieldErrors = (currentMutation.error as any)?.errors as Array<{
-    field: string
-    message: string
-  }> | undefined
+  const fieldErrors = (currentMutation.error as Problem)?.errors as FieldError[] | undefined
   const getFieldError = (field: string) =>
     fieldErrors?.find((e) => e.field === field)?.message
 
@@ -83,10 +80,11 @@ export function TransactionForm({
       try {
         const newCat = await createCategory.mutateAsync({ name: newCategoryName })
         categoryId = newCat.id
-      } catch (error: any) {
+      } catch (error) {
+        const apiError = error as Problem
         toast({
           title: 'Error',
-          description: error.message || 'Failed to create new category.',
+          description: apiError.detail || apiError.title || 'Failed to create new category.',
           variant: 'destructive',
         })
         return
@@ -113,11 +111,12 @@ export function TransactionForm({
         })
         onSuccess()
       },
-      onError: (error: any) => {
-        if (!error.errors) {
+      onError: (error) => {
+        const apiError = error as Problem
+        if (!apiError.errors) {
           toast({
             title: 'Error',
-            description: `Failed to ${isEditing ? 'update' : 'create'} transaction.`,
+            description: apiError.detail || apiError.title || `Failed to ${isEditing ? 'update' : 'create'} transaction.`,
             variant: 'destructive',
           })
         }
@@ -288,11 +287,11 @@ export function TransactionForm({
                     }
                     autoFocus
                   />
-                  {(createCategory.error as any)?.message && (
+                  {(createCategory.error as Problem)?.detail || (createCategory.error as Problem)?.title ? (
                     <p className="text-xs font-medium text-destructive">
-                      {(createCategory.error as any).message}
+                      {(createCategory.error as Problem).detail || (createCategory.error as Problem).title}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               ) : (
                 <div className="space-y-1 animate-fade-in">

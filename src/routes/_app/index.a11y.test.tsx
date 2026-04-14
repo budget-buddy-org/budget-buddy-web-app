@@ -2,20 +2,20 @@ import { render } from '@testing-library/react'
 import 'vitest-axe/extend-expect'
 import { axe } from 'vitest-axe'
 import { describe, expect, it, vi } from 'vitest'
-import { Route } from './index.lazy'
+import { DashboardPage } from '@/components/dashboard/DashboardPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type React from 'react'
+import React from 'react'
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: any) => ({ options }),
+  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
   useNavigate: () => vi.fn(),
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }))
 
 // Mock recharts to avoid rendering issues in JSDOM
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div style={{ width: '100%', height: '100%' }}>{children}</div>,
-  BarChart: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div style={{ width: '100%', height: '100%' }}>{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Bar: () => null,
   XAxis: () => null,
   YAxis: () => null,
@@ -64,8 +64,6 @@ describe('DashboardPage a11y', () => {
         },
       },
     })
-    
-    const DashboardPage = (Route as any).options.component as React.ElementType
     
     const { container } = render(
       <QueryClientProvider client={queryClient}>

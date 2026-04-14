@@ -17,6 +17,12 @@ import {
   deleteCategory,
 } from '@budget-buddy-org/budget-buddy-contracts'
 
+type ListCategoriesResult = Awaited<ReturnType<typeof listCategories>>
+type GetCategoryResult = Awaited<ReturnType<typeof getCategory>>
+type CreateCategoryResult = Awaited<ReturnType<typeof createCategory>>
+type UpdateCategoryResult = Awaited<ReturnType<typeof updateCategory>>
+type DeleteCategoryResult = Awaited<ReturnType<typeof deleteCategory>>
+
 vi.mock('@budget-buddy-org/budget-buddy-contracts', () => ({
   listCategories: vi.fn(),
   getCategory: vi.fn(),
@@ -54,7 +60,7 @@ describe('useCategories', () => {
   })
 
   it('returns fetched categories', async () => {
-    vi.mocked(listCategories).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(listCategories).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListCategoriesResult)
 
     const { result } = renderHook(() => useCategories(), { wrapper: makeWrapper() })
 
@@ -64,7 +70,7 @@ describe('useCategories', () => {
   })
 
   it('passes size and page to the API', async () => {
-    vi.mocked(listCategories).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(listCategories).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListCategoriesResult)
 
     renderHook(() => useCategories(50, 1), { wrapper: makeWrapper() })
 
@@ -81,7 +87,7 @@ describe('useCategory', () => {
   })
 
   it('fetches a single category by id', async () => {
-    vi.mocked(getCategory).mockResolvedValue({ data: mockCategory } as any)
+    vi.mocked(getCategory).mockResolvedValue({ data: mockCategory, error: undefined } as unknown as GetCategoryResult)
 
     const { result } = renderHook(() => useCategory('cat-1'), { wrapper: makeWrapper() })
 
@@ -104,8 +110,8 @@ describe('useCreateCategory', () => {
   })
 
   it('calls createCategory and invalidates queries on success', async () => {
-    vi.mocked(createCategory).mockResolvedValue({ data: mockCategory } as any)
-    vi.mocked(listCategories).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(createCategory).mockResolvedValue({ data: mockCategory, error: undefined } as unknown as CreateCategoryResult)
+    vi.mocked(listCategories).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListCategoriesResult)
 
     const { result } = renderHook(() => useCreateCategory(), { wrapper: makeWrapper() })
 
@@ -123,7 +129,7 @@ describe('useUpdateCategory', () => {
 
   it('calls updateCategory with the correct path and body', async () => {
     const updated = { ...mockCategory, name: 'Food' }
-    vi.mocked(updateCategory).mockResolvedValue({ data: updated } as any)
+    vi.mocked(updateCategory).mockResolvedValue({ data: updated, error: undefined } as unknown as UpdateCategoryResult)
 
     const { result } = renderHook(() => useUpdateCategory('cat-1'), { wrapper: makeWrapper() })
 
@@ -143,8 +149,8 @@ describe('useDeleteCategory', () => {
   })
 
   it('calls deleteCategory and returns the id on success', async () => {
-    vi.mocked(deleteCategory).mockResolvedValue({ data: undefined } as any)
-    vi.mocked(listCategories).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(deleteCategory).mockResolvedValue({ data: undefined, error: undefined } as unknown as DeleteCategoryResult)
+    vi.mocked(listCategories).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListCategoriesResult)
 
     const { result } = renderHook(() => useDeleteCategory(), { wrapper: makeWrapper() })
 
@@ -157,7 +163,7 @@ describe('useDeleteCategory', () => {
   it('rolls back the optimistic update on error', async () => {
     const networkError = new Error('network error')
     vi.mocked(deleteCategory).mockRejectedValue(networkError)
-    vi.mocked(listCategories).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(listCategories).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListCategoriesResult)
 
     const wrapper = makeWrapper()
     const { result: listResult } = renderHook(() => useCategories(), { wrapper })

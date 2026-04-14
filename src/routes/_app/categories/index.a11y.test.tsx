@@ -2,12 +2,12 @@ import { render } from '@testing-library/react'
 import 'vitest-axe/extend-expect'
 import { axe } from 'vitest-axe'
 import { describe, expect, it, vi } from 'vitest'
-import { Route } from './index.lazy'
+import { CategoriesPage } from '@/components/categories/CategoriesPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type React from 'react'
+import React from 'react'
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: any) => ({ options }),
+  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
 }))
 
 vi.mock('@/hooks/useCategories', () => ({
@@ -34,8 +34,6 @@ describe('CategoriesPage a11y', () => {
         },
       },
     })
-    
-    const CategoriesPage = (Route as any).options.component as React.ElementType
     
     const { container } = render(
       <QueryClientProvider client={queryClient}>

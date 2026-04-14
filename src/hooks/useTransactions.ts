@@ -8,6 +8,7 @@ import {
 } from '@budget-buddy-org/budget-buddy-contracts'
 import type {
   PaginatedTransactions,
+  Transaction,
   TransactionUpdate,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts'
@@ -33,15 +34,17 @@ export function useTransactions(filters: TransactionFilters = {}) {
     queryKey: KEYS.list(filters),
     queryFn: async () => {
       // API doesn't support search yet, so we implement it client-side
+      const apiFilters = { ...filters };
+      delete apiFilters.search;
+      
       if (filters.search) {
         // Fetch a larger set to perform local search — fetch up to 1000 items
         const { data, error } = await listTransactions({
           query: {
-            ...filters,
+            ...apiFilters,
             size: 1000,
             page: 0,
-            search: undefined, // Clear from API call to avoid errors
-          } as any,
+          },
         })
         if (error) throw error
 
@@ -66,9 +69,9 @@ export function useTransactions(filters: TransactionFilters = {}) {
 
       const { data, error } = await listTransactions({
         query: {
-          ...filters,
+          ...apiFilters,
           sort: filters.sort ?? 'desc',
-        } as any,
+        },
       })
       if (error) throw error
       return data
@@ -80,7 +83,7 @@ export function useAllTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: [...KEYS.list(filters), 'all'],
     queryFn: async () => {
-      let allItems: any[] = []
+      let allItems: Transaction[] = []
       let page = 0
       let total = 0
       const size = 200

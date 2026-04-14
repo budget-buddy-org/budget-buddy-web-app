@@ -1,13 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Route } from './index.lazy'
+import { TransactionsPage } from '@/components/transactions/TransactionsPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type React from 'react'
+import React from 'react'
+import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts'
 
 const mockNavigate = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: any) => ({ options }),
+  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
   useNavigate: () => mockNavigate,
   useSearch: () => vi.fn(),
 }))
@@ -22,7 +23,7 @@ vi.mock('@/hooks/useCategories', () => ({
 }))
 
 vi.mock('@/components/transactions/TransactionForm', () => ({
-  TransactionForm: ({ transaction, onSuccess }: any) => (
+  TransactionForm: ({ transaction, onSuccess }: { transaction?: Transaction, onSuccess: () => void }) => (
     <div data-testid="transaction-form">
       {transaction ? `Editing ${transaction.id}` : 'Adding'}
       <button onClick={onSuccess}>Success</button>
@@ -44,25 +45,23 @@ describe('TransactionsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    ;(useCategories as any).mockReturnValue({ data: { items: [] }, isLoading: false })
-    ;(useTransactions as any).mockReturnValue({ data: { items: [], meta: { total: 0 } }, isLoading: false })
-    ;(useTransaction as any).mockReturnValue({ data: null, isLoading: false })
+    vi.mocked(useCategories).mockReturnValue({ data: { items: [] }, isLoading: false } as ReturnType<typeof useCategories>)
+    vi.mocked(useTransactions).mockReturnValue({ data: { items: [], meta: { total: 0 } }, isLoading: false } as ReturnType<typeof useTransactions>)
+    vi.mocked(useTransaction).mockReturnValue({ data: null, isLoading: false } as ReturnType<typeof useTransaction>)
   })
 
   it('opens edit dialog when clicking a transaction in the list', async () => {
-    ;(useTransactions as any).mockReturnValue({ 
+    vi.mocked(useTransactions).mockReturnValue({ 
       data: { 
-        items: [{ id: '123', description: 'Test Transaction', amount: 1000, date: '2024-01-01', type: 'EXPENSE', currency: 'EUR' }], 
-        meta: { total: 1 } 
+        items: [{ id: '123', description: 'Test Transaction', amount: 1000, date: '2024-01-01', type: 'EXPENSE', currency: 'EUR' } as Transaction], 
+        meta: { total: 1, size: 20, page: 0 } 
       }, 
       isLoading: false 
-    })
-    ;(useTransaction as any).mockReturnValue({ 
-      data: { id: '123', description: 'Test Transaction', amount: 1000, date: '2024-01-01', type: 'EXPENSE', currency: 'EUR' }, 
+    } as ReturnType<typeof useTransactions>)
+    vi.mocked(useTransaction).mockReturnValue({ 
+      data: { id: '123', description: 'Test Transaction', amount: 1000, date: '2024-01-01', type: 'EXPENSE', currency: 'EUR' } as Transaction, 
       isLoading: false 
-    })
-
-    const TransactionsPage = (Route as any).options.component as React.ElementType
+    } as ReturnType<typeof useTransaction>)
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -78,8 +77,6 @@ describe('TransactionsPage', () => {
   })
 
   it('opens add dialog when clicking Add button', async () => {
-    const TransactionsPage = (Route as any).options.component as React.ElementType
-
     render(
       <QueryClientProvider client={queryClient}>
         <TransactionsPage />

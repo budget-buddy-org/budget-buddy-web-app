@@ -65,9 +65,11 @@ describe('useTabVisibilityRefresh', () => {
     mockStoreState.refreshToken = 'rt_old'
     mockStoreState.refreshTokenObtainedAt = STALE_TIMESTAMP
 
+    type RefreshResult = Awaited<ReturnType<typeof refreshAction>>
     vi.mocked(refreshAction).mockResolvedValue({
-      data: { access_token: 'at_new', refresh_token: 'rt_new', expires_in: 3600 },
-    } as any)
+      data: { access_token: 'at_new', refresh_token: 'rt_new', expires_in: 3600, token_type: 'Bearer' },
+      error: undefined,
+    } as unknown as RefreshResult)
 
     renderHook(() => useTabVisibilityRefresh())
     fireVisibilityChange('visible')

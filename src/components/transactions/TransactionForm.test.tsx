@@ -26,27 +26,27 @@ vi.mock('@/hooks/useCategories', () => ({
 
 // Mock UI components to simplify testing
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, type, loading }: any) =>
+  Button: ({ children, onClick, disabled, type, loading }: { children: React.ReactNode, onClick: () => void, disabled: boolean, type: 'button' | 'submit', loading: boolean }) =>
     React.createElement('button', { onClick, disabled: disabled || loading, type }, children),
 }))
 vi.mock('@/components/ui/input', () => ({
-  Input: ({ value, onChange, placeholder, autoFocus }: any) =>
+  Input: ({ value, onChange, placeholder, autoFocus }: { value: string, onChange: React.ChangeEventHandler<HTMLInputElement>, placeholder: string, autoFocus: boolean }) =>
     React.createElement('input', { value, onChange, placeholder, 'data-autofocus': autoFocus }),
 }))
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children, value, onChange }: any) =>
+  Select: ({ children, value, onChange }: { children: React.ReactNode, value: string, onChange: React.ChangeEventHandler<HTMLSelectElement> }) =>
     React.createElement('select', { value, onChange }, children),
 }))
 vi.mock('@/components/ui/amount-input', () => ({
-  AmountInput: ({ value, onChange }: any) =>
-    React.createElement('input', { type: 'number', value, onChange: (e: any) => onChange(e.target.value) }),
+  AmountInput: ({ value, onChange }: { value: string, onChange: (val: string) => void }) =>
+    React.createElement('input', { type: 'number', value, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value) }),
 }))
 vi.mock('@/components/ui/date-picker', () => ({
-  DatePicker: ({ value, onChange }: any) =>
-    React.createElement('input', { type: 'date', value, onChange: (e: any) => onChange({ target: { value: e.target.value } }) }),
+  DatePicker: ({ value, onChange }: { value: string, onChange: React.ChangeEventHandler<HTMLInputElement> }) =>
+    React.createElement('input', { type: 'date', value, onChange }),
 }))
 vi.mock('@/components/ui/transaction-type-toggle', () => ({
-  TransactionTypeToggle: ({ value, onChange }: any) =>
+  TransactionTypeToggle: ({ value, onChange }: { value: 'EXPENSE' | 'INCOME', onChange: (val: 'EXPENSE' | 'INCOME') => void }) =>
     React.createElement('div', {}, 
       React.createElement('button', { onClick: () => onChange('EXPENSE'), 'aria-pressed': value === 'EXPENSE' }, 'Expense'),
       React.createElement('button', { onClick: () => onChange('INCOME'), 'aria-pressed': value === 'INCOME' }, 'Income'),
@@ -54,14 +54,14 @@ vi.mock('@/components/ui/transaction-type-toggle', () => ({
 }))
 
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => React.createElement('div', {}, children),
-  DropdownMenuTrigger: ({ children }: any) => React.createElement('div', {}, children),
-  DropdownMenuContent: ({ children }: any) => React.createElement('div', {}, children),
-  DropdownMenuItem: ({ children, onClick }: any) => React.createElement('button', { onClick }, children),
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => React.createElement('div', {}, children),
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => React.createElement('div', {}, children),
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => React.createElement('div', {}, children),
+  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) => React.createElement('button', { onClick }, children),
 }))
 
 vi.mock('@/components/ConfirmationDialog', () => ({
-  ConfirmationDialog: ({ isOpen, onConfirm, title }: any) => 
+  ConfirmationDialog: ({ isOpen, onConfirm, title }: { isOpen: boolean, onConfirm: () => void, title: string }) => 
     isOpen ? React.createElement('div', {}, 
       React.createElement('span', {}, title),
       React.createElement('button', { onClick: onConfirm }, 'Confirm Delete')
@@ -73,16 +73,19 @@ const categories = [
   { id: 'cat-2', name: 'Transport' },
 ]
 
-function renderForm(props = {}) {
+function renderForm(props: Partial<React.ComponentProps<typeof TransactionForm>> = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  const defaultProps = {
+    categories,
+    onSuccess: vi.fn(),
+    onCancel: vi.fn(),
+  }
   return render(
     React.createElement(QueryClientProvider, { client: qc },
       React.createElement(TransactionForm, {
-        categories,
-        onSuccess: vi.fn(),
-        onCancel: vi.fn(),
+        ...defaultProps,
         ...props
-      } as any),
+      } as React.ComponentProps<typeof TransactionForm>),
     ),
   )
 }

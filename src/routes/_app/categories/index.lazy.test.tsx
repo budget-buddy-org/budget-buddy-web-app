@@ -4,7 +4,7 @@ import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (opts: any) => ({ options: opts }),
+  createLazyFileRoute: () => (opts: { component: React.ComponentType }) => ({ options: opts }),
 }))
 
 const mockCreateCategory = { mutate: vi.fn(), isPending: false }
@@ -25,7 +25,7 @@ vi.mock('@/hooks/use-toast', () => ({
 }))
 
 vi.mock('@/components/ConfirmationDialog', () => ({
-  ConfirmationDialog: ({ isOpen, onConfirm, onOpenChange }: any) =>
+  ConfirmationDialog: ({ isOpen, onConfirm, onOpenChange }: { isOpen: boolean, onConfirm: () => void, onOpenChange: (open: boolean) => void }) =>
     isOpen ? React.createElement('div', { 'data-testid': 'confirmation-dialog' }, [
       React.createElement('button', { key: 'confirm', onClick: onConfirm }, 'Confirm Delete'),
       React.createElement('button', { key: 'cancel', onClick: () => onOpenChange(false) }, 'Cancel'),
@@ -34,26 +34,26 @@ vi.mock('@/components/ConfirmationDialog', () => ({
 
 // Stub UI primitives
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, disabled, type, onClick, variant, size, className }: any) =>
+  Button: ({ children, disabled, type, onClick, variant, size, className }: { children: React.ReactNode, disabled?: boolean, type?: 'button' | 'submit', onClick?: () => void, variant?: string, size?: string, className?: string }) =>
     React.createElement('button', { disabled, type, onClick, 'data-variant': variant, 'data-size': size, className }, children),
 }))
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => React.createElement('div', { className }, children),
-  CardContent: ({ children, className }: any) => React.createElement('div', { className }, children),
+  Card: ({ children, className }: { children: React.ReactNode, className?: string }) => React.createElement('div', { className }, children),
+  CardContent: ({ children, className }: { children: React.ReactNode, className?: string }) => React.createElement('div', { className }, children),
 }))
 vi.mock('@/components/ui/input', () => ({
-  Input: ({ value, onChange, placeholder, className, autoFocus, maxLength }: any) =>
+  Input: ({ value, onChange, placeholder, className, autoFocus, maxLength }: { value: string, onChange: React.ChangeEventHandler<HTMLInputElement>, placeholder?: string, className?: string, autoFocus?: boolean, maxLength?: number }) =>
     React.createElement('input', { value, onChange, placeholder, className, 'data-autofocus': autoFocus, maxLength }),
 }))
 vi.mock('@/components/ui/skeleton', () => ({
-  Skeleton: ({ className }: any) => React.createElement('div', { 'data-testid': 'skeleton', className }),
+  Skeleton: ({ className }: { className?: string }) => React.createElement('div', { 'data-testid': 'skeleton', className }),
 }))
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null,
-  DialogContent: ({ children }: any) => React.createElement('div', { 'data-testid': 'dialog-content' }, children),
-  DialogHeader: ({ children }: any) => React.createElement('div', { 'data-testid': 'dialog-header' }, children),
-  DialogTitle: ({ children }: any) => React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
-  DialogDescription: ({ children }: any) => React.createElement('p', { 'data-testid': 'dialog-description' }, children),
+  Dialog: ({ children, open }: { children: React.ReactNode, open: boolean }) => open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null,
+  DialogContent: ({ children }: { children: React.ReactNode }) => React.createElement('div', { 'data-testid': 'dialog-content' }, children),
+  DialogHeader: ({ children }: { children: React.ReactNode }) => React.createElement('div', { 'data-testid': 'dialog-header' }, children),
+  DialogTitle: ({ children }: { children: React.ReactNode }) => React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
+  DialogDescription: ({ children }: { children: React.ReactNode }) => React.createElement('p', { 'data-testid': 'dialog-description' }, children),
 }))
 vi.mock('lucide-react', () => ({
   Plus: () => React.createElement('span', null, '+'),
@@ -68,7 +68,7 @@ vi.mock('lucide-react', () => ({
 
 const { useCategories } = await import('@/hooks/useCategories')
 const { Route } = await import('./index.lazy')
-const CategoriesPage = Route.options.component as React.ComponentType
+const CategoriesPage = (Route.options as { component: React.ComponentType }).component
 
 function renderPage() {
   return render(React.createElement(CategoriesPage))
@@ -83,7 +83,7 @@ describe('CategoriesPage', () => {
   })
 
   it('shows loading skeletons while data is loading', () => {
-    vi.mocked(useCategories).mockReturnValue({ data: undefined, isLoading: true } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: undefined, isLoading: true } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     expect(screen.getAllByTestId('skeleton')).toHaveLength(4)
   })
@@ -92,7 +92,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     expect(screen.getByText(/no categories yet/i)).toBeInTheDocument()
   })
@@ -111,7 +111,7 @@ describe('CategoriesPage', () => {
         },
       },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     expect(screen.getByText('Groceries')).toBeInTheDocument()
     expect(screen.getByText('Transport')).toBeInTheDocument()
@@ -121,7 +121,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -142,7 +142,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -160,7 +160,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -176,7 +176,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -197,7 +197,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -219,7 +219,7 @@ describe('CategoriesPage', () => {
         meta: { total: 2, size: 200, page: 0 },
       },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -241,7 +241,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 
@@ -268,7 +268,7 @@ describe('CategoriesPage', () => {
         meta: { total: 1, size: 200, page: 0 },
       },
       isLoading: false,
-    } as any)
+    } as unknown as ReturnType<typeof useCategories>)
     renderPage()
     const user = userEvent.setup()
 

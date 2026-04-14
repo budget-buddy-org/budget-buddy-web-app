@@ -3,12 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { LoginPage } from '@/components/auth/LoginPage'
 
 const mockNavigate = vi.fn()
 const mockSetAuth = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (opts: any) => ({ options: opts }),
+  createLazyFileRoute: () => (opts: { component: React.ComponentType }) => ({ options: opts }),
   useNavigate: () => mockNavigate,
   Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
     React.createElement('a', { href: to }, children),
@@ -25,17 +26,15 @@ vi.mock('@/stores/auth.store', () => ({
 
 // Stub shadcn/ui primitives used in the login form
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, disabled, type }: any) =>
+  Button: ({ children, disabled, type }: { children: React.ReactNode, disabled: boolean, type: 'button' | 'submit' }) =>
     React.createElement('button', { disabled, type }, children),
 }))
 vi.mock('@/components/ui/input', () => ({
-  Input: ({ id, type, value, onChange, ...rest }: any) =>
-    React.createElement('input', { id, type, value, onChange, ...rest }),
+  Input: ({ id, type, value, onChange }: { id: string, type: string, value: string, onChange: React.ChangeEventHandler<HTMLInputElement> }) =>
+    React.createElement('input', { id, type, value, onChange }),
 }))
 
 const { loginUser } = await import('@budget-buddy-org/budget-buddy-contracts')
-const { Route } = await import('./login.lazy')
-const LoginPage = Route.options.component as React.ComponentType
 
 function renderLogin() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -60,9 +59,11 @@ describe('LoginPage', () => {
   })
 
   it('calls loginUser with credentials and stores tokens on success', async () => {
+    type LoginResult = Awaited<ReturnType<typeof loginUser>>
     vi.mocked(loginUser).mockResolvedValue({
-      data: { access_token: 'at-abc', refresh_token: 'rt-xyz', expires_in: 3600 },
-    } as any)
+      data: { access_token: 'at-abc', refresh_token: 'rt-xyz', expires_in: 3600, token_type: 'Bearer' },
+      error: undefined,
+    } as unknown as LoginResult)
 
     renderLogin()
     const user = userEvent.setup()

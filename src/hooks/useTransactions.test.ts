@@ -9,6 +9,10 @@ import {
   deleteTransaction,
 } from '@budget-buddy-org/budget-buddy-contracts'
 
+type ListTransactionsResult = Awaited<ReturnType<typeof listTransactions>>
+type CreateTransactionResult = Awaited<ReturnType<typeof createTransaction>>
+type DeleteTransactionResult = Awaited<ReturnType<typeof deleteTransaction>>
+
 vi.mock('@budget-buddy-org/budget-buddy-contracts', () => ({
   listTransactions: vi.fn(),
   getTransaction: vi.fn(),
@@ -53,10 +57,11 @@ describe('useTransactions', () => {
   it('returns fetched transactions', async () => {
     vi.mocked(listTransactions).mockResolvedValue({
       data: {
-        items: [{ id: 'tx-1', date: '2024-01-10' }],
+        items: [{ id: 'tx-1', date: '2024-01-10', categoryId: 'cat-1', amount: 100, currency: 'EUR', type: 'EXPENSE' }],
         meta: { total: 1, size: 20, page: 0 }
-      }
-    } as any)
+      },
+      error: undefined
+    } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(() => useTransactions(), { wrapper: makeWrapper() })
 
@@ -66,7 +71,7 @@ describe('useTransactions', () => {
   })
 
   it('passes filters to the API', async () => {
-    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListTransactionsResult)
 
     renderHook(
       () => useTransactions({ categoryId: 'cat-1', sort: 'asc', size: 10 }),
@@ -81,16 +86,17 @@ describe('useTransactions', () => {
 
   it('performs client-side search when search filter is present', async () => {
     const items = [
-      { id: '1', description: 'Apple' },
-      { id: '2', description: 'Banana' },
-      { id: '3', description: 'Apricot' },
+      { id: '1', description: 'Apple', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE' as const, date: '2024-01-01' },
+      { id: '2', description: 'Banana', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE' as const, date: '2024-01-01' },
+      { id: '3', description: 'Apricot', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE' as const, date: '2024-01-01' },
     ]
     vi.mocked(listTransactions).mockResolvedValue({
       data: {
         items,
         meta: { total: 3, size: 20, page: 0 }
-      }
-    } as any)
+      },
+      error: undefined
+    } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(
       () => useTransactions({ search: 'ap' }),
@@ -105,11 +111,10 @@ describe('useTransactions', () => {
     expect(result.current.data?.items[1].description).toBe('Apricot')
     expect(result.current.data?.meta.total).toBe(2)
     
-    // Should have called API with search: undefined and large size
+    // Should have called API with large size
     expect(listTransactions).toHaveBeenCalledWith(
       expect.objectContaining({ 
         query: expect.objectContaining({ 
-          search: undefined,
           size: 1000 
         }) 
       }),
@@ -126,16 +131,18 @@ describe('useAllTransactions', () => {
     vi.mocked(listTransactions)
       .mockResolvedValueOnce({
         data: {
-          items: [{ id: '1' }],
+          items: [{ id: '1', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE', date: '2024-01-01' }],
           meta: { total: 2, size: 1, page: 0 }
-        }
-      } as any)
+        },
+        error: undefined
+      } as unknown as ListTransactionsResult)
       .mockResolvedValueOnce({
         data: {
-          items: [{ id: '2' }],
+          items: [{ id: '2', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE', date: '2024-01-01' }],
           meta: { total: 2, size: 1, page: 1 }
-        }
-      } as any)
+        },
+        error: undefined
+      } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(() => useAllTransactions(), { wrapper: makeWrapper() })
 
@@ -151,10 +158,11 @@ describe('useAllTransactions', () => {
   it('limits to 10 page fetches', async () => {
     vi.mocked(listTransactions).mockResolvedValue({
       data: {
-        items: [{ id: '1' }],
+        items: [{ id: '1', categoryId: 'c1', amount: 10, currency: 'EUR', type: 'EXPENSE', date: '2024-01-01' }],
         meta: { total: 100, size: 1, page: 0 }
-      }
-    } as any)
+      },
+      error: undefined
+    } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(() => useAllTransactions(), { wrapper: makeWrapper() })
 
@@ -170,8 +178,8 @@ describe('useCreateTransaction', () => {
 
   it('calls createTransaction and invalidates queries on success', async () => {
     const created = { ...mockPage.items[0] }
-    vi.mocked(createTransaction).mockResolvedValue({ data: created } as any)
-    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(createTransaction).mockResolvedValue({ data: created, error: undefined } as unknown as CreateTransactionResult)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(() => useCreateTransaction(), { wrapper: makeWrapper() })
 
@@ -195,8 +203,8 @@ describe('useDeleteTransaction', () => {
   })
 
   it('calls deleteTransaction and invalidates queries on success', async () => {
-    vi.mocked(deleteTransaction).mockResolvedValue({ data: undefined } as any)
-    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage } as any)
+    vi.mocked(deleteTransaction).mockResolvedValue({ data: undefined, error: undefined } as unknown as DeleteTransactionResult)
+    vi.mocked(listTransactions).mockResolvedValue({ data: mockPage, error: undefined } as unknown as ListTransactionsResult)
 
     const { result } = renderHook(() => useDeleteTransaction(), { wrapper: makeWrapper() })
 
