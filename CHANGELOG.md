@@ -1,3 +1,9 @@
+## [2.9.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.8.0...v2.9.0) (2026-04-14)
+
+### Features
+
+* enhance mobile UX, forms, and add version check ([#65](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/65)) ([5049392](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/5049392e600eebf5a62380090599e6822eb3a421))
+
 ## [2.8.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.7.0...v2.8.0) (2026-04-14)
 
 ### Features
