@@ -22,7 +22,7 @@ export function RegisterPage() {
     },
   });
 
-  const fieldErrors = (register.error as Problem)?.errors;
+  const fieldErrors = (register.error as unknown as Problem)?.errors;
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   return (

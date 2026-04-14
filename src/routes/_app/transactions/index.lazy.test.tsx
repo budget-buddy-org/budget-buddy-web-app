@@ -56,14 +56,15 @@ describe('TransactionsPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as ReturnType<typeof useCategories>);
+    } as unknown as ReturnType<typeof useCategories>);
     vi.mocked(useTransactions).mockReturnValue({
       data: { items: [], meta: { total: 0 } },
       isLoading: false,
-    } as ReturnType<typeof useTransactions>);
-    vi.mocked(useTransaction).mockReturnValue({ data: null, isLoading: false } as ReturnType<
-      typeof useTransaction
-    >);
+    } as unknown as ReturnType<typeof useTransactions>);
+    vi.mocked(useTransaction).mockReturnValue({
+      data: null,
+      isLoading: false,
+    } as unknown as ReturnType<typeof useTransaction>);
   });
 
   it('opens edit dialog when clicking a transaction in the list', async () => {
@@ -82,7 +83,7 @@ describe('TransactionsPage', () => {
         meta: { total: 1, size: 20, page: 0 },
       },
       isLoading: false,
-    } as ReturnType<typeof useTransactions>);
+    } as unknown as ReturnType<typeof useTransactions>);
     vi.mocked(useTransaction).mockReturnValue({
       data: {
         id: '123',
@@ -93,7 +94,7 @@ describe('TransactionsPage', () => {
         currency: 'EUR',
       } as Transaction,
       isLoading: false,
-    } as ReturnType<typeof useTransaction>);
+    } as unknown as ReturnType<typeof useTransaction>);
 
     render(
       <QueryClientProvider client={queryClient}>

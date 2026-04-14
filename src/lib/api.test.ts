@@ -1,9 +1,9 @@
-import type { ResolvedRequestOptions } from '@budget-buddy-org/budget-buddy-contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { InternalOptions } from './api';
 
 // Capture interceptors registered during module init
 let responseInterceptor:
-  | ((res: Response, req: Request, opts: ResolvedRequestOptions) => Promise<Response>)
+  | ((res: Response, req: Request, opts: Partial<InternalOptions>) => Promise<Response>)
   | undefined;
 
 type RefreshTokenResult = Awaited<ReturnType<typeof refreshToken>>;
@@ -20,7 +20,7 @@ vi.mock('@budget-buddy-org/budget-buddy-contracts/client.gen', () => ({
       response: {
         use: vi.fn(
           (
-            fn: (res: Response, req: Request, opts: ResolvedRequestOptions) => Promise<Response>,
+            fn: (res: Response, req: Request, opts: Partial<InternalOptions>) => Promise<Response>,
           ) => {
             responseInterceptor = fn;
           },

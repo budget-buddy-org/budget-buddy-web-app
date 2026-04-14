@@ -6,11 +6,11 @@ import * as axeMatchers from 'vitest-axe/matchers';
 expect.extend(axeMatchers);
 
 declare module 'vitest' {
-  export interface Assertion<T = unknown> extends axeMatchers.AxeMatchers {
-    T: T;
+  export interface Assertion<T> extends axeMatchers.AxeMatchers {
+    _branded?: T;
   }
   export interface AsymmetricMatchersContaining extends axeMatchers.AxeMatchers {
-    _branded: true;
+    _branded?: boolean;
   }
 }
 

@@ -241,8 +241,9 @@ describe('TransactionForm', () => {
       description: 'Old Coffee',
       amount: 500,
       currency: 'EUR',
-      type: 'EXPENSE',
+      type: 'EXPENSE' as const,
       date: '2024-01-01',
+      categoryId: 'cat-1',
     };
     renderForm({ onSuccess, onDeleteSuccess, transaction });
     const user = userEvent.setup();
@@ -277,8 +278,9 @@ describe('TransactionForm', () => {
       description: 'Old Coffee',
       amount: 500,
       currency: 'EUR',
-      type: 'EXPENSE',
+      type: 'EXPENSE' as const,
       date: '2024-01-01',
+      categoryId: 'cat-1',
     };
     renderForm({ transaction });
     const editInput = screen.getByPlaceholderText(/Coffee/i);

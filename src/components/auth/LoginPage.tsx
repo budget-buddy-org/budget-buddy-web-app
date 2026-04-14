@@ -26,7 +26,7 @@ export function LoginPage() {
     },
   });
 
-  const fieldErrors = (login.error as Problem)?.errors;
+  const fieldErrors = (login.error as unknown as Problem)?.errors;
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   return (

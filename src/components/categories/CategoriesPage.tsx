@@ -51,9 +51,9 @@ export function CategoriesPage() {
   const [editName, setEditName] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const createFieldError = (createCategory.error as Problem)?.errors?.[0]?.message;
+  const createFieldError = (createCategory.error as unknown as Problem)?.errors?.[0]?.message;
   const updateCategory = useUpdateCategory(editingCategory?.id ?? '');
-  const updateFieldError = (updateCategory.error as Problem)?.errors?.[0]?.message;
+  const updateFieldError = (updateCategory.error as unknown as Problem)?.errors?.[0]?.message;
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +72,7 @@ export function CategoriesPage() {
           });
         },
         onError: (error) => {
-          const apiError = error as Problem;
+          const apiError = error as unknown as Problem;
           if (!apiError.errors) {
             toast({
               title: 'Error',
@@ -102,7 +102,7 @@ export function CategoriesPage() {
           });
         },
         onError: (error) => {
-          const apiError = error as Problem;
+          const apiError = error as unknown as Problem;
           if (!apiError.errors) {
             toast({
               title: 'Error',

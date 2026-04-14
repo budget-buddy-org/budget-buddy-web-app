@@ -76,7 +76,9 @@ export function TransactionForm({
     form.categoryId !== (transaction?.categoryId ?? '') ||
     (isAddingCategory && !!newCategoryName);
 
-  const fieldErrors = (currentMutation.error as Problem)?.errors as FieldError[] | undefined;
+  const fieldErrors = (currentMutation.error as unknown as Problem)?.errors as
+    | FieldError[]
+    | undefined;
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +91,7 @@ export function TransactionForm({
         const newCat = await createCategory.mutateAsync({ name: newCategoryName });
         categoryId = newCat.id;
       } catch (error) {
-        const apiError = error as Problem;
+        const apiError = error as unknown as Problem;
         toast({
           title: 'Error',
           description: apiError.detail || apiError.title || 'Failed to create new category.',
@@ -120,7 +122,7 @@ export function TransactionForm({
         onSuccess();
       },
       onError: (error) => {
-        const apiError = error as Problem;
+        const apiError = error as unknown as Problem;
         if (!apiError.errors) {
           toast({
             title: 'Error',
@@ -324,11 +326,11 @@ export function TransactionForm({
                   }
                   autoFocus
                 />
-                {(createCategory.error as Problem)?.detail ||
-                (createCategory.error as Problem)?.title ? (
+                {(createCategory.error as unknown as Problem)?.detail ||
+                (createCategory.error as unknown as Problem)?.title ? (
                   <p className="text-xs font-medium text-destructive">
-                    {(createCategory.error as Problem).detail ||
-                      (createCategory.error as Problem).title}
+                    {(createCategory.error as unknown as Problem).detail ||
+                      (createCategory.error as unknown as Problem).title}
                   </p>
                 ) : null}
               </div>

@@ -1,7 +1,11 @@
-import type { ResolvedRequestOptions } from '@budget-buddy-org/budget-buddy-contracts';
 import { refreshToken as refreshAction } from '@budget-buddy-org/budget-buddy-contracts';
 import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen';
 import { useAuthStore } from '@/stores/auth.store';
+
+export type InternalOptions = Parameters<typeof client.request>[0] & {
+  _retry?: boolean;
+  _isRefresh?: boolean;
+};
 
 // Queue of requests waiting for a token refresh to complete
 let refreshPromise: Promise<string | null> | null = null;
@@ -58,8 +62,8 @@ export function refreshAuth() {
 
 // On 401: attempt refresh → retry; on refresh failure → clear auth + redirect to login
 client.interceptors.response.use(
-  async (response: Response, _request: Request, options: ResolvedRequestOptions) => {
-    const opts = options as ResolvedRequestOptions & { _retry?: boolean; _isRefresh?: boolean };
+  async (response: Response, _request: Request, options: unknown) => {
+    const opts = options as InternalOptions;
     if (
       response.status !== 401 ||
       opts._retry ||
