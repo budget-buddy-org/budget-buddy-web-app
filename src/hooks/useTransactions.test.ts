@@ -156,7 +156,7 @@ describe('useTransactions', () => {
     expect(listTransactions).toHaveBeenCalledWith(
       expect.objectContaining({
         query: expect.objectContaining({
-          size: 1000,
+          size: 200,
         }),
       }),
     );

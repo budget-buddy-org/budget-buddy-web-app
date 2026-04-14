@@ -38,11 +38,11 @@ export function useTransactions(filters: TransactionFilters = {}) {
       delete apiFilters.search;
 
       if (filters.search) {
-        // Fetch a larger set to perform local search — fetch up to 1000 items
+        // Fetch a larger set to perform local search — fetch up to 200 items
         const { data, error } = await listTransactions({
           query: {
             ...apiFilters,
-            size: 1000,
+            size: 200,
             page: 0,
           },
         });
