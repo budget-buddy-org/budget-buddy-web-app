@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Check, Trash2, X } from 'lucide-react'
 
 interface ConfirmationDialogProps {
   isOpen: boolean
@@ -38,22 +39,26 @@ export function ConfirmationDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="flex flex-row gap-2 pt-2 sm:justify-end">
           <Button
             type="button"
             variant="outline"
+            className="flex-1 sm:flex-none sm:min-w-[100px]"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
+            <X className="h-4 w-4 mr-2" />
             {cancelText}
           </Button>
           <Button
             type="button"
             variant={variant}
+            className="flex-1 sm:flex-none sm:min-w-[100px]"
             onClick={onConfirm}
-            disabled={isLoading}
+            loading={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {!isLoading && (variant === 'destructive' ? <Trash2 className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />)}
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

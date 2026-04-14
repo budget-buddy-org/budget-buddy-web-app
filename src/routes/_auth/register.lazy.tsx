@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { registerUser } from '@budget-buddy-org/budget-buddy-contracts'
 import type { RegisterRequest } from '@budget-buddy-org/budget-buddy-contracts'
+import { UserPlus } from 'lucide-react'
 
 export const Route = createLazyFileRoute('/_auth/register')({
   component: RegisterPage,
@@ -49,6 +50,7 @@ function RegisterPage() {
           <Input
             id="username"
             type="text"
+            placeholder="choose_username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
@@ -69,6 +71,7 @@ function RegisterPage() {
           <Input
             id="password"
             type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
@@ -91,8 +94,9 @@ function RegisterPage() {
           <p className="text-sm text-income">Account created! Redirecting to login…</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={register.isPending}>
-          {register.isPending ? 'Creating account…' : 'Create account'}
+        <Button type="submit" className="w-full" loading={register.isPending}>
+          {!register.isPending && <UserPlus className="h-4 w-4 mr-2" />}
+          Create account
         </Button>
       </form>
 

@@ -1,13 +1,14 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { Plus, Trash2 } from 'lucide-react'
+import { Check, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/hooks/useCategories'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Pagination } from '@/components/ui/pagination'
-import { cn } from '@/lib/cn'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmationDialog } from '@/components/ConfirmationDialog'
 
@@ -27,11 +28,14 @@ function CategoriesPage() {
   const deleteCategory = useDeleteCategory()
 
   const [newName, setNewName] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null)
   const [editName, setEditName] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const createFieldError = (createCategory.error as any)?.errors?.[0]?.message
+  const updateCategory = useUpdateCategory(editingCategory?.id ?? '')
+  const updateFieldError = (updateCategory.error as any)?.errors?.[0]?.message
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +45,7 @@ function CategoriesPage() {
       {
         onSuccess: () => {
           setNewName('')
+          setShowForm(false)
           setPage(0)
           toast({
             title: 'Category created',
@@ -52,6 +57,33 @@ function CategoriesPage() {
             toast({
               title: 'Error',
               description: 'Failed to create category. Please try again.',
+              variant: 'destructive',
+            })
+          }
+        },
+      },
+    )
+  }
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editName.trim() || !editingCategory) return
+    updateCategory.mutate(
+      { name: editName.trim() },
+      {
+        onSuccess: () => {
+          setEditingCategory(null)
+          setEditName('')
+          toast({
+            title: 'Category updated',
+            description: 'The category name has been changed.',
+          })
+        },
+        onError: (error: any) => {
+          if (!error.errors) {
+            toast({
+              title: 'Error',
+              description: 'Failed to update category.',
               variant: 'destructive',
             })
           }
@@ -84,26 +116,90 @@ function CategoriesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Categories</h1>
+      <PageHeader
+        title="Categories"
+        primaryAction={{
+          label: 'Add',
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
 
-      <form onSubmit={handleCreate} className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          <Input
-            placeholder="New category name…"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            maxLength={255}
-            className={createFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-          />
-          <Button type="submit" disabled={createCategory.isPending || !newName.trim()}>
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
-        </div>
-        {createFieldError && (
-          <p className="text-sm font-medium text-destructive">{createFieldError}</p>
-        )}
-      </form>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Category</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                placeholder="New category name…"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                maxLength={255}
+                autoFocus
+                className={createFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+              />
+              {createFieldError && (
+                <p className="text-[0.625rem] font-medium text-destructive">{createFieldError}</p>
+              )}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" className="flex-1" loading={createCategory.isPending} disabled={!newName.trim()}>
+                <Check className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setShowForm(false)} disabled={createCategory.isPending}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                placeholder="Category name…"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={255}
+                autoFocus
+                className={updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+              />
+              {updateFieldError && (
+                <p className="text-[0.625rem] font-medium text-destructive">{updateFieldError}</p>
+              )}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button 
+                type="submit" 
+                className="flex-1" 
+                loading={updateCategory.isPending} 
+                disabled={!editName.trim() || editName.trim() === editingCategory?.name}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setEditingCategory(null)} disabled={updateCategory.isPending}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardContent className="p-0">
@@ -122,14 +218,10 @@ function CategoriesPage() {
                   key={c.id}
                   id={c.id}
                   name={c.name}
-                  editingId={editingId}
-                  editName={editName}
                   onStartEdit={() => {
-                    setEditingId(c.id)
+                    setEditingCategory(c)
                     setEditName(c.name)
                   }}
-                  onEditName={setEditName}
-                  onCancelEdit={() => setEditingId(null)}
                   onDelete={() => setDeleteId(c.id)}
                   isDeleting={deleteCategory.isPending && deleteId === c.id}
                 />
@@ -163,82 +255,17 @@ function CategoriesPage() {
 }
 
 function CategoryRow({
-  id,
   name,
-  editingId,
-  editName,
   onStartEdit,
-  onEditName,
-  onCancelEdit,
   onDelete,
   isDeleting,
 }: {
   id: string
   name: string
-  editingId: string | null
-  editName: string
   onStartEdit: () => void
-  onEditName: (v: string) => void
-  onCancelEdit: () => void
   onDelete: () => void
   isDeleting: boolean
 }) {
-  const { toast } = useToast()
-  const updateCategory = useUpdateCategory(id)
-  const isEditing = editingId === id
-  const updateFieldError = (updateCategory.error as any)?.errors?.[0]?.message
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editName.trim()) return
-    updateCategory.mutate(
-      { name: editName.trim() },
-      {
-        onSuccess: () => {
-          onCancelEdit()
-          toast({
-            title: 'Category updated',
-            description: 'The category name has been changed.',
-          })
-        },
-        onError: (error: any) => {
-          if (!error.errors) {
-            toast({
-              title: 'Error',
-              description: 'Failed to update category.',
-              variant: 'destructive',
-            })
-          }
-        },
-      },
-    )
-  }
-
-  if (isEditing) {
-    return (
-      <li className="flex flex-col gap-1 bg-muted/20 px-4 py-2">
-        <form onSubmit={handleSave} className="flex flex-1 items-center gap-2">
-          <Input
-            value={editName}
-            onChange={(e) => onEditName(e.target.value)}
-            className={cn('h-9', updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : '')}
-            autoFocus
-            maxLength={255}
-          />
-          <Button type="submit" size="sm" disabled={updateCategory.isPending}>
-            Save
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCancelEdit}>
-            Cancel
-          </Button>
-        </form>
-        {updateFieldError && (
-          <p className="text-sm font-medium text-destructive">{updateFieldError}</p>
-        )}
-      </li>
-    )
-  }
-
   return (
     <li className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer">
       <button

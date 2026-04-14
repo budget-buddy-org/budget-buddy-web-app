@@ -1,9 +1,11 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
-import { Filter, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { createLazyFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { Filter } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCategories } from '@/hooks/useCategories'
 import { useTransactions } from '@/hooks/useTransactions'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Pagination } from '@/components/ui/pagination'
 import { TransactionFilters } from '@/components/transactions/TransactionFilters'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
@@ -16,11 +18,24 @@ export const Route = createLazyFileRoute('/_app/transactions/')({
 const PAGE_SIZE = 20
 
 function TransactionsPage() {
+  const navigate = useNavigate()
+  const search = useSearch({ from: '/_app/transactions/' }) as any
   const { data: categoriesData } = useCategories()
   const categories = categoriesData?.items ?? []
 
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    if (search.add === 'true') {
+      setShowForm(true)
+      // Clear the param after opening
+      navigate({
+        search: { add: undefined } as any,
+        replace: true,
+      })
+    }
+  }, [search.add, navigate])
 
   const [filters, setFilters] = useState<{
     categoryId: string
@@ -78,23 +93,22 @@ function TransactionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Transactions</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={showFilters ? 'secondary' : 'outline'}
-            onClick={() => setShowFilters((v) => !v)}
-            aria-label="Toggle filters"
-          >
-            <Filter className="h-4 w-4" />
-            {hasActiveFilters && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-          </Button>
-          <Button onClick={() => setShowForm((v) => !v)}>
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Transactions"
+        primaryAction={{
+          label: 'Add',
+          onClick: () => setShowForm((v) => !v),
+        }}
+      >
+        <Button
+          variant={showFilters ? 'secondary' : 'outline'}
+          onClick={() => setShowFilters((v) => !v)}
+          aria-label="Toggle filters"
+        >
+          <Filter className="h-4 w-4" />
+          {hasActiveFilters && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
+        </Button>
+      </PageHeader>
 
       {showFilters && (
         <TransactionFilters
@@ -104,14 +118,19 @@ function TransactionsPage() {
           onReset={resetFilters}
         />
       )}
-
-      {showForm && (
-        <TransactionForm
-          categories={categories}
-          onSuccess={() => setShowForm(false)}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
+      
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Transaction</DialogTitle>
+          </DialogHeader>
+          <TransactionForm
+            categories={categories}
+            onSuccess={() => setShowForm(false)}
+            onCancel={() => setShowForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       <TransactionList
         transactions={transactions}

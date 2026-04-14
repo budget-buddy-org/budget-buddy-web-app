@@ -1,11 +1,14 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { AmountInput } from '@/components/ui/amount-input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select } from '@/components/ui/select'
-import { useCreateTransaction } from '@/hooks/useTransactions'
+import { TransactionTypeToggle } from '@/components/ui/transaction-type-toggle'
+import { useCreateTransaction, useUpdateTransaction } from '@/hooks/useTransactions'
 import { useToast } from '@/hooks/use-toast'
 import { toMinorUnits, todayIso } from '@/lib/formatters'
-import type { TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts'
+import type { Transaction, TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts'
+import { Check, X } from 'lucide-react'
 import { useState } from 'react'
 
 const CURRENCIES = ['EUR', 'USD', 'GBP']
@@ -14,31 +17,45 @@ interface TransactionFormProps {
   categories: { id: string; name: string }[]
   onSuccess: () => void
   onCancel: () => void
+  transaction?: Transaction
 }
 
 export function TransactionForm({
   categories,
   onSuccess,
   onCancel,
+  transaction,
 }: TransactionFormProps) {
   const { toast } = useToast()
   const createTx = useCreateTransaction()
+  const updateTx = useUpdateTransaction(transaction?.id ?? '')
 
   const [form, setForm] = useState({
-    description: '',
-    amount: '',
-    type: 'EXPENSE' as 'EXPENSE' | 'INCOME',
-    currency: 'EUR',
-    date: todayIso(),
-    categoryId: '',
+    description: transaction?.description ?? '',
+    amount: transaction ? (transaction.amount / 100).toFixed(2) : '',
+    type: (transaction?.type as 'EXPENSE' | 'INCOME') ?? ('EXPENSE' as const),
+    currency: transaction?.currency ?? 'EUR',
+    date: transaction?.date ?? todayIso(),
+    categoryId: transaction?.categoryId ?? '',
   })
 
-  const createFieldErrors = (createTx.error as any)?.errors as Array<{
+  const isEditing = !!transaction
+  const currentMutation = isEditing ? updateTx : createTx
+
+  const hasChanges =
+    form.description !== (transaction?.description ?? '') ||
+    form.amount !== (transaction ? (transaction.amount / 100).toFixed(2) : '') ||
+    form.type !== ((transaction?.type as 'EXPENSE' | 'INCOME') ?? 'EXPENSE') ||
+    form.currency !== (transaction?.currency ?? 'EUR') ||
+    form.date !== (transaction?.date ?? todayIso()) ||
+    form.categoryId !== (transaction?.categoryId ?? '')
+
+  const fieldErrors = (currentMutation.error as any)?.errors as Array<{
     field: string
     message: string
   }> | undefined
-  const getCreateFieldError = (field: string) =>
-    createFieldErrors?.find((e) => e.field === field)?.message
+  const getFieldError = (field: string) =>
+    fieldErrors?.find((e) => e.field === field)?.message
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,11 +68,13 @@ export function TransactionForm({
       categoryId: form.categoryId,
     }
 
-    createTx.mutate(body, {
+    currentMutation.mutate(body, {
       onSuccess: () => {
         toast({
-          title: 'Transaction created',
-          description: 'The transaction has been recorded successfully.',
+          title: isEditing ? 'Transaction updated' : 'Transaction created',
+          description: isEditing
+            ? 'Your changes have been saved.'
+            : 'The transaction has been recorded successfully.',
         })
         onSuccess()
       },
@@ -63,7 +82,7 @@ export function TransactionForm({
         if (!error.errors) {
           toast({
             title: 'Error',
-            description: 'Failed to create transaction.',
+            description: `Failed to ${isEditing ? 'update' : 'create'} transaction.`,
             variant: 'destructive',
           })
         }
@@ -71,101 +90,109 @@ export function TransactionForm({
     })
   }
 
+  const isFormValid =
+    !!form.type &&
+    !!form.currency &&
+    !!form.date &&
+    !!form.amount &&
+    Number.parseFloat(form.amount) !== 0 &&
+    (categories.length === 0 || !!form.categoryId)
+
+  const isFormDisabled = !isFormValid || (isEditing && !hasChanges)
+
   return (
-    <Card>
-      <CardContent className="pt-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Type <span className="text-destructive">*</span>
+              </label>
+              <TransactionTypeToggle
+                value={form.type}
+                onChange={(val) => setForm((f) => ({ ...f, type: val }))}
+                error={!!getFieldError('type')}
+              />
+              {getFieldError('type') && (
+                <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('type')}</p>
+              )}
+            </div>
+
             <div className="sm:col-span-2 space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Description</label>
               <Input
                 placeholder="Coffee, salary…"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className={getCreateFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                className={getFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                autoFocus
               />
-              {getCreateFieldError('description') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('description')}</p>
+              {getFieldError('description') && (
+                <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('description')}</p>
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                Amount <span className="text-destructive">*</span>
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="12.99"
-                value={form.amount}
-                onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                required
-                className={getCreateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-              />
-              {getCreateFieldError('amount') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('amount')}</p>
-              )}
+            <div className="flex gap-4 sm:col-span-2">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Amount <span className="text-destructive">*</span>
+                </label>
+                <AmountInput
+                  placeholder="12.99"
+                  value={form.amount}
+                  onChange={(val) => setForm((f) => ({ ...f, amount: val }))}
+                  required
+                  className={getFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                />
+                {getFieldError('amount') && (
+                  <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('amount')}</p>
+                )}
+              </div>
+
+              <div className="flex-1 space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Currency <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  value={form.currency}
+                  onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+                  className={getFieldError('currency') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
+                {getFieldError('currency') && (
+                  <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('currency')}</p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Type</label>
-              <Select
-                value={form.type}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, type: e.target.value as 'EXPENSE' | 'INCOME' }))
-                }
-                className={getCreateFieldError('type') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-              >
-                <option value="EXPENSE">Expense</option>
-                <option value="INCOME">Income</option>
-              </Select>
-              {getCreateFieldError('type') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('type')}</p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Currency</label>
-              <Select
-                value={form.currency}
-                onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-                className={getCreateFieldError('currency') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
-              {getCreateFieldError('currency') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('currency')}</p>
-              )}
-            </div>
-
-            <div className="space-y-1">
+            <div className="sm:col-span-2 space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
                 Date <span className="text-destructive">*</span>
               </label>
-              <Input
-                type="date"
+              <DatePicker
                 value={form.date}
                 onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
                 required
-                className={getCreateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                className={getFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               />
-              {getCreateFieldError('date') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('date')}</p>
+              {getFieldError('date') && (
+                <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('date')}</p>
               )}
             </div>
 
             {categories.length > 0 && (
               <div className="sm:col-span-2 space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Category</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Category <span className="text-destructive">*</span>
+                </label>
                 <Select
                   value={form.categoryId}
                   onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-                  className={getCreateFieldError('categoryId') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
+                  className={getFieldError('categoryId') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
                 >
                   <option value="">No category</option>
                   {categories.map((c) => (
@@ -174,23 +201,23 @@ export function TransactionForm({
                     </option>
                   ))}
                 </Select>
-                {getCreateFieldError('categoryId') && (
-                  <p className="text-[0.625rem] font-medium text-destructive">{getCreateFieldError('categoryId')}</p>
+                {getFieldError('categoryId') && (
+                  <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('categoryId')}</p>
                 )}
               </div>
             )}
           </div>
 
-          <div className="flex gap-2">
-            <Button type="submit" disabled={createTx.isPending}>
-              {createTx.isPending ? 'Saving…' : 'Save'}
+          <div className="flex gap-2 pt-2">
+            <Button type="submit" className="flex-1" loading={currentMutation.isPending} disabled={isFormDisabled}>
+              <Check className="h-4 w-4 mr-2" />
+              Save
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={currentMutation.isPending}>
+              <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+    </form>
   )
 }

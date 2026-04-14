@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -6,7 +7,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.3.0'),
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.8.0'),
   },
   plugins: [
     TanStackRouterVite({
@@ -16,6 +17,19 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
+    {
+      name: 'generate-version-json',
+      closeBundle() {
+        const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
+        const distPath = path.resolve(__dirname, 'dist');
+        if (fs.existsSync(distPath)) {
+          fs.writeFileSync(
+            path.join(distPath, 'version.json'),
+            JSON.stringify({ version: pkg.version }, null, 2)
+          );
+        }
+      }
+    }
   ],
   resolve: {
     alias: {

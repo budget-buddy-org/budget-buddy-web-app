@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { loginUser } from '@budget-buddy-org/budget-buddy-contracts'
 import { useAuthStore } from '@/stores/auth.store'
 import type { AuthToken, LoginRequest } from '@budget-buddy-org/budget-buddy-contracts'
+import { LogIn } from 'lucide-react'
 
 export const Route = createLazyFileRoute('/_auth/login')({
   component: LoginPage,
@@ -53,6 +54,7 @@ function LoginPage() {
           <Input
             id="username"
             type="text"
+            placeholder="john_doe"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
@@ -71,6 +73,7 @@ function LoginPage() {
           <Input
             id="password"
             type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
@@ -86,8 +89,9 @@ function LoginPage() {
           <p className="text-sm text-destructive">Invalid credentials. Please try again.</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={login.isPending}>
-          {login.isPending ? 'Signing in…' : 'Sign in'}
+        <Button type="submit" className="w-full" loading={login.isPending}>
+          {!login.isPending && <LogIn className="h-4 w-4 mr-2" />}
+          Sign in
         </Button>
       </form>
 
