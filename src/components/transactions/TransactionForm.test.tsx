@@ -31,7 +31,7 @@ vi.mock('@/components/ui/button', () => ({
 }))
 vi.mock('@/components/ui/input', () => ({
   Input: ({ value, onChange, placeholder, autoFocus }: any) =>
-    React.createElement('input', { value, onChange, placeholder, autoFocus }),
+    React.createElement('input', { value, onChange, placeholder, 'data-autofocus': autoFocus }),
 }))
 vi.mock('@/components/ui/select', () => ({
   Select: ({ children, value, onChange }: any) =>
@@ -165,5 +165,17 @@ describe('TransactionForm', () => {
     await user.click(screen.getByText(/Confirm Delete/i))
 
     expect(mockDeleteTx.mutate).toHaveBeenCalledWith('tx-1', expect.any(Object))
+  })
+
+  it('handles autoFocus based on mode', () => {
+    const { unmount } = renderForm()
+    const createInput = screen.getByPlaceholderText(/Coffee/i)
+    expect(createInput).toHaveAttribute('data-autofocus', 'true')
+    unmount()
+
+    const transaction = { id: 'tx-1', description: 'Old Coffee', amount: 500, currency: 'EUR', type: 'EXPENSE', date: '2024-01-01' }
+    renderForm({ transaction })
+    const editInput = screen.getByPlaceholderText(/Coffee/i)
+    expect(editInput).toHaveAttribute('data-autofocus', 'false')
   })
 })

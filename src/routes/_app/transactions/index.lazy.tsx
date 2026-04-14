@@ -155,7 +155,7 @@ function TransactionsPage() {
             </DialogDescription>
           </DialogHeader>
           {isTransactionLoading && search.edit ? (
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 animate-fade-in">
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />

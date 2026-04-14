@@ -160,7 +160,7 @@ function CategoriesPage() {
               Create a new category to group your transactions.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
+          <form onSubmit={handleCreate} className="space-y-4 animate-fade-in">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
                 Name <span className="text-destructive">*</span>
@@ -200,7 +200,7 @@ function CategoriesPage() {
               Modify the name of your category.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-4 animate-fade-in">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
                 Name <span className="text-destructive">*</span>
@@ -210,7 +210,6 @@ function CategoriesPage() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 maxLength={255}
-                autoFocus
                 autoComplete="off"
                 className={updateFieldError ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
               />
@@ -240,7 +239,7 @@ function CategoriesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="space-y-px p-2">
+            <div className="space-y-px p-2 animate-fade-in">
               {[...Array(4)].map((_, i) => (
                 <Skeleton key={i} className="h-11 rounded-sm" />
               ))}

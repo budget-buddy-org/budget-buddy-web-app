@@ -179,7 +179,7 @@ function DashboardPage() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <Skeleton className="h-7 w-32" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Skeleton className="col-span-2 h-24 md:col-span-1" />
