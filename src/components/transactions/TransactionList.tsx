@@ -41,7 +41,7 @@ export function TransactionList({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-fade-in">
+      <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <Card key={i}>
             <CardContent className="p-0">

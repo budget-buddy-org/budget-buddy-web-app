@@ -157,7 +157,7 @@ export function TransactionForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {isEditing && (
           <div className="absolute top-4 right-4">
             <DropdownMenu>
@@ -208,7 +208,7 @@ export function TransactionForm({
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 className={getFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-                autoFocus={!isEditing}
+                autoFocus
               />
               {getFieldError('description') && (
                 <p className="text-[0.625rem] font-medium text-destructive">{getFieldError('description')}</p>
@@ -296,7 +296,7 @@ export function TransactionForm({
               </div>
 
               {isAddingCategory ? (
-                <div className="space-y-1 animate-fade-in">
+                <div className="space-y-1">
                   <Input
                     placeholder="New category name…"
                     value={newCategoryName}
@@ -317,7 +317,7 @@ export function TransactionForm({
                   )}
                 </div>
               ) : (
-                <div className="space-y-1 animate-fade-in">
+                <>
                   <Select
                     value={form.categoryId}
                     onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
@@ -340,7 +340,7 @@ export function TransactionForm({
                       {getFieldError('categoryId')}
                     </p>
                   )}
-                </div>
+                </>
               )}
             </div>
           </div>
