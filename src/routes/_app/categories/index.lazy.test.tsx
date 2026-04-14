@@ -48,12 +48,20 @@ vi.mock('@/components/ui/input', () => ({
 vi.mock('@/components/ui/skeleton', () => ({
   Skeleton: ({ className }: any) => React.createElement('div', { 'data-testid': 'skeleton', className }),
 }))
+vi.mock('@/components/ui/dialog', () => ({
+  Dialog: ({ children, open }: any) => open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null,
+  DialogContent: ({ children }: any) => React.createElement('div', { 'data-testid': 'dialog-content' }, children),
+  DialogHeader: ({ children }: any) => React.createElement('div', { 'data-testid': 'dialog-header' }, children),
+  DialogTitle: ({ children }: any) => React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
+}))
 vi.mock('lucide-react', () => ({
   Plus: () => React.createElement('span', null, '+'),
   Trash2: () => React.createElement('span', null, 'delete'),
   ChevronLeft: () => React.createElement('span', null, '<'),
   ChevronRight: () => React.createElement('span', null, '>'),
   Filter: () => React.createElement('span', null, 'filter'),
+  X: () => React.createElement('span', null, 'x'),
+  Check: () => React.createElement('span', null, 'check'),
 }))
 
 const { useCategories } = await import('@/hooks/useCategories')
@@ -115,8 +123,12 @@ describe('CategoriesPage', () => {
     renderPage()
     const user = userEvent.setup()
 
+    // Toggle form
+    const addButtons = screen.getAllByRole('button', { name: /add/i })
+    await user.click(addButtons[0])
+
     await user.type(screen.getByPlaceholderText(/new category name/i), 'Food')
-    await user.click(screen.getByRole('button', { name: /add/i }))
+    await user.click(screen.getByRole('button', { name: /save/i }))
 
     expect(mockCreateCategory.mutate).toHaveBeenCalledWith(
       { name: 'Food' },
@@ -130,10 +142,15 @@ describe('CategoriesPage', () => {
       isLoading: false,
     } as any)
     renderPage()
+    const user = userEvent.setup()
+
+    // Toggle form
+    const addButtons = screen.getAllByRole('button', { name: /add/i })
+    await user.click(addButtons[0])
 
     // Submit without typing anything
-    const addButton = screen.getByRole('button', { name: /add/i })
-    expect(addButton).toBeDisabled()
+    const saveButton = screen.getByRole('button', { name: /save/i })
+    expect(saveButton).toBeDisabled()
     expect(mockCreateCategory.mutate).not.toHaveBeenCalled()
   })
 

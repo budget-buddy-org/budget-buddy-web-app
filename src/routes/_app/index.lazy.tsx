@@ -1,4 +1,4 @@
-import { Link, createLazyFileRoute } from '@tanstack/react-router'
+import { Link, createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { ArrowDownRight, ArrowUpRight, Wallet, PlusCircle } from 'lucide-react'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTransactions } from '@/hooks/useTransactions'
 import { formatCurrency, formatDate } from '@/lib/formatters'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export const Route = createLazyFileRoute('/_app/')({
   component: DashboardPage,
@@ -16,6 +17,7 @@ export const Route = createLazyFileRoute('/_app/')({
 const SUMMARY_LIMIT = 50
 
 function DashboardPage() {
+  const navigate = useNavigate()
   const { data, isLoading } = useTransactions({ size: SUMMARY_LIMIT, sort: 'desc' })
 
   if (isLoading) return <DashboardSkeleton />
@@ -51,10 +53,14 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
-        <span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} items</span>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle={<span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} items</span>}
+        primaryAction={{
+          label: 'Add',
+          onClick: () => navigate({ to: '/transactions', search: { add: 'true' } as any }),
+        }}
+      />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -127,7 +133,7 @@ function DashboardPage() {
                 </p>
               </div>
               <Button asChild size="sm">
-                <Link to="/transactions">Add transaction</Link>
+                <Link to="/transactions" search={{ add: undefined }}>Add transaction</Link>
               </Button>
             </div>
           ) : (

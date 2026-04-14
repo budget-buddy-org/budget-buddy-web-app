@@ -2,8 +2,9 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { useThemeStore } from '@/stores/theme.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Separator } from '@/components/ui/separator'
-import { Moon, Sun, Monitor, Type, Palette } from 'lucide-react'
+import { Moon, Sun, Monitor, Type, Palette, RefreshCw } from 'lucide-react'
 
 export const Route = createLazyFileRoute('/_app/settings')({
   component: SettingsPage,
@@ -14,10 +15,10 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your application appearance and preferences.</p>
-      </div>
+      <PageHeader
+        title="Settings"
+        subtitle={<span className="text-muted-foreground">Manage your application appearance and preferences.</span>}
+      />
 
       <Separator />
 
@@ -114,6 +115,33 @@ function SettingsPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               Increase or decrease the base font size for better readability.
+            </p>
+          </Card>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4 text-primary" />
+            <h2 className="text-lg font-semibold">Version & Updates</h2>
+          </div>
+          <Card className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Current Version</p>
+                <p className="text-xs text-muted-foreground">v{__APP_VERSION__}</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 cursor-pointer"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Reload App
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Manually reload the application to ensure you're using the latest version.
             </p>
           </Card>
         </section>

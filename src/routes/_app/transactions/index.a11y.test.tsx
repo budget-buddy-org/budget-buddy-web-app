@@ -9,6 +9,7 @@ import type React from 'react'
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: any) => ({ options }),
   useNavigate: () => vi.fn(),
+  useSearch: () => ({ add: undefined }),
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }))
 

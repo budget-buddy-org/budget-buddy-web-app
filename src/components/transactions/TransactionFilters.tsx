@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Select } from '@/components/ui/select'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -40,7 +41,7 @@ export function TransactionFilters({
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search description..."
+                placeholder="Search transactions…"
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -63,16 +64,14 @@ export function TransactionFilters({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">From</label>
-            <Input
-              type="date"
+            <DatePicker
               value={filters.start}
               onChange={(e) => onFilterChange({ ...filters, start: e.target.value })}
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">To</label>
-            <Input
-              type="date"
+            <DatePicker
               value={filters.end}
               onChange={(e) => onFilterChange({ ...filters, end: e.target.value })}
             />

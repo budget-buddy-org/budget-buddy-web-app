@@ -3,6 +3,7 @@ import { Link, Outlet, createRootRoute, useRouter } from '@tanstack/react-router
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { useState } from 'react'
 import { Toaster } from '@/components/ui/toaster'
+import { VersionCheck } from '@/components/VersionCheck'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -13,6 +14,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <>
+      <VersionCheck />
       <Outlet />
       <Toaster />
       {import.meta.env.DEV && (

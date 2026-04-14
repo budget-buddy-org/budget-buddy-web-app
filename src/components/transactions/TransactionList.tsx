@@ -1,18 +1,16 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConfirmationDialog } from '@/components/ConfirmationDialog'
-import { useDeleteTransaction, useUpdateTransaction } from '@/hooks/useTransactions'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { TransactionForm } from './TransactionForm'
+import { useDeleteTransaction } from '@/hooks/useTransactions'
 import { useToast } from '@/hooks/use-toast'
-import { formatCurrency, formatDate, toMinorUnits } from '@/lib/formatters'
+import { formatCurrency, formatDate } from '@/lib/formatters'
 import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts'
 import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
-
-const CURRENCIES = ['EUR', 'USD', 'GBP']
 
 interface TransactionListProps {
   transactions: Transaction[]
@@ -25,7 +23,7 @@ export function TransactionList({
   categories,
   isLoading,
 }: TransactionListProps) {
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const { toast } = useToast()
   const deleteTx = useDeleteTransaction()
@@ -74,47 +72,38 @@ export function TransactionList({
             <p className="px-6 py-4 text-sm text-muted-foreground">No transactions yet.</p>
           ) : (
             <ul className="divide-y">
-              {transactions.map((t) =>
-                editingId === t.id ? (
-                  <TransactionEditRow
-                    key={t.id}
-                    transaction={t}
-                    categories={categories}
-                    onDone={() => setEditingId(null)}
-                  />
-                ) : (
-                  <li
-                    key={t.id}
-                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer"
+              {transactions.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer"
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 text-left focus-visible:outline-none cursor-pointer"
+                    onClick={() => setEditingTransaction(t)}
                   >
-                    <button
-                      type="button"
-                      className="min-w-0 flex-1 text-left focus-visible:outline-none cursor-pointer"
-                      onClick={() => setEditingId(t.id)}
-                    >
-                      <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(t.date)}
-                        {categoryMap[t.categoryId ?? ''] ? ` · ${categoryMap[t.categoryId!]}` : ''}
-                      </p>
-                    </button>
-                    <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
-                      {t.type === 'INCOME' ? '+' : '-'}
-                      {formatCurrency(t.amount, t.currency)}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteId(t.id)}
-                      disabled={deleteTx.isPending && deleteId === t.id}
-                      aria-label="Delete transaction"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </li>
-                )
-              )}
+                    <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(t.date)}
+                      {categoryMap[t.categoryId ?? ''] ? ` · ${categoryMap[t.categoryId!]}` : ''}
+                    </p>
+                  </button>
+                  <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
+                    {t.type === 'INCOME' ? '+' : '-'}
+                    {formatCurrency(t.amount, t.currency)}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeleteId(t.id)}
+                    disabled={deleteTx.isPending && deleteId === t.id}
+                    aria-label="Delete transaction"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </li>
+              ))}
             </ul>
           )}
         </CardContent>
@@ -130,170 +119,23 @@ export function TransactionList({
         variant="destructive"
         isLoading={deleteTx.isPending}
       />
+
+      <Dialog open={!!editingTransaction} onOpenChange={(open) => !open && setEditingTransaction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Transaction</DialogTitle>
+          </DialogHeader>
+          {editingTransaction && (
+            <TransactionForm
+              categories={categories}
+              transaction={editingTransaction}
+              onSuccess={() => setEditingTransaction(null)}
+              onCancel={() => setEditingTransaction(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
 
-function TransactionEditRow({
-  transaction,
-  categories,
-  onDone,
-}: {
-  transaction: Transaction
-  categories: { id: string; name: string }[]
-  onDone: () => void
-}) {
-  const { toast } = useToast()
-  const update = useUpdateTransaction(transaction.id)
-  const [form, setForm] = useState({
-    description: transaction.description ?? '',
-    amount: (transaction.amount / 100).toFixed(2),
-    type: transaction.type as 'EXPENSE' | 'INCOME',
-    currency: transaction.currency,
-    date: transaction.date,
-    categoryId: transaction.categoryId ?? '',
-  })
-
-  const updateFieldErrors = (update.error as any)?.errors as Array<{
-    field: string
-    message: string
-  }> | undefined
-  const getUpdateFieldError = (field: string) =>
-    updateFieldErrors?.find((e) => e.field === field)?.message
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault()
-    update.mutate(
-      {
-        description: form.description || undefined,
-        amount: toMinorUnits(Number(form.amount)),
-        type: form.type,
-        currency: form.currency,
-        date: form.date,
-        categoryId: form.categoryId || undefined,
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Transaction updated',
-            description: 'Your changes have been saved.',
-          })
-          onDone()
-        },
-        onError: (error: any) => {
-          if (!error.errors) {
-            toast({
-              title: 'Error',
-              description: 'Failed to update transaction.',
-              variant: 'destructive',
-            })
-          }
-        },
-      }
-    )
-  }
-
-  return (
-    <li className="bg-muted/20 px-4 py-3 sm:rounded-md">
-      <form onSubmit={handleSave} className="space-y-3">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2 space-y-1">
-            <Input
-              placeholder="Description"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className={getUpdateFieldError('description') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-              autoFocus
-            />
-            {getUpdateFieldError('description') && (
-              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('description')}</p>
-            )}
-          </div>
-          <div className="space-y-1">
-            <Input
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={form.amount}
-              onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-              required
-              className={getUpdateFieldError('amount') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-            />
-            {getUpdateFieldError('amount') && (
-              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('amount')}</p>
-            )}
-          </div>
-          <div className="space-y-1">
-            <Select
-              value={form.type}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as 'EXPENSE' | 'INCOME' }))}
-              className={getUpdateFieldError('type') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-            >
-              <option value="EXPENSE">Expense</option>
-              <option value="INCOME">Income</option>
-            </Select>
-            {getUpdateFieldError('type') && (
-              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('type')}</p>
-            )}
-          </div>
-          <div className="space-y-1">
-            <Select
-              value={form.currency}
-              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-              className={getUpdateFieldError('currency') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
-            {getUpdateFieldError('currency') && (
-              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('currency')}</p>
-            )}
-          </div>
-          <div className="space-y-1">
-            <Input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              required
-              className={getUpdateFieldError('date') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-            />
-            {getUpdateFieldError('date') && (
-              <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('date')}</p>
-            )}
-          </div>
-          {categories.length > 0 && (
-            <div className="sm:col-span-2 space-y-1">
-              <Select
-                value={form.categoryId}
-                onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-                className={getUpdateFieldError('categoryId') ? 'border-destructive ring-destructive focus-visible:ring-destructive' : ''}
-              >
-                <option value="">No category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-              {getUpdateFieldError('categoryId') && (
-                <p className="text-[0.625rem] font-medium text-destructive">{getUpdateFieldError('categoryId')}</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Button type="submit" disabled={update.isPending}>
-            {update.isPending ? 'Saving…' : 'Save'}
-          </Button>
-          <Button type="button" variant="outline" onClick={onDone}>
-            Cancel
-          </Button>
-        </div>
-      </form>
-    </li>
-  )
-}

@@ -28,7 +28,7 @@ export function Header() {
         <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>
       </Link>
       <div className="flex items-center gap-1 sm:gap-2">
-        <Link to="/settings">
+        <Link to="/settings" className="hidden md:inline-flex">
           <Button
             variant="ghost"
             size="icon"
@@ -45,7 +45,7 @@ export function Header() {
           onClick={() => setTheme(NEXT_THEME[theme])}
           title={`Switch theme (current: ${theme})`}
           aria-label={`Switch theme (current: ${theme})`}
-          className="cursor-pointer"
+          className="cursor-pointer hidden md:inline-flex"
         >
           <ThemeIcon className="h-4 w-4" />
         </Button>
