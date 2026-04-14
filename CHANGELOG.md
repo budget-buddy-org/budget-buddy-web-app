@@ -1,3 +1,9 @@
+## [2.11.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.10.0...v2.11.0) (2026-04-14)
+
+### Features
+
+* search categories, sort selects, and improve mobile UX ([a04f32a](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/a04f32a2527d80e951beac4440b399a291a4b8c5))
+
 ## [2.10.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.9.2...v2.10.0) (2026-04-14)
 
 ### Features
