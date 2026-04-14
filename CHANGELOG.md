@@ -1,3 +1,9 @@
+## [2.12.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.11.0...v2.12.0) (2026-04-14)
+
+### Features
+
+* improve dashboard, transaction grouping, and navigation ([#69](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/69)) ([20f7674](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/20f767411b99c6fbfa8280414a77af5d9717bbbc))
+
 ## [2.11.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.10.0...v2.11.0) (2026-04-14)
 
 ### Features
