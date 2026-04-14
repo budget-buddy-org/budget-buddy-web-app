@@ -1,3 +1,9 @@
+## [2.9.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.9.1...v2.9.2) (2026-04-14)
+
+### Bug Fixes
+
+* **ui:** ensure Button asChild receives only one child ([#67](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/67)) ([e366710](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e36671005b7b6f3cdb021093f9aa19da15b2be33))
+
 ## [2.9.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.9.0...v2.9.1) (2026-04-14)
 
 ### Bug Fixes
