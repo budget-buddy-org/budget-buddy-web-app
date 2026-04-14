@@ -1,3 +1,9 @@
+## [2.10.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.9.2...v2.10.0) (2026-04-14)
+
+### Features
+
+* improve transaction filters, fix refresh flow, and improve a11y ([#68](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/68)) ([cc26373](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/cc26373563a14a40f62f49c7d98ab516a57589eb))
+
 ## [2.9.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.9.1...v2.9.2) (2026-04-14)
 
 ### Bug Fixes
