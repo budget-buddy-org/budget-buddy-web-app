@@ -3,8 +3,9 @@ import { Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useCategories } from '@/hooks/useCategories'
-import { useTransactions } from '@/hooks/useTransactions'
+import { useTransactions, useTransaction } from '@/hooks/useTransactions'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Pagination } from '@/components/ui/pagination'
 import { TransactionFilters } from '@/components/transactions/TransactionFilters'
@@ -25,6 +26,7 @@ function TransactionsPage() {
 
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const { data: editingTransaction, isLoading: isTransactionLoading } = useTransaction(search.edit!)
 
   useEffect(() => {
     if (search.add === 'true') {
@@ -36,6 +38,16 @@ function TransactionsPage() {
       })
     }
   }, [search.add, navigate])
+
+  const closeForm = () => {
+    setShowForm(false)
+    if (search.edit) {
+      navigate({
+        search: { edit: undefined } as any,
+        replace: true,
+      })
+    }
+  }
 
   const [filters, setFilters] = useState<{
     categoryId: string
@@ -95,9 +107,10 @@ function TransactionsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Transactions"
+        subtitle="View and manage your income and expenses."
         primaryAction={{
           label: 'Add',
           onClick: () => setShowForm((v) => !v),
@@ -131,19 +144,30 @@ function TransactionsPage() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent>
+      <Dialog open={showForm || !!search.edit} onOpenChange={(open) => !open && closeForm()}>
+        <DialogContent hideClose={!!search.edit}>
           <DialogHeader>
-            <DialogTitle>Add Transaction</DialogTitle>
+            <DialogTitle>{search.edit ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
             <DialogDescription>
-              Record a new expense or income to track your budget.
+              {search.edit
+                ? 'Update your transaction details including amount, date, and category.'
+                : 'Record a new expense or income to track your budget.'}
             </DialogDescription>
           </DialogHeader>
-          <TransactionForm
-            categories={categories}
-            onSuccess={() => setShowForm(false)}
-            onCancel={() => setShowForm(false)}
-          />
+          {isTransactionLoading && search.edit ? (
+            <div className="space-y-4 py-4 animate-fade-in">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (showForm || (search.edit && editingTransaction)) ? (
+            <TransactionForm
+              categories={categories}
+              transaction={search.edit ? editingTransaction : undefined}
+              onSuccess={closeForm}
+              onCancel={closeForm}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
 
@@ -153,6 +177,7 @@ function TransactionsPage() {
         isLoading={isLoading}
         isFiltering={isFiltered}
         onResetFilters={resetFilters}
+        onEdit={(id) => (navigate as any)({ search: (s: any) => ({ ...s, edit: id }) })}
       />
 
       {!isLoading && transactions.length > 0 && (

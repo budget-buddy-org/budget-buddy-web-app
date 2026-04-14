@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTransactions } from '@/hooks/useTransactions'
+import { useAllTransactions } from '@/hooks/useTransactions'
 import { formatCurrency, formatDate } from '@/lib/formatters'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -14,17 +14,28 @@ export const Route = createLazyFileRoute('/_app/')({
   component: DashboardPage,
 })
 
-const SUMMARY_LIMIT = 50
-
 function DashboardPage() {
   const navigate = useNavigate()
-  const { data, isLoading } = useTransactions({ size: SUMMARY_LIMIT, sort: 'desc' })
+  
+  // Calculate date range for the last 6 months to support the chart
+  const now = new Date()
+  const currentMonth = now.toISOString().slice(0, 7)
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  const startDate = sixMonthsAgo.toISOString().split('T')[0]
+
+  const { data, isLoading } = useAllTransactions({ 
+    start: startDate,
+    sort: 'desc' 
+  })
 
   if (isLoading) return <DashboardSkeleton />
 
   const transactions = data?.items ?? []
 
-  const totals = transactions.reduce(
+  // Current month summary
+  const currentMonthTransactions = transactions.filter((t) => t.date.startsWith(currentMonth))
+  
+  const totals = currentMonthTransactions.reduce(
     (acc, t) => {
       if (t.type === 'INCOME') acc.income += t.amount
       else acc.expense += t.amount
@@ -52,10 +63,10 @@ function DashboardPage() {
   const recent = transactions.slice(0, 8)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Dashboard"
-        subtitle={<span className="text-xs text-muted-foreground">Last {SUMMARY_LIMIT} items</span>}
+        subtitle="Current month summary"
         primaryAction={{
           label: 'Add',
           onClick: () => navigate({ to: '/transactions', search: { add: 'true' } as any }),
@@ -133,23 +144,29 @@ function DashboardPage() {
                 </p>
               </div>
               <Button asChild size="sm">
-                <Link to="/transactions" search={{ add: undefined }}>Add transaction</Link>
+                <Link to="/transactions" search={{ add: undefined, edit: undefined } as any}>Add transaction</Link>
               </Button>
             </div>
           ) : (
             <ul className="divide-y">
               {recent.map((t) => (
-                <li key={t.id} className="flex items-center justify-between px-6 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
-                  </div>
-                  <div className="ml-4 flex items-center gap-2">
-                    <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
-                      {t.type === 'INCOME' ? '+' : '-'}
-                      {formatCurrency(t.amount, t.currency)}
-                    </Badge>
-                  </div>
+                <li key={t.id}>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between px-6 py-3 transition-colors hover:bg-muted/30 cursor-pointer text-left focus-visible:outline-none"
+                    onClick={() => navigate({ to: '/transactions', search: { edit: t.id } as any })}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                    </div>
+                    <div className="ml-4 flex items-center gap-2">
+                      <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
+                        {t.type === 'INCOME' ? '+' : '-'}
+                        {formatCurrency(t.amount, t.currency)}
+                      </Badge>
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -162,7 +179,7 @@ function DashboardPage() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <Skeleton className="h-7 w-32" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Skeleton className="col-span-2 h-24 md:col-span-1" />

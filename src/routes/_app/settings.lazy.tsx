@@ -3,7 +3,6 @@ import { useThemeStore } from '@/stores/theme.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Separator } from '@/components/ui/separator'
 import { Moon, Sun, Monitor, Type, Palette, RefreshCw } from 'lucide-react'
 
 export const Route = createLazyFileRoute('/_app/settings')({
@@ -17,10 +16,8 @@ function SettingsPage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Settings"
-        subtitle={<span className="text-muted-foreground">Manage your application appearance and preferences.</span>}
+        subtitle="Manage your application appearance and preferences."
       />
-
-      <Separator />
 
       <div className="grid gap-6">
         <section className="space-y-3">

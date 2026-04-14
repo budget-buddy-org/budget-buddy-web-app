@@ -31,7 +31,7 @@ export function TransactionTypeToggle({
         className={cn(
           'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none',
           value === 'EXPENSE'
-            ? 'bg-background text-expense shadow-sm'
+            ? 'bg-background text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
         )}
       >

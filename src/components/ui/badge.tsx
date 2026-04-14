@@ -12,7 +12,7 @@ const badgeVariants = cva(
         destructive: 'border-transparent bg-destructive text-destructive-foreground',
         outline: 'text-foreground',
         income: 'border-transparent bg-income/15 text-income',
-        expense: 'border-transparent bg-expense/15 text-expense',
+        expense: 'border-transparent bg-muted text-foreground',
       },
     },
     defaultVariants: { variant: 'default' },

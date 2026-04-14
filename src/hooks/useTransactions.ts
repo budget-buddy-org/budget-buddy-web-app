@@ -32,15 +32,72 @@ export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: KEYS.list(filters),
     queryFn: async () => {
-      const { data, error } = await listTransactions({
-        query: {
-          size: 20,
-          sort: 'desc',
-          ...filters,
-        },
-      })
-      if (error) throw error
-      return data
+      let allItems: any[] = []
+      const page = filters.page ?? 0
+      const size = filters.size ?? 20
+      let total = 0
+      let fetchCount = 0
+
+      while (fetchCount < 10) {
+        const { data, error } = await listTransactions({
+          query: {
+            size,
+            sort: 'desc',
+            ...filters,
+            page: page + fetchCount,
+          },
+        })
+        if (error) throw error
+
+        if (fetchCount === 0) {
+          total = data.meta.total
+        }
+
+        const newItems = data.items
+        if (newItems.length === 0) break
+
+        // Always add the first two pages (initial requested + one more)
+        // OR if the day is split (last item of current batch has same date as first item of next page)
+        const isSplit = allItems.length > 0 && allItems[allItems.length - 1].date === newItems[0].date
+
+        if (fetchCount < 2 || isSplit) {
+          allItems = [...allItems, ...newItems]
+          fetchCount++
+          if (allItems.length >= total) break
+        } else {
+          break
+        }
+      }
+
+      return { items: allItems, meta: { total } }
+    },
+  })
+}
+
+export function useAllTransactions(filters: TransactionFilters = {}) {
+  return useQuery({
+    queryKey: [...KEYS.list(filters), 'all'],
+    queryFn: async () => {
+      let allItems: any[] = []
+      let page = 0
+      let total = 0
+      const size = 200
+
+      do {
+        const { data, error } = await listTransactions({
+          query: {
+            ...filters,
+            size,
+            page,
+          },
+        })
+        if (error) throw error
+        allItems = [...allItems, ...data.items]
+        total = data.meta.total
+        page++
+      } while (allItems.length < total && page < 10)
+
+      return { items: allItems, meta: { total } }
     },
   })
 }

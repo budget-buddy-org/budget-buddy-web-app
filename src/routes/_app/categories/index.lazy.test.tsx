@@ -43,7 +43,7 @@ vi.mock('@/components/ui/card', () => ({
 }))
 vi.mock('@/components/ui/input', () => ({
   Input: ({ value, onChange, placeholder, className, autoFocus, maxLength }: any) =>
-    React.createElement('input', { value, onChange, placeholder, className, autoFocus, maxLength }),
+    React.createElement('input', { value, onChange, placeholder, className, 'data-autofocus': autoFocus, maxLength }),
 }))
 vi.mock('@/components/ui/skeleton', () => ({
   Skeleton: ({ className }: any) => React.createElement('div', { 'data-testid': 'skeleton', className }),
@@ -259,5 +259,26 @@ describe('CategoriesPage', () => {
     await user.click(confirmBtn)
 
     expect(mockDeleteCategory.mutate).toHaveBeenCalledWith('cat-1', expect.any(Object))
+  })
+
+  it('handles autoFocus correctly in dialogs', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: {
+        items: [{ id: 'cat-1', name: 'Groceries' }],
+        meta: { total: 1, size: 200, page: 0 },
+      },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    // Add dialog
+    await user.click(screen.getByRole('button', { name: /Add/i }))
+    expect(screen.getByPlaceholderText(/New category name/i)).toHaveAttribute('data-autofocus', 'true')
+    await user.click(screen.getByRole('button', { name: /Cancel/i }))
+
+    // Edit dialog
+    await user.click(screen.getByText('Groceries'))
+    expect(screen.getByPlaceholderText(/Category name/i)).not.toHaveAttribute('data-autofocus')
   })
 })

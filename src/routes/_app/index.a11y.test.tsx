@@ -23,8 +23,8 @@ vi.mock('recharts', () => ({
   Cell: () => null,
 }))
 
-vi.mock('@/hooks/useTransactions', () => ({
-  useTransactions: () => ({
+vi.mock('@/hooks/useTransactions', () => {
+  const mockData = {
     data: {
       items: [
         {
@@ -48,8 +48,12 @@ vi.mock('@/hooks/useTransactions', () => ({
       ],
     },
     isLoading: false,
-  }),
-}))
+  }
+  return {
+    useTransactions: () => mockData,
+    useAllTransactions: () => mockData,
+  }
+})
 
 describe('DashboardPage a11y', () => {
   it('should have no accessibility violations', async () => {
