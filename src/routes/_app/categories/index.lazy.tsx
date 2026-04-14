@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { Check, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
+import { Check, Search, Trash2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Pagination } from '@/components/ui/pagination'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmationDialog } from '@/components/ConfirmationDialog'
+import { useDebounce } from '@/hooks/use-debounce'
 
 export const Route = createLazyFileRoute('/_app/categories/')({
   component: CategoriesPage,
@@ -20,9 +21,15 @@ const PAGE_SIZE = 20
 
 function CategoriesPage() {
   const [page, setPage] = useState(0)
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebounce(searchTerm)
   const size = PAGE_SIZE
-  const { data, isLoading } = useCategories(size, page)
+  const { data, isLoading } = useCategories(size, page, debouncedSearch || undefined)
   const total = data?.meta?.total ?? 0
+
+  useEffect(() => {
+    setPage(0)
+  }, [debouncedSearch])
   const { toast } = useToast()
   const createCategory = useCreateCategory()
   const deleteCategory = useDeleteCategory()
@@ -115,7 +122,12 @@ function CategoriesPage() {
     })
   }
 
-  const categories = data?.items ?? []
+  const allCategories = data?.items ?? []
+  const categories = debouncedSearch
+    ? allCategories.filter((c) =>
+        c.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      )
+    : allCategories
 
   return (
     <div className="space-y-4">
@@ -126,6 +138,18 @@ function CategoriesPage() {
           onClick: () => setShowForm((v) => !v),
         }}
       />
+
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search categories…"
+          className="pl-9 text-base"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          autoComplete="off"
+          aria-label="Search categories"
+        />
+      </div>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent>

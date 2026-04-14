@@ -14,18 +14,24 @@ import type {
 
 const KEYS = {
   all: ['categories'] as const,
-  list: (size: number, page: number) => ['categories', 'list', size, page] as const,
+  list: (size: number, page: number, search?: string) => ['categories', 'list', size, page, search] as const,
   detail: (id: string) => ['categories', id] as const,
 }
 
-export function useCategories(size = 200, page = 0) {
+export function useCategories(size = 200, page = 0, search?: string) {
   return useQuery({
-    queryKey: KEYS.list(size, page),
+    queryKey: KEYS.list(size, page, search),
     queryFn: async () => {
       const { data, error } = await listCategories({
-        query: { size, page },
+        query: { size, page, search } as any,
       })
       if (error) throw error
+      
+      // Sort categories by name ASC
+      if (data?.items) {
+        data.items.sort((a, b) => a.name.localeCompare(b.name))
+      }
+      
       return data
     },
   })

@@ -12,7 +12,7 @@ import type { Transaction, TransactionWrite } from '@budget-buddy-org/budget-bud
 import { Check, X, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
-const CURRENCIES = ['EUR', 'USD', 'GBP']
+const CURRENCIES = ['EUR', 'GBP', 'USD']
 
 interface TransactionFormProps {
   categories: { id: string; name: string }[]

@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { LayoutDashboard, Tag, ArrowLeftRight, Settings } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { useState } from 'react'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,6 +11,17 @@ const NAV_ITEMS = [
 ] as const
 
 export function MobileNav() {
+  const [lastTap, setLastTap] = useState<{ [key: string]: number }>({})
+
+  const handleTap = (to: string) => {
+    const now = Date.now()
+    const last = lastTap[to] || 0
+    if (now - last < 300) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    setLastTap((prev) => ({ ...prev, [to]: now }))
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="flex h-[50px] items-center">
@@ -20,6 +32,7 @@ export function MobileNav() {
             className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             activeProps={{ className: 'text-primary font-semibold' }}
             activeOptions={{ exact: to === '/' }}
+            onClick={() => handleTap(to)}
           >
             <Icon className="h-5 w-5" />
             <span className="text-[0.625rem]">{label}</span>

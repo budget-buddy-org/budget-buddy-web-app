@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -63,6 +63,7 @@ vi.mock('lucide-react', () => ({
   Filter: () => React.createElement('span', null, 'filter'),
   X: () => React.createElement('span', null, 'x'),
   Check: () => React.createElement('span', null, 'check'),
+  Search: () => React.createElement('span', null, 'search'),
 }))
 
 const { useCategories } = await import('@/hooks/useCategories')
@@ -206,6 +207,34 @@ describe('CategoriesPage', () => {
     expect(mockUpdateCategory.mutate).not.toHaveBeenCalled()
     // The category name button should be visible again
     expect(screen.getByRole('button', { name: 'Groceries' })).toBeInTheDocument()
+  })
+
+  it('filters categories when searching', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: {
+        items: [
+          { id: 'cat-1', name: 'Groceries' },
+          { id: 'cat-2', name: 'Transport' },
+        ],
+        meta: { total: 2, size: 200, page: 0 },
+      },
+      isLoading: false,
+    } as any)
+    renderPage()
+    const user = userEvent.setup()
+
+    const searchInput = screen.getByPlaceholderText(/search categories/i)
+    await user.type(searchInput, 'Groc')
+
+    expect(searchInput).toHaveValue('Groc')
+    
+    await waitFor(() => {
+      expect(useCategories).toHaveBeenCalledWith(
+        expect.any(Number),
+        expect.any(Number),
+        'Groc'
+      )
+    })
   })
 
   it('calls deleteCategory.mutate when the delete button is clicked and confirmed', async () => {

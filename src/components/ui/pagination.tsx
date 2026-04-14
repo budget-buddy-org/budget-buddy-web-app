@@ -22,7 +22,7 @@ export function Pagination({
   const canNext = (page + 1) * size < total
 
   return (
-    <div className={cn('flex items-center justify-between px-2 py-4', className)}>
+    <div className={cn('flex items-center justify-between px-2 pt-4 pb-20 md:pb-4', className)}>
       <div className="flex-1 text-sm text-muted-foreground">
         Page {page + 1} of {totalPages}
         <span className="ml-2 hidden sm:inline">({total} total items)</span>
