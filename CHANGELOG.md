@@ -1,3 +1,9 @@
+## [3.2.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.1.1...v3.2.0) (2026-04-15)
+
+### Features
+
+* optimize components, improve mobile UI, and refine auth logic ([#73](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/73)) ([3838cc2](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/3838cc2c1013d7a053c3c767f8ce0fc69afa9be0))
+
 ## [3.1.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.1.0...v3.1.1) (2026-04-15)
 
 ### Bug Fixes
