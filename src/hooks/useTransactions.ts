@@ -11,7 +11,14 @@ import {
   listTransactions,
   updateTransaction,
 } from '@budget-buddy-org/budget-buddy-contracts';
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 export interface TransactionFilters {
   page?: number;
@@ -26,6 +33,7 @@ export interface TransactionFilters {
 const KEYS = {
   all: ['transactions'] as const,
   list: (filters: TransactionFilters) => ['transactions', 'list', filters] as const,
+  infinite: (filters: TransactionFilters) => ['transactions', 'infinite', filters] as const,
   detail: (id: string) => ['transactions', id] as const,
 };
 
@@ -80,6 +88,44 @@ export const transactionsQueryOptions = (filters: TransactionFilters = {}) =>
 
 export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery(transactionsQueryOptions(filters));
+}
+
+export const infiniteTransactionsQueryOptions = (filters: TransactionFilters = {}) => {
+  return infiniteQueryOptions({
+    queryKey: KEYS.infinite(filters),
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const apiFilters = { ...filters };
+      delete apiFilters.search;
+
+      const { data, error } = await listTransactions({
+        query: {
+          ...apiFilters,
+          page: pageParam,
+          size: apiFilters.size ?? 20,
+          sort: apiFilters.sort ?? 'desc',
+        },
+      });
+      if (error) throw error;
+      return data;
+    },
+    getNextPageParam: (lastPage) => {
+      const { page, size, total } = lastPage.meta;
+      if ((page + 1) * size >= total) return undefined;
+      return page + 1;
+    },
+  });
+};
+
+export function useInfiniteTransactions(filters: TransactionFilters = {}) {
+  return useInfiniteQuery(infiniteTransactionsQueryOptions(filters));
+}
+
+export function usePrefetchTransactions() {
+  const qc = useQueryClient();
+  return (filters: TransactionFilters = {}) => {
+    qc.prefetchQuery(transactionsQueryOptions(filters));
+  };
 }
 
 export const allTransactionsQueryOptions = (filters: TransactionFilters = {}) =>

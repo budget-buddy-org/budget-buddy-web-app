@@ -21,13 +21,17 @@ const AmountInput = React.forwardRef<HTMLInputElement, AmountInputProps>(
 
       // Convert to a number (e.g. 1299) then back to decimal string (e.g. 12.99)
       const numericValue = Number.parseInt(digits, 10);
+      if (numericValue === 0) {
+        onChange('');
+        return;
+      }
       const decimalValue = (numericValue / 100).toFixed(2);
 
       onChange(decimalValue);
     };
 
     // Ensure the display value is always correctly formatted
-    const displayValue = value ? Number.parseFloat(value).toFixed(2) : '';
+    const displayValue = value ? Number.parseFloat(value).toFixed(2) : '0.00';
 
     return (
       <Input

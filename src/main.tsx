@@ -6,10 +6,20 @@ import { createRoot } from 'react-dom/client';
 import { RouteLoader } from './components/layout/RouteLoader';
 import { refreshAuth } from './lib/api';
 import { loadConfig } from './lib/config';
+import { logError } from './lib/error-logger';
 import { queryClient } from './lib/query-client';
 import { routeTree } from './routeTree.gen';
 import { useAuthStore } from './stores/auth.store';
 import './index.css';
+
+// Global error monitoring
+window.addEventListener('error', (event) => {
+  logError(event.error, { source: 'GlobalError' });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  logError(event.reason, { source: 'UnhandledRejection' });
+});
 
 const router = createRouter({
   routeTree,

@@ -1,59 +1,56 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { AmountInput } from './amount-input';
 
 describe('AmountInput', () => {
-  it('should format initial value', () => {
-    const onChange = vi.fn();
-    render(<AmountInput value="12.99" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
-    expect(input.value).toBe('12.99');
+  it('formats initial value correctly', () => {
+    render(<AmountInput value="12.34" onChange={vi.fn()} />);
+    expect(screen.getByRole('textbox')).toHaveValue('12.34');
   });
 
-  it('should implement unit-shifting logic: 1 -> 0.01', () => {
+  it('handles "1" -> "0.01" shift', async () => {
     const onChange = vi.fn();
     render(<AmountInput value="" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
 
-    fireEvent.change(input, { target: { value: '1' } });
-    expect(onChange).toHaveBeenCalledWith('0.01');
+    await userEvent.type(input, '1');
+    expect(onChange).toHaveBeenLastCalledWith('0.01');
   });
 
-  it('should implement unit-shifting logic: 12 -> 0.12', () => {
+  it('handles "10" -> "0.10" shift', async () => {
     const onChange = vi.fn();
     render(<AmountInput value="0.01" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
 
-    // Adding '2' to '0.01' -> '0.012' -> digits '0012' -> '12' -> '0.12'
-    fireEvent.change(input, { target: { value: '0.012' } });
-    expect(onChange).toHaveBeenCalledWith('0.12');
+    await userEvent.type(input, '0');
+    expect(onChange).toHaveBeenLastCalledWith('0.10');
   });
 
-  it('should implement unit-shifting logic: 120 -> 1.20', () => {
+  it('handles "100" -> "1.00" shift', async () => {
     const onChange = vi.fn();
-    render(<AmountInput value="0.12" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    render(<AmountInput value="0.10" onChange={onChange} />);
+    const input = screen.getByRole('textbox');
 
-    fireEvent.change(input, { target: { value: '0.120' } });
-    expect(onChange).toHaveBeenCalledWith('1.20');
+    await userEvent.type(input, '0');
+    expect(onChange).toHaveBeenLastCalledWith('1.00');
   });
 
-  it('should handle backspace: 1.20 -> 0.12', () => {
+  it('handles backspace correctly', async () => {
     const onChange = vi.fn();
-    render(<AmountInput value="1.20" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    render(<AmountInput value="1.00" onChange={onChange} />);
+    const input = screen.getByRole('textbox');
 
-    // Removing '0' from '1.20' -> '1.2' -> digits '12' -> '0.12'
-    fireEvent.change(input, { target: { value: '1.2' } });
-    expect(onChange).toHaveBeenCalledWith('0.12');
+    await userEvent.type(input, '{backspace}');
+    expect(onChange).toHaveBeenLastCalledWith('0.10');
   });
 
-  it('should handle empty input', () => {
+  it('clears value when all digits are removed', async () => {
     const onChange = vi.fn();
     render(<AmountInput value="0.01" onChange={onChange} />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
 
-    fireEvent.change(input, { target: { value: '' } });
-    expect(onChange).toHaveBeenCalledWith('');
+    await userEvent.type(input, '{backspace}');
+    expect(onChange).toHaveBeenLastCalledWith('');
   });
 });
