@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type ScrollDirection = 'up' | 'down' | null;
 
 export function useScrollDirection() {
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
-  const [prevOffset, setPrevOffset] = useState(0);
+  const prevOffsetRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentOffset = window.scrollY;
+      const prevOffset = prevOffsetRef.current;
 
       // Minimum threshold to prevent jitter
       if (Math.abs(currentOffset - prevOffset) < 10) {
@@ -21,12 +22,12 @@ export function useScrollDirection() {
         setScrollDirection('up');
       }
 
-      setPrevOffset(currentOffset);
+      prevOffsetRef.current = currentOffset;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevOffset]);
+  }, []);
 
   return scrollDirection;
 }

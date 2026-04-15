@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: () => {
-    if (useAuthStore.getState().isAuthenticated()) {
+    if (useAuthStore.getState().accessToken) {
       throw redirect({ to: '/' });
     }
   },

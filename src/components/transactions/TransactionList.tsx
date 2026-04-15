@@ -23,7 +23,10 @@ export function TransactionList({
   onResetFilters,
   onEdit,
 }: TransactionListProps) {
-  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+  const categoryMap = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
+    [categories],
+  );
 
   const groupedTransactions = useMemo(() => {
     const groups: { date: string; items: Transaction[] }[] = [];

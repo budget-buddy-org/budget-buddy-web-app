@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ArrowDownRight, ArrowUpRight, PlusCircle, Wallet } from 'lucide-react';
+import { useMemo } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { CardDescription, SummaryCard } from '@/components/dashboard/SummaryCard';
@@ -9,54 +10,73 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAllTransactions } from '@/hooks/useTransactions';
 import { formatCurrency, formatDate } from '@/lib/formatters';
+import { useThemeStore } from '@/stores/theme.store';
 
 export function DashboardPage() {
   const navigate = useNavigate();
 
+  // Subscribe to theme so chart colors update when theme changes
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme());
+
   // Calculate date range for the last 6 months to support the chart
-  const now = new Date();
-  const currentMonth = now.toISOString().slice(0, 7);
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const startDate = sixMonthsAgo.toISOString().split('T')[0];
+  const { startDate, currentMonth } = useMemo(() => {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    return {
+      currentMonth: now.toISOString().slice(0, 7),
+      startDate: sixMonthsAgo.toISOString().split('T')[0] ?? '',
+    };
+  }, []);
 
   const { data, isLoading } = useAllTransactions({
     start: startDate,
     sort: 'desc',
   });
 
+  const { totals, balance, chartData, recent, currency } = useMemo(() => {
+    const transactions = data?.items ?? [];
+    const currentMonthTransactions = transactions.filter((t) => t.date.startsWith(currentMonth));
+
+    const totals = currentMonthTransactions.reduce(
+      (acc, t) => {
+        if (t.type === 'INCOME') acc.income += t.amount;
+        else acc.expense += t.amount;
+        return acc;
+      },
+      { income: 0, expense: 0 },
+    );
+
+    const chartData = Object.entries(
+      transactions.reduce<Record<string, { income: number; expense: number }>>((acc, t) => {
+        const month = t.date.slice(0, 7); // YYYY-MM
+        if (!acc[month]) acc[month] = { income: 0, expense: 0 };
+        if (t.type === 'INCOME') acc[month].income += t.amount / 100;
+        else acc[month].expense += t.amount / 100;
+        return acc;
+      }, {}),
+    )
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([month, values]) => ({ month, ...values }));
+
+    return {
+      totals,
+      balance: totals.income - totals.expense,
+      chartData,
+      recent: transactions.slice(0, 8),
+      currency: transactions[0]?.currency ?? 'EUR',
+    };
+  }, [data, currentMonth]);
+
+  // Read chart colors from CSS variables so they respond to theme/dark-mode changes
+  const incomeColor =
+    getComputedStyle(document.documentElement).getPropertyValue('--color-income').trim() ||
+    'hsl(142 71% 45%)';
+  const expenseColor =
+    getComputedStyle(document.documentElement).getPropertyValue('--color-expense').trim() ||
+    (resolvedTheme === 'dark' ? 'hsl(0 62% 50%)' : 'hsl(0 84% 60%)');
+
   if (isLoading) return <DashboardSkeleton />;
-
-  const transactions = data?.items ?? [];
-
-  // Current month summary
-  const currentMonthTransactions = transactions.filter((t) => t.date.startsWith(currentMonth));
-
-  const totals = currentMonthTransactions.reduce(
-    (acc, t) => {
-      if (t.type === 'INCOME') acc.income += t.amount;
-      else acc.expense += t.amount;
-      return acc;
-    },
-    { income: 0, expense: 0 },
-  );
-
-  const balance = totals.income - totals.expense;
-
-  // Group transactions by month for chart
-  const chartData = Object.entries(
-    transactions.reduce<Record<string, { income: number; expense: number }>>((acc, t) => {
-      const month = t.date.slice(0, 7); // YYYY-MM
-      if (!acc[month]) acc[month] = { income: 0, expense: 0 };
-      if (t.type === 'INCOME') acc[month].income += t.amount / 100;
-      else acc[month].expense += t.amount / 100;
-      return acc;
-    }, {}),
-  )
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6)
-    .map(([month, values]) => ({ month, ...values }));
-
-  const recent = transactions.slice(0, 8);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -106,16 +126,16 @@ export function DashboardPage() {
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={40} />
                 <Tooltip
-                  formatter={(v) => (typeof v === 'number' ? `€${v.toFixed(2)}` : v)}
+                  formatter={(v, name) => [
+                    typeof v === 'number'
+                      ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v)
+                      : v,
+                    name,
+                  ]}
                   contentStyle={{ fontSize: 12 }}
                 />
-                <Bar dataKey="income" name="Income" fill="hsl(142 71% 45%)" radius={[4, 4, 0, 0]} />
-                <Bar
-                  dataKey="expense"
-                  name="Expenses"
-                  fill="hsl(0 84% 60%)"
-                  radius={[4, 4, 0, 0]}
-                />
+                <Bar dataKey="income" name="Income" fill={incomeColor} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" name="Expenses" fill={expenseColor} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

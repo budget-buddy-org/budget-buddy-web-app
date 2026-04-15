@@ -27,7 +27,7 @@ export function TransactionTypeToggle({
         aria-pressed={value === 'EXPENSE'}
         onClick={() => onChange('EXPENSE')}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none',
+          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'EXPENSE'
             ? 'bg-background text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
@@ -41,7 +41,7 @@ export function TransactionTypeToggle({
         aria-pressed={value === 'INCOME'}
         onClick={() => onChange('INCOME')}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none',
+          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'INCOME'
             ? 'bg-background text-income shadow-sm'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',

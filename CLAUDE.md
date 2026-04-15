@@ -12,12 +12,13 @@ pnpm install
 cp .env.example .env.local   # set VITE_API_URL if needed
 
 pnpm dev           # Vite dev server at http://localhost:5173
-pnpm build         # type-check + production build
+pnpm build         # production build + tsc -b type check
+pnpm preview       # preview the production build locally
 pnpm lint          # Biome lint
 pnpm format        # Biome auto-format (writes files)
 pnpm test          # Vitest run once
 pnpm test:watch    # Vitest watch mode
-pnpm type-check    # tsc --noEmit
+pnpm type-check    # tsc --noEmit (tsconfig.app.json)
 ```
 
 Run a single test file:
@@ -45,6 +46,8 @@ Child routes are nested under these layouts by naming convention (`_app/`, `_aut
 
 **Code splitting:** Page components live in `.lazy.tsx` siblings (e.g. `_app/index.lazy.tsx`) using `createLazyFileRoute`. The plain `.tsx` file keeps only the `createFileRoute` stub (for loaders/beforeLoad). Actual page implementations are moved to `src/components/{page}/` to resolve React Fast Refresh warnings and keep route files clean. The Vite plugin handles the dynamic import automatically. Add new pages with the same split — never put a component in the route definition file.
 
+**Test colocation in routes:** The router plugin is configured with `routeFileIgnorePattern: '\\.test\\.tsx?$'`, so test files (`*.test.tsx`) placed inside `src/routes/` are excluded from the generated route tree. This allows tests to live next to the route file they test.
+
 ### API Client
 
 `src/lib/api.ts` configures the OpenAPI Fetch-based client from `@budget-buddy-org/budget-buddy-contracts`. It:
@@ -71,6 +74,12 @@ Two Zustand stores:
 - `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`), `primaryHue` (0-360), and `fontSize` (12-24) to `localStorage` (`budget-buddy-theme`). Applies CSS variables to `:root` on rehydration.
 
 `useTabVisibilityRefresh` (mounted in `_app.tsx`) proactively refreshes the auth token on tab focus when the refresh token is older than 6 days, preventing expiry mid-session.
+
+### Version Updates
+
+`VersionCheck` (mounted in `RootComponent`, renders null) polls `/version.json` every 5 minutes and on tab focus. When the fetched version differs from `__APP_VERSION__` (a global injected at build time from `package.json`), it shows a persistent toast prompting a reload.
+
+The build emits `/dist/version.json` via a Vite plugin in `vite.config.ts`. In production, the running app compares its baked-in version against the freshly served `version.json`, enabling zero-downtime update notifications.
 
 ### Runtime Configuration
 

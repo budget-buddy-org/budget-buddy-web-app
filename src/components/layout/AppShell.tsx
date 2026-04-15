@@ -4,7 +4,7 @@ import { MobileNav, SidebarNav } from './MobileNav';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <Header />
       <div className="flex flex-1">
         {/* Sidebar — visible on md+ */}

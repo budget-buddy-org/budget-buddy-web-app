@@ -7,7 +7,6 @@ export function CategoryRow({
   onDelete,
   isDeleting,
 }: {
-  id: string;
   name: string;
   onStartEdit: () => void;
   onDelete: () => void;

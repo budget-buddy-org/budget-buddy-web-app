@@ -119,7 +119,7 @@ export function TransactionForm({
           description: isEditing
             ? 'Your changes have been saved.'
             : 'The transaction has been recorded successfully.',
-          variant: 'success',
+          variant: 'default',
         });
         onSuccess();
       },
@@ -146,7 +146,7 @@ export function TransactionForm({
         toast({
           title: 'Transaction deleted',
           description: 'The transaction has been removed.',
-          variant: 'success',
+          variant: 'default',
         });
         if (onDeleteSuccess) {
           onDeleteSuccess();

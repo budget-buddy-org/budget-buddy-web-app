@@ -33,6 +33,8 @@ export function TransactionFilters({
   const [prevSearch, setPrevSearch] = useState(filters.search);
   const debouncedSearch = useDebounce(searchTerm);
 
+  // Sync local input when the parent resets filters externally (e.g. "Reset All" from parent).
+  // This is the React-recommended "setState during render" pattern for derived state.
   if (filters.search !== prevSearch) {
     setSearchTerm(filters.search);
     setPrevSearch(filters.search);

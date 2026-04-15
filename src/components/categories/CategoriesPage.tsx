@@ -26,13 +26,14 @@ import {
 } from '@/hooks/useCategories';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE = 20;
 
 export function CategoriesPage() {
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm);
-  const size = PAGE_SIZE;
+  // Fetch a larger set when searching (client-side filter); use page size otherwise.
+  const size = debouncedSearch ? 200 : PAGE_SIZE;
   const { data, isLoading } = useCategories(size, page, debouncedSearch || undefined);
   const total = data?.meta?.total ?? 0;
 
@@ -70,7 +71,7 @@ export function CategoriesPage() {
           toast({
             title: 'Category created',
             description: 'Your new category has been added successfully.',
-            variant: 'success',
+            variant: 'default',
           });
         },
         onError: (error) => {
@@ -100,7 +101,7 @@ export function CategoriesPage() {
           toast({
             title: 'Category updated',
             description: 'The category name has been changed.',
-            variant: 'success',
+            variant: 'default',
           });
         },
         onError: (error) => {
@@ -125,7 +126,7 @@ export function CategoriesPage() {
         toast({
           title: 'Category deleted',
           description: 'The category has been removed.',
-          variant: 'success',
+          variant: 'default',
         });
       },
       onError: () => {
@@ -292,7 +293,6 @@ export function CategoriesPage() {
               {categories.map((c) => (
                 <CategoryRow
                   key={c.id}
-                  id={c.id}
                   name={c.name}
                   onStartEdit={() => {
                     setEditingCategory(c);

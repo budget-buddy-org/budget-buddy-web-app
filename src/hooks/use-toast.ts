@@ -84,26 +84,10 @@ export const reducer = (state: State, action: Action): State => {
 
     case actionTypes.DISMISS_TOAST: {
       const { toastId } = action;
-
-      // ! Side effects ! - This should be moved out of the reducer.
-      // In React 18, reducers should be pure.
-      if (toastId) {
-        addToRemoveQueue(toastId);
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
-        });
-      }
-
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t,
+          t.id === toastId || toastId === undefined ? { ...t, open: false } : t,
         ),
       };
     }
@@ -127,6 +111,16 @@ let memoryState: State = { toasts: [] };
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
+
+  // Schedule removal side effects here, outside the pure reducer.
+  if (action.type === actionTypes.DISMISS_TOAST) {
+    if (action.toastId) {
+      addToRemoveQueue(action.toastId);
+    } else {
+      for (const t of memoryState.toasts) addToRemoveQueue(t.id);
+    }
+  }
+
   listeners.forEach((listener) => {
     listener(memoryState);
   });

@@ -35,22 +35,31 @@ export function refreshAuth() {
 
   refreshPromise = (async () => {
     try {
-      const { data } = await refreshAction({
+      const { data, response } = await refreshAction({
         body: { refresh_token: refreshTokenValue },
         // @ts-expect-error Internal refresh flag
         _isRefresh: true,
       });
 
       if (!data) {
-        throw new Error('Refresh failed');
+        // Clear auth unless the server returned a 5xx (transient server error).
+        // A 4xx means the token was explicitly rejected; no response at all is an
+        // unexpected state — both warrant clearing the session.
+        const status = response?.status;
+        const isTransientServerError = status !== undefined && status >= 500;
+        if (!isTransientServerError) {
+          useAuthStore.getState().clearAuth();
+        }
+        flushQueue(new Error('Refresh failed'), null);
+        return null;
       }
 
       useAuthStore.getState().setAuth(data.access_token, data.refresh_token, data.expires_in);
       flushQueue(null, data.access_token);
       return data.access_token;
     } catch (refreshError) {
+      // Network-level error (no response): do not clear auth, allow retry on next request.
       flushQueue(refreshError, null);
-      useAuthStore.getState().clearAuth();
       return null;
     } finally {
       refreshPromise = null;

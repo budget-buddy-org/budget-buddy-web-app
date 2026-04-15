@@ -27,20 +27,18 @@ export const categoriesQueryOptions = (size = 200, page = 0, search?: string) =>
         query: { size, page },
       });
       if (error) throw error;
+      if (!data) return data;
 
-      // Client-side search if API doesn't support it
-      if (search && data?.items) {
+      let items = [...data.items].sort((a, b) => a.name.localeCompare(b.name));
+      let total = data.meta.total;
+
+      if (search) {
         const term = search.toLowerCase();
-        data.items = data.items.filter((item) => item.name.toLowerCase().includes(term));
-        data.meta.total = data.items.length;
+        items = items.filter((item) => item.name.toLowerCase().includes(term));
+        total = items.length;
       }
 
-      // Sort categories by name ASC
-      if (data?.items) {
-        data.items.sort((a, b) => a.name.localeCompare(b.name));
-      }
-
-      return data;
+      return { ...data, items, meta: { ...data.meta, total } };
     },
   });
 
