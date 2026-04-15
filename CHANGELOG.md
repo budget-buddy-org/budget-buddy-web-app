@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.0.0...v3.1.0) (2026-04-15)
+
+### Features
+
+* trigger release ([8377954](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/83779546eb1e5d8d85e5e0e586ca572339bb5f15))
+
 ## [3.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v2.12.0...v3.0.0) (2026-04-14)
 
 ### ⚠ BREAKING CHANGES
