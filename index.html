@@ -13,39 +13,10 @@
     <meta name="theme-color" content="#2563eb" />
     <link rel="manifest" href="/manifest.json" />
     <title>Budget Buddy</title>
-    <script>
-      (function() {
-        try {
-          var persisted = JSON.parse(localStorage.getItem('budget-buddy-theme'));
-          if (persisted && persisted.state) {
-            var theme = persisted.state.theme;
-            var primaryHue = persisted.state.primaryHue;
-            var fontSize = persisted.state.fontSize;
-
-            if (primaryHue) {
-              document.documentElement.style.setProperty('--primary-hue', primaryHue);
-            }
-            if (fontSize) {
-              document.documentElement.style.setProperty('--font-size-base', fontSize + 'px');
-            }
-
-            var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            // In 2026, setting colorScheme directly is best practice for early paint
-            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-            if (isDark) {
-              document.documentElement.classList.add('dark');
-            }
-          }
-        } catch (e) {
-          console.error('Failed to apply theme from localStorage:', e);
-        }
-      })();
-    </script>
     <style>
       :root {
         --primary-hue: 240;
-        /* Standard in 2026 for letting native CSS functions work */
-        color-scheme: light dark; 
+        color-scheme: light dark;
         
         --background: light-dark(#ffffff, #09090b);
         --foreground: light-dark(#09090b, #fafafa);
