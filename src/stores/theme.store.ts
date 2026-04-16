@@ -20,9 +20,10 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia(SYSTEM_THEME_MEDIA).matches ? 'dark' : 'light';
 }
 
-function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
+export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
   const resolved = theme === 'system' ? getSystemTheme() : theme;
   document.documentElement.classList.toggle('dark', resolved === 'dark');
+  document.documentElement.style.colorScheme = theme === 'system' ? 'light dark' : theme;
   document.documentElement.style.setProperty('--primary-hue', primaryHue.toString());
   document.documentElement.style.setProperty('--font-size-base', `${fontSize}px`);
 }
