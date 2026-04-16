@@ -23,8 +23,7 @@ function getSystemTheme(): 'light' | 'dark' {
 export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
   const resolved = theme === 'system' ? getSystemTheme() : theme;
   document.documentElement.classList.toggle('dark', resolved === 'dark');
-  // In 2026, setting colorScheme directly is best practice and required for light-dark()
-  document.documentElement.style.colorScheme = resolved;
+  document.documentElement.style.colorScheme = theme === 'system' ? 'light dark' : theme;
   document.documentElement.style.setProperty('--primary-hue', primaryHue.toString());
   document.documentElement.style.setProperty('--font-size-base', `${fontSize}px`);
 }
