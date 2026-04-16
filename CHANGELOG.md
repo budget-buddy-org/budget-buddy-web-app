@@ -1,3 +1,9 @@
+## [3.5.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.0...v3.5.1) (2026-04-16)
+
+### Bug Fixes
+
+* ensure theme settings persist on page reload ([#75](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/75)) ([28d22a7](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/28d22a7a973b4050342870a8fad5f21f8f17a69f))
+
 ## [3.5.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.4.0...v3.5.0) (2026-04-15)
 
 ### Features
