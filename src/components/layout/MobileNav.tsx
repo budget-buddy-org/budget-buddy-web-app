@@ -27,7 +27,7 @@ export function MobileNav() {
   return (
     <div
       className="fixed left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 md:hidden"
-      style={{ bottom: 'env(safe-area-inset-bottom)' }}
+      style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
     >
       <nav
         className={cn(
