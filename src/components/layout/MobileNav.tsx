@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowLeftRight, LayoutDashboard, Settings, Tag } from 'lucide-react';
+import { ArrowLeftRight, LayoutDashboard, Plus, Settings, Tag } from 'lucide-react';
 import { useCallback, useRef } from 'react';
+import { useFABContext } from '@/contexts/fab-context';
 import { cn } from '@/lib/cn';
+import { useThemeStore } from '@/stores/theme.store';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,6 +13,8 @@ const NAV_ITEMS = [
 ] as const;
 
 export function MobileNav() {
+  const { fab } = useFABContext();
+  const { showNavLabels } = useThemeStore();
   const lastTapRef = useRef<{ [key: string]: number }>({});
 
   const handleTap = useCallback((to: string, timeStamp: number) => {
@@ -22,23 +26,43 @@ export function MobileNav() {
   }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
-      <div className="flex h-[50px] items-center">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            activeProps={{ className: 'text-primary font-semibold' }}
-            activeOptions={{ exact: to === '/' }}
-            onClick={(e) => handleTap(to, e.timeStamp)}
-          >
-            <Icon className="h-4 w-4" />
-            <span className="text-xs">{label}</span>
-          </Link>
-        ))}
-      </div>
-    </nav>
+    <>
+      {fab && (
+        <button
+          type="button"
+          onClick={fab.onClick}
+          aria-label={fab.label}
+          className="fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/25 transition-colors hover:bg-primary/90 active:scale-95 md:hidden"
+          style={{ bottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}
+        >
+          {fab.icon ?? <Plus className="h-6 w-6" />}
+        </button>
+      )}
+
+      <nav
+        className="fixed left-1/2 z-50 -translate-x-1/2 md:hidden"
+        style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-center gap-0.5 rounded-full border border-border/40 bg-background/80 px-1.5 py-1.5 shadow-xl shadow-black/10 backdrop-blur-2xl dark:bg-background/70 dark:shadow-black/40">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <Link
+              key={to}
+              to={to}
+              className={cn(
+                'flex flex-col items-center justify-center gap-0.5 rounded-full px-3 text-muted-foreground transition-colors hover:text-foreground',
+                showNavLabels ? 'h-12 min-w-[3.25rem]' : 'h-10 w-10',
+              )}
+              activeProps={{ className: 'bg-primary/10 text-primary' }}
+              activeOptions={{ exact: to === '/' }}
+              onClick={(e) => handleTap(to, e.timeStamp)}
+            >
+              <Icon className="h-[1.125rem] w-[1.125rem] shrink-0" />
+              {showNavLabels && <span className="text-[10px] leading-none">{label}</span>}
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }
 

@@ -121,7 +121,7 @@ export function DashboardPage() {
             type="button"
             onClick={() => handleMonthSelect(month)}
             className={cn(
-              'shrink-0 rounded-full px-3 py-1 text-sm font-medium transition-colors',
+              'shrink-0 rounded-full px-3 py-1 text-md font-medium transition-colors',
               selectedMonth === month
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:text-foreground',

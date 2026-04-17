@@ -1,8 +1,7 @@
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { useScrollDirection } from '@/hooks/use-scroll-direction';
-import { cn } from '@/lib/cn';
+import { useFABAction } from '@/contexts/fab-context';
 
 interface PageHeaderProps {
   title: string;
@@ -12,12 +11,12 @@ interface PageHeaderProps {
     onClick: () => void;
     icon?: ReactNode;
   };
-  children?: ReactNode; // Extra elements/buttons
+  children?: ReactNode;
 }
 
 export function PageHeader({ title, subtitle, primaryAction, children }: PageHeaderProps) {
-  const scrollDirection = useScrollDirection();
-  const isHidden = scrollDirection === 'down';
+  // Register the primary action as the mobile FAB (clears on unmount)
+  useFABAction(primaryAction ?? null);
 
   return (
     <div className="space-y-4">
@@ -36,22 +35,6 @@ export function PageHeader({ title, subtitle, primaryAction, children }: PageHea
           )}
         </div>
       </div>
-
-      {/* Mobile FAB */}
-      {primaryAction && (
-        <Button
-          onClick={primaryAction.onClick}
-          size="icon"
-          className={cn(
-            'fixed right-4 z-40 h-14 w-14 rounded-full shadow-lg md:hidden transition-all duration-300 transform',
-            'bottom-[calc(50px+env(safe-area-inset-bottom)+1.5rem)]',
-            isHidden ? 'translate-y-24 opacity-0' : 'translate-y-0 opacity-100',
-          )}
-          aria-label={primaryAction.label}
-        >
-          {primaryAction.icon || <Plus className="h-4 w-4" />}
-        </Button>
-      )}
     </div>
   );
 }

@@ -1,11 +1,20 @@
-import { Monitor, Moon, Palette, RefreshCw, Sun, Type } from 'lucide-react';
+import { Monitor, Moon, Navigation, Palette, RefreshCw, Sun, Type } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useThemeStore } from '@/stores/theme.store';
 
 export function SettingsPage() {
-  const { theme, setTheme, primaryHue, setPrimaryHue, fontSize, setFontSize } = useThemeStore();
+  const {
+    theme,
+    setTheme,
+    primaryHue,
+    setPrimaryHue,
+    fontSize,
+    setFontSize,
+    showNavLabels,
+    setShowNavLabels,
+  } = useThemeStore();
 
   return (
     <div className="space-y-6">
@@ -103,6 +112,39 @@ export function SettingsPage() {
             <p className="text-xs text-muted-foreground">
               Increase or decrease the base font size for better readability.
             </p>
+          </Card>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Navigation className="h-4 w-4 text-primary" />
+            <h2 className="text-lg font-semibold">Navigation</h2>
+          </div>
+          <Card className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">Show labels</p>
+                <p className="text-xs text-muted-foreground">
+                  Display text labels below nav icons on mobile.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: true, label: 'Show' },
+                  { value: false, label: 'Hide' },
+                ].map((opt) => (
+                  <Button
+                    key={String(opt.value)}
+                    variant={showNavLabels === opt.value ? 'default' : 'outline'}
+                    size="sm"
+                    className="cursor-pointer"
+                    onClick={() => setShowNavLabels(opt.value)}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </Card>
         </section>
 
