@@ -1,3 +1,9 @@
+## [3.5.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.1...v3.5.2) (2026-04-17)
+
+### Bug Fixes
+
+* address critical UI bugs and inconsistencies ([#76](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/76)) ([5c30ca5](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/5c30ca58287ef38ecc02e63ea9f732af1fd57cd0))
+
 ## [3.5.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.0...v3.5.1) (2026-04-16)
 
 ### Bug Fixes
