@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 
 export function MobileNav() {
   const { fab } = useFABContext();
-  const { showNavLabels } = useThemeStore();
+  const { showNavLabels, glassEffect } = useThemeStore();
   const lastTapRef = useRef<{ [key: string]: number }>({});
 
   const handleTap = useCallback((to: string, timeStamp: number) => {
@@ -43,7 +43,14 @@ export function MobileNav() {
         className="fixed left-1/2 z-50 -translate-x-1/2 md:hidden"
         style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="flex items-center gap-0.5 rounded-full border border-border/40 bg-background/80 px-1.5 py-1.5 shadow-xl shadow-black/10 backdrop-blur-2xl dark:bg-background/70 dark:shadow-black/40">
+        <div
+          className={cn(
+            'flex items-center gap-0.5 rounded-full border border-border/40 px-1.5 py-1.5 shadow-xl transition-colors',
+            glassEffect
+              ? 'bg-background/80 shadow-black/10 backdrop-blur-2xl dark:bg-background/70 dark:shadow-black/40'
+              : 'bg-background shadow-black/5',
+          )}
+        >
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}

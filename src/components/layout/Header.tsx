@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { LogOut, Monitor, Moon, Settings, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLogout } from '@/hooks/useLogout';
+import { cn } from '@/lib/cn';
 import { type Theme, useThemeStore } from '@/stores/theme.store';
 
 const THEME_ICONS: Record<Theme, typeof Sun> = {
@@ -17,12 +18,17 @@ const NEXT_THEME: Record<Theme, Theme> = {
 };
 
 export function Header() {
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme, glassEffect } = useThemeStore();
   const ThemeIcon = THEME_ICONS[theme];
   const logout = useLogout();
 
   return (
-    <header className="flex h-14 md:h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 bg-background/80 backdrop-blur z-50">
+    <header
+      className={cn(
+        'flex h-14 md:h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 z-50 transition-colors',
+        glassEffect ? 'bg-background/80 backdrop-blur' : 'bg-background',
+      )}
+    >
       <Link to="/" className="font-semibold tracking-tight hover:opacity-80 transition-opacity">
         Budget Buddy
         <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>

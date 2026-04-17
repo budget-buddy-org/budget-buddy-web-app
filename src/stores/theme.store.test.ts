@@ -101,4 +101,12 @@ describe('useThemeStore', () => {
     useThemeStore.getState().setShowNavLabels(false);
     expect(useThemeStore.getState().showNavLabels).toBe(false);
   });
+
+  it('toggles glassEffect', async () => {
+    const { useThemeStore } = await import('./theme.store');
+
+    expect(useThemeStore.getState().glassEffect).toBe(true);
+    useThemeStore.getState().setGlassEffect(false);
+    expect(useThemeStore.getState().glassEffect).toBe(false);
+  });
 });

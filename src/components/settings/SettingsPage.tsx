@@ -15,6 +15,8 @@ export function SettingsPage() {
     setFontSize,
     showNavLabels,
     setShowNavLabels,
+    glassEffect,
+    setGlassEffect,
   } = useThemeStore();
 
   return (
@@ -130,6 +132,15 @@ export function SettingsPage() {
                 </p>
               </div>
               <Switch checked={showNavLabels} onCheckedChange={setShowNavLabels} />
+            </div>
+            <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t">
+              <div>
+                <p className="text-sm font-medium">Glass effect</p>
+                <p className="text-xs text-muted-foreground">
+                  Apply blur effects to headers and navigation.
+                </p>
+              </div>
+              <Switch checked={glassEffect} onCheckedChange={setGlassEffect} />
             </div>
           </Card>
         </section>

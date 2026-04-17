@@ -1,5 +1,6 @@
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useThemeStore } from '@/stores/theme.store';
 
 type StrictProps = {
   nullable?: false;
@@ -26,10 +27,13 @@ export function TransactionTypeToggle({
   className,
   error,
 }: TransactionTypeToggleProps) {
+  const { glassEffect } = useThemeStore();
+
   return (
     <div
       className={cn(
         'flex h-10 p-1 bg-muted rounded-lg transition-colors',
+        glassEffect && 'bg-muted/50 backdrop-blur-md',
         error && 'border border-destructive',
         className,
       )}
@@ -42,7 +46,10 @@ export function TransactionTypeToggle({
           className={cn(
             'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             value === ''
-              ? 'bg-background text-foreground shadow-sm'
+              ? cn(
+                  'bg-background text-foreground shadow-sm',
+                  glassEffect && 'bg-background/80 backdrop-blur-sm',
+                )
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
           )}
         >
@@ -56,7 +63,10 @@ export function TransactionTypeToggle({
         className={cn(
           'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'EXPENSE'
-            ? 'bg-background text-foreground shadow-sm'
+            ? cn(
+                'bg-background text-foreground shadow-sm',
+                glassEffect && 'bg-background/80 backdrop-blur-sm',
+              )
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
         )}
       >
@@ -70,7 +80,10 @@ export function TransactionTypeToggle({
         className={cn(
           'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'INCOME'
-            ? 'bg-background text-income shadow-sm'
+            ? cn(
+                'bg-background text-income shadow-sm',
+                glassEffect && 'bg-background/80 backdrop-blur-sm',
+              )
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
         )}
       >
