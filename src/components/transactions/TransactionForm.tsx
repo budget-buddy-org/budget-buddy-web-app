@@ -3,18 +3,12 @@ import type {
   Transaction,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts';
-import { Check, MoreHorizontal, Plus, RotateCcw, Trash2, X } from 'lucide-react';
+import { Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { TransactionTypeToggle } from '@/components/ui/transaction-type-toggle';
@@ -379,32 +373,16 @@ export function TransactionForm({
         </div>
 
         {isEditing && (
-          <div className="absolute top-4 right-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-sm opacity-70 transition-opacity hover:opacity-100"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-destructive cursor-pointer"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remove
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onCancel} className="cursor-pointer">
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <button
+            type="button"
+            aria-label="Delete transaction"
+            className="absolute top-4 left-4 rounded-sm text-destructive opacity-70 ring-offset-background transition hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none cursor-pointer active:scale-90 motion-reduce:transition-none"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isPending}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Delete transaction</span>
+          </button>
         )}
       </form>
 

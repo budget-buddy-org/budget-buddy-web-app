@@ -15,7 +15,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </aside>
 
           {/* Main content — extra bottom padding on mobile to clear floating nav */}
-          <main className="flex-1 pb-15 md:pb-0">
+          <main className="flex-1 pb-20 md:pb-0">
             <div className="mx-auto max-w-2xl px-4 py-6 md:max-w-4xl md:px-6">{children}</div>
           </main>
         </div>

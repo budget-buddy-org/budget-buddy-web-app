@@ -248,11 +248,11 @@ describe('TransactionForm', () => {
     renderForm({ onSuccess, onDeleteSuccess, transaction });
     const user = userEvent.setup();
 
-    // Open dropdown and click Remove
-    await user.click(screen.getByText(/Remove/i));
+    // Click the delete button
+    await user.click(screen.getByRole('button', { name: /delete transaction/i }));
 
     // Check if confirmation dialog is shown
-    expect(screen.getByText(/Delete Transaction/i)).toBeInTheDocument();
+    expect(screen.getByText(/Delete Transaction/)).toBeInTheDocument();
 
     // Mock delete success
     mockDeleteTx.mutate.mockImplementationOnce((_id, options) => {

@@ -97,7 +97,7 @@ export function TransactionsPage() {
       </Dialog>
 
       <Dialog open={showForm || !!editingId} onOpenChange={(open) => !open && closeForm()}>
-        <DialogContent hideClose={!!editingId}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
             <DialogDescription>
