@@ -33,7 +33,7 @@ export function MobileNav() {
           onClick={fab.onClick}
           aria-label={fab.label}
           className="fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/25 transition-colors hover:bg-primary/90 active:scale-95 md:hidden"
-          style={{ bottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}
+          style={{ bottom: '6rem' }}
         >
           {fab.icon ?? <Plus className="h-6 w-6" />}
         </button>
@@ -41,7 +41,7 @@ export function MobileNav() {
 
       <nav
         className="fixed left-1/2 z-50 -translate-x-1/2 md:hidden"
-        style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
+        style={{ bottom: 'env(safe-area-inset-bottom)' }}
       >
         <div
           className={cn(
