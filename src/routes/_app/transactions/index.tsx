@@ -4,19 +4,42 @@ import { categoriesQueryOptions } from '@/hooks/useCategories';
 import { transactionsQueryOptions } from '@/hooks/useTransactions';
 import { queryClient } from '@/lib/query-client';
 
+export interface TransactionSearch {
+  page?: number;
+  categoryId?: string;
+  start?: string;
+  end?: string;
+  sort?: 'asc' | 'desc';
+  type?: 'EXPENSE' | 'INCOME' | '';
+}
+
 export const Route = createFileRoute('/_app/transactions/')({
   pendingComponent: TransactionsSkeleton,
-  validateSearch: () => ({
-    // Previous parameters were add/edit, now they are no longer used for routing to the modal
+  validateSearch: (search: Record<string, unknown>): TransactionSearch => ({
+    page: typeof search.page === 'number' ? search.page : undefined,
+    categoryId: typeof search.categoryId === 'string' ? search.categoryId : undefined,
+    start: typeof search.start === 'string' ? search.start : undefined,
+    end: typeof search.end === 'string' ? search.end : undefined,
+    sort: search.sort === 'asc' ? 'asc' : search.sort === 'desc' ? 'desc' : undefined,
+    type:
+      search.type === 'EXPENSE' || search.type === 'INCOME'
+        ? search.type
+        : search.type === ''
+          ? ''
+          : undefined,
   }),
-  loader: () => {
-    // Pre-fetch the first page of transactions and categories in parallel
+  loader: ({ location }) => {
+    const search = location.search as TransactionSearch;
     return Promise.all([
       queryClient.ensureQueryData(
         transactionsQueryOptions({
-          page: 0,
+          page: search.page ?? 0,
           size: 20,
-          sort: 'desc',
+          sort: search.sort ?? 'desc',
+          categoryId: search.categoryId || undefined,
+          start: search.start || undefined,
+          end: search.end || undefined,
+          type: search.type || undefined,
         }),
       ),
       queryClient.ensureQueryData(categoriesQueryOptions()),

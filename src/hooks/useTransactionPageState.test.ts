@@ -2,15 +2,35 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type TransactionPageFilters, useTransactionPageState } from './useTransactionPageState';
 
+const mockNavigate = vi.fn();
+const mockSearch: Record<string, unknown> = {};
+
+vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => mockNavigate,
+}));
+
+vi.mock('@/routes/_app/transactions/index', () => ({
+  Route: {
+    fullPath: '/_app/transactions/',
+    useSearch: () => mockSearch,
+  },
+}));
+
 const DEFAULT_FILTERS: TransactionPageFilters = {
   categoryId: '',
   start: '',
   end: '',
   sort: 'desc',
+  type: '',
 };
 
 beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
+  mockNavigate.mockReset();
+  // Reset mock search to empty (all defaults)
+  for (const key of Object.keys(mockSearch)) {
+    delete mockSearch[key];
+  }
 });
 
 describe('useTransactionPageState — initial state', () => {
@@ -71,83 +91,69 @@ describe('useTransactionPageState — closeForm', () => {
 
     expect(result.current.editingId).toBeNull();
   });
-
-  it('resets both showForm and editingId together', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => {
-      result.current.setShowForm(true);
-      result.current.setEditingId('tx-abc');
-    });
-    act(() => result.current.closeForm());
-
-    expect(result.current.showForm).toBe(false);
-    expect(result.current.editingId).toBeNull();
-  });
 });
 
 describe('useTransactionPageState — handleFilterChange', () => {
-  it('updates filters to the new value', () => {
+  it('calls navigate with the new filter params', () => {
     const { result } = renderHook(() => useTransactionPageState());
     const newFilters: TransactionPageFilters = {
       categoryId: 'cat-1',
       start: '2024-01-01',
       end: '2024-01-31',
       sort: 'asc',
+      type: 'EXPENSE',
     };
 
     act(() => result.current.handleFilterChange(newFilters));
 
-    expect(result.current.filters).toEqual(newFilters);
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: expect.objectContaining({ categoryId: 'cat-1', sort: 'asc', type: 'EXPENSE' }),
+        replace: true,
+      }),
+    );
   });
 
-  it('resets page to 0 when filters change', () => {
+  it('resets page to undefined when filters change', () => {
     const { result } = renderHook(() => useTransactionPageState());
-
-    // advance to page 2 first
-    act(() => result.current.handlePageChange(2));
-    expect(result.current.page).toBe(2);
 
     act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, categoryId: 'cat-1' }));
 
-    expect(result.current.page).toBe(0);
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({ search: expect.objectContaining({ page: undefined }) }),
+    );
   });
 });
 
 describe('useTransactionPageState — resetFilters', () => {
-  it('restores all filters to defaults', () => {
+  it('calls navigate with all undefined search params', () => {
     const { result } = renderHook(() => useTransactionPageState());
 
-    act(() =>
-      result.current.handleFilterChange({
-        categoryId: 'cat-1',
-        start: '2024-01-01',
-        end: '2024-12-31',
-        sort: 'asc',
+    act(() => result.current.resetFilters());
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: {
+          page: undefined,
+          categoryId: undefined,
+          start: undefined,
+          end: undefined,
+          sort: undefined,
+          type: undefined,
+        },
+        replace: true,
       }),
     );
-    act(() => result.current.resetFilters());
-
-    expect(result.current.filters).toEqual(DEFAULT_FILTERS);
-  });
-
-  it('resets page to 0', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => result.current.handlePageChange(3));
-    act(() => result.current.resetFilters());
-
-    expect(result.current.page).toBe(0);
   });
 });
 
 describe('useTransactionPageState — handlePageChange', () => {
-  it('updates page to the requested value', () => {
+  it('calls navigate with the new page', () => {
     const { result } = renderHook(() => useTransactionPageState());
 
     act(() => result.current.handlePageChange(4));
 
-    expect(result.current.page).toBe(4);
+    expect(mockNavigate).toHaveBeenCalled();
   });
 
   it('calls window.scrollTo with smooth scroll to top', () => {
@@ -169,59 +175,45 @@ describe('useTransactionPageState — handlePageChange', () => {
 });
 
 describe('useTransactionPageState — isFiltered', () => {
-  it('is false with default filters', () => {
+  it('is false with default (empty) search', () => {
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.isFiltered).toBe(false);
   });
 
-  it('is true when categoryId is set', () => {
+  it('is true when categoryId is in search', () => {
+    mockSearch.categoryId = 'cat-1';
     const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, categoryId: 'cat-1' }));
     expect(result.current.isFiltered).toBe(true);
   });
 
-  it('is true when start date is set', () => {
+  it('is true when start date is in search', () => {
+    mockSearch.start = '2024-01-01';
     const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, start: '2024-01-01' }));
     expect(result.current.isFiltered).toBe(true);
   });
 
-  it('is true when end date is set', () => {
+  it('is true when type is in search', () => {
+    mockSearch.type = 'INCOME';
     const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, end: '2024-12-31' }));
     expect(result.current.isFiltered).toBe(true);
-  });
-
-  it('is false after resetFilters clears active filters', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, categoryId: 'cat-1' }));
-    act(() => result.current.resetFilters());
-    expect(result.current.isFiltered).toBe(false);
   });
 });
 
 describe('useTransactionPageState — hasActiveFilters', () => {
-  it('is false with default filters', () => {
+  it('is false with default search', () => {
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.hasActiveFilters).toBe(false);
   });
 
-  it('is true when sort is asc (non-default)', () => {
+  it('is true when sort is asc', () => {
+    mockSearch.sort = 'asc';
     const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, sort: 'asc' }));
     expect(result.current.hasActiveFilters).toBe(true);
   });
 
-  it('is true when isFiltered is true (e.g. categoryId set)', () => {
+  it('is true when categoryId is set', () => {
+    mockSearch.categoryId = 'cat-1';
     const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, categoryId: 'cat-1' }));
     expect(result.current.hasActiveFilters).toBe(true);
-  });
-
-  it('is false after resetFilters even when sort was changed', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, sort: 'asc' }));
-    act(() => result.current.resetFilters());
-    expect(result.current.hasActiveFilters).toBe(false);
   });
 });

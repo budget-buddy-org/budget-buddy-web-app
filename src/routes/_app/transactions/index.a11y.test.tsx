@@ -8,9 +8,17 @@ import { TransactionsPage } from '@/components/transactions/TransactionsPage';
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
+  createFileRoute: () => (options: unknown) => ({ options }),
   useNavigate: () => vi.fn(),
-  useSearch: () => ({ add: undefined }),
+  useSearch: () => ({}),
   Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
+}));
+
+vi.mock('@/routes/_app/transactions/index', () => ({
+  Route: {
+    fullPath: '/_app/transactions/',
+    useSearch: () => ({}),
+  },
 }));
 
 vi.mock('@/hooks/useCategories', () => ({

@@ -1,10 +1,13 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
+import { Route } from '@/routes/_app/transactions/index';
 
 export interface TransactionPageFilters {
   categoryId: string;
   start: string;
   end: string;
   sort: 'asc' | 'desc';
+  type: 'EXPENSE' | 'INCOME' | '';
 }
 
 const DEFAULT_FILTERS: TransactionPageFilters = {
@@ -12,14 +15,26 @@ const DEFAULT_FILTERS: TransactionPageFilters = {
   start: '',
   end: '',
   sort: 'desc',
+  type: '',
 };
 
 export function useTransactionPageState() {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const search = Route.useSearch();
+
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<TransactionPageFilters>(DEFAULT_FILTERS);
-  const [page, setPage] = useState(0);
+
+  const filters: TransactionPageFilters = {
+    categoryId: search.categoryId ?? DEFAULT_FILTERS.categoryId,
+    start: search.start ?? DEFAULT_FILTERS.start,
+    end: search.end ?? DEFAULT_FILTERS.end,
+    sort: search.sort ?? DEFAULT_FILTERS.sort,
+    type: search.type ?? DEFAULT_FILTERS.type,
+  };
+
+  const page = search.page ?? 0;
 
   const closeForm = useCallback(() => {
     setShowForm(false);
@@ -27,21 +42,48 @@ export function useTransactionPageState() {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-    setPage(0);
-  }, []);
+    navigate({
+      search: {
+        page: undefined,
+        categoryId: undefined,
+        start: undefined,
+        end: undefined,
+        sort: undefined,
+        type: undefined,
+      },
+      replace: true,
+    });
+  }, [navigate]);
 
-  const handleFilterChange = useCallback((newFilters: TransactionPageFilters) => {
-    setFilters(newFilters);
-    setPage(0);
-  }, []);
+  const handleFilterChange = useCallback(
+    (newFilters: TransactionPageFilters) => {
+      navigate({
+        search: {
+          page: undefined,
+          categoryId: newFilters.categoryId || undefined,
+          start: newFilters.start || undefined,
+          end: newFilters.end || undefined,
+          sort: newFilters.sort !== 'desc' ? newFilters.sort : undefined,
+          type: newFilters.type || undefined,
+        },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
 
-  const handlePageChange = useCallback((newPage: number) => {
-    setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      navigate({
+        search: (prev) => ({ ...prev, page: newPage || undefined }),
+        replace: true,
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [navigate],
+  );
 
-  const isFiltered = !!(filters.categoryId || filters.start || filters.end);
+  const isFiltered = !!(filters.categoryId || filters.start || filters.end || filters.type);
   const hasActiveFilters = isFiltered || filters.sort !== 'desc';
 
   return {

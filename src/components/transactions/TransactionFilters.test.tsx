@@ -3,6 +3,27 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TransactionFilters } from './TransactionFilters';
 
+vi.mock('@/components/ui/transaction-type-toggle', () => ({
+  TransactionTypeToggle: ({ value, onChange }: { value: string; onChange: (v: string) => void }) =>
+    React.createElement('div', { 'data-testid': 'type-toggle', 'data-value': value }, [
+      React.createElement(
+        'button',
+        { key: 'all', type: 'button', onClick: () => onChange('') },
+        'All',
+      ),
+      React.createElement(
+        'button',
+        { key: 'expense', type: 'button', onClick: () => onChange('EXPENSE') },
+        'Expense',
+      ),
+      React.createElement(
+        'button',
+        { key: 'income', type: 'button', onClick: () => onChange('INCOME') },
+        'Income',
+      ),
+    ]),
+}));
+
 vi.mock('@/components/ui/date-picker', () => ({
   DatePicker: ({
     id,
@@ -39,6 +60,7 @@ describe('TransactionFilters', () => {
     start: '',
     end: '',
     sort: 'desc' as const,
+    type: '' as const,
   };
   const onFilterChange = vi.fn();
   const onReset = vi.fn();
@@ -64,7 +86,7 @@ describe('TransactionFilters', () => {
   });
 
   it('calls onReset when reset button is clicked', () => {
-    const activeFilters = { ...filters, categoryId: '1' };
+    const activeFilters = { ...filters, categoryId: '1', type: '' as const };
     render(
       <TransactionFilters
         categories={categories}

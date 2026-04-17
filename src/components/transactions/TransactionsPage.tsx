@@ -53,6 +53,7 @@ export function TransactionsPage() {
     categoryId: filters.categoryId || undefined,
     start: filters.start || undefined,
     end: filters.end || undefined,
+    type: filters.type || undefined,
   };
 
   const { data, isLoading } = useTransactions(queryFilters);

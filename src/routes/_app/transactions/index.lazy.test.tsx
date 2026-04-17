@@ -9,8 +9,16 @@ const mockNavigate = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
+  createFileRoute: () => (options: unknown) => ({ options }),
   useNavigate: () => mockNavigate,
-  useSearch: () => vi.fn(),
+  useSearch: () => ({}),
+}));
+
+vi.mock('@/routes/_app/transactions/index', () => ({
+  Route: {
+    fullPath: '/_app/transactions/',
+    useSearch: () => ({}),
+  },
 }));
 
 vi.mock('@/hooks/useTransactions', () => ({

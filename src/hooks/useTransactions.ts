@@ -1,6 +1,7 @@
 import type {
   PaginatedTransactions,
   Transaction,
+  TransactionType,
   TransactionUpdate,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts';
@@ -27,6 +28,7 @@ export interface TransactionFilters {
   start?: string;
   end?: string;
   sort?: 'asc' | 'desc';
+  type?: TransactionType;
 }
 
 // Client-side "fetch all" limits — the API doesn't support full-text search, so we

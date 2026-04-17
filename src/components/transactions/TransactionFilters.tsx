@@ -2,16 +2,13 @@ import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
+import { TransactionTypeToggle } from '@/components/ui/transaction-type-toggle';
+import type { TransactionPageFilters } from '@/hooks/useTransactionPageState';
 
 interface TransactionFiltersProps {
   categories: { id: string; name: string }[];
-  filters: {
-    categoryId: string;
-    start: string;
-    end: string;
-    sort: 'asc' | 'desc';
-  };
-  onFilterChange: (filters: TransactionFiltersProps['filters']) => void;
+  filters: TransactionPageFilters;
+  onFilterChange: (filters: TransactionPageFilters) => void;
   onReset: () => void;
   onClose: () => void;
 }
@@ -24,10 +21,19 @@ export function TransactionFilters({
   onClose,
 }: TransactionFiltersProps) {
   const hasActiveFilters =
-    filters.categoryId || filters.start || filters.end || filters.sort !== 'desc';
+    filters.categoryId || filters.start || filters.end || filters.sort !== 'desc' || filters.type;
 
   return (
     <div className="space-y-4 pt-2">
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium">Type</legend>
+        <TransactionTypeToggle
+          nullable
+          value={filters.type}
+          onChange={(type) => onFilterChange({ ...filters, type })}
+        />
+      </fieldset>
+
       <div className="space-y-2">
         <label htmlFor="category-filter" className="text-sm font-medium">
           Category
