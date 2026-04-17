@@ -1,3 +1,9 @@
+## [3.7.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.6.0...v3.7.0) (2026-04-17)
+
+### Features
+
+* rework mobile nav bar ([#79](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/79)) ([7798d44](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7798d44f9a15c921b624c912717281d9701f1080))
+
 ## [3.6.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.3...v3.6.0) (2026-04-17)
 
 ### Features
