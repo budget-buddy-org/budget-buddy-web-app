@@ -1,3 +1,9 @@
+## [3.5.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.2...v3.5.3) (2026-04-17)
+
+### Bug Fixes
+
+* **ui:** improve theme ([#77](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/77)) ([e07e79d](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e07e79d1cdcc520db9fd6f3c2ae1c2ac26b00923))
+
 ## [3.5.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.5.1...v3.5.2) (2026-04-17)
 
 ### Bug Fixes
