@@ -1,3 +1,9 @@
+## [3.8.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.7.2...v3.8.0) (2026-04-17)
+
+### Features
+
+* **ui:** swipe-to-dismiss bottom sheet and refine edit dialog ([#83](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/83)) ([8b7d7b2](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/8b7d7b2f489645f2ff3eaae57cd50b66fd523b1d))
+
 ## [3.7.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.7.1...v3.7.2) (2026-04-17)
 
 ### Bug Fixes
