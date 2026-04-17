@@ -1,93 +1,74 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ArrowDownRight, ArrowUpRight, PlusCircle, Wallet } from 'lucide-react';
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { ArrowDownRight, ArrowUpRight, ChevronDown, PlusCircle, Wallet } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { CardDescription, SummaryCard } from '@/components/dashboard/SummaryCard';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCategories } from '@/hooks/useCategories';
 import { useAllTransactions } from '@/hooks/useTransactions';
-import { formatCurrency, formatDate, toLocalIsoDate, toLocalYearMonth } from '@/lib/formatters';
-import { useThemeStore } from '@/stores/theme.store';
+import { getCategoryColor } from '@/lib/categoryColor';
+import { formatCurrency, formatDate, todayIso, toLocalIsoDate } from '@/lib/formatters';
 
-// Recharts is large — only load it on desktop where the chart is actually rendered.
-// Mobile users (where the chart is hidden) never download the vendor-recharts chunk.
-const MonthlyChart = lazy(() =>
-  import('@/components/dashboard/MonthlyChart').then((m) => ({ default: m.MonthlyChart })),
+const VISIBLE_COUNT = 5;
+
+// Stable for the session — month boundaries don't shift while the app is open.
+const firstDayOfMonth = toLocalIsoDate(
+  new Date(new Date().getFullYear(), new Date().getMonth(), 1),
 );
+const today = todayIso();
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const [showAll, setShowAll] = useState(false);
 
-  // Initialise once — avoids loading recharts on mobile where the chart is never shown.
-  // No effect needed: this is a client-only SPA and the value won't change between renders.
-  const [isDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
-  );
-
-  // Subscribe to theme so chart colors update when theme changes
-  const resolvedTheme = useThemeStore((s) => s.resolvedTheme());
-
-  // Calculate date range for the last 6 months to support the chart
-  const { startDate, currentMonth } = useMemo(() => {
-    const now = new Date();
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    return {
-      currentMonth: toLocalYearMonth(now),
-      startDate: toLocalIsoDate(sixMonthsAgo),
-    };
-  }, []);
-
-  const { data, isLoading } = useAllTransactions({
-    start: startDate,
+  const { data: txData, isLoading: txLoading } = useAllTransactions({
+    start: firstDayOfMonth,
+    end: today,
     sort: 'desc',
   });
+  const { data: catData, isLoading: catLoading } = useCategories();
 
-  const { totals, balance, chartData, recent, currency } = useMemo(() => {
-    const transactions = data?.items ?? [];
-    const currentMonthTransactions = transactions.filter((t) => t.date.startsWith(currentMonth));
+  const { totals, balance, categoryRows, recent, currency } = useMemo(() => {
+    const transactions = txData?.items ?? [];
+    const categoryMap = new Map((catData?.items ?? []).map((c) => [c.id, c.name]));
 
-    const totals = currentMonthTransactions.reduce(
-      (acc, t) => {
-        if (t.type === 'INCOME') acc.income += t.amount;
-        else acc.expense += t.amount;
-        return acc;
-      },
-      { income: 0, expense: 0 },
-    );
+    let income = 0;
+    let expense = 0;
+    const expenseByCategory: Record<string, number> = {};
 
-    const chartData = Object.entries(
-      transactions.reduce<Record<string, { income: number; expense: number }>>((acc, t) => {
-        const month = t.date.slice(0, 7); // YYYY-MM
-        if (!acc[month]) acc[month] = { income: 0, expense: 0 };
-        if (t.type === 'INCOME') acc[month].income += t.amount / 100;
-        else acc[month].expense += t.amount / 100;
-        return acc;
-      }, {}),
-    )
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6)
-      .map(([month, values]) => ({ month, ...values }));
+    for (const t of transactions) {
+      if (t.type === 'INCOME') {
+        income += t.amount;
+      } else {
+        expense += t.amount;
+        const name = (t.categoryId && categoryMap.get(t.categoryId)) || 'No Category';
+        expenseByCategory[name] = (expenseByCategory[name] ?? 0) + t.amount;
+      }
+    }
+
+    const sorted = Object.entries(expenseByCategory).sort(([, a], [, b]) => b - a);
+    const maxAmount = sorted[0]?.[1] ?? 1; // top bar always fills 100%
 
     return {
-      totals,
-      balance: totals.income - totals.expense,
-      chartData,
+      totals: { income, expense },
+      balance: income - expense,
+      categoryRows: sorted.map(([name, amount]) => ({
+        name,
+        amount,
+        pct: Math.round((amount / maxAmount) * 100),
+      })),
       recent: transactions.slice(0, 8),
       currency: transactions[0]?.currency ?? 'EUR',
     };
-  }, [data, currentMonth]);
+  }, [txData, catData]);
 
-  // Read chart colors from CSS variables so they respond to theme/dark-mode changes
-  const incomeColor =
-    getComputedStyle(document.documentElement).getPropertyValue('--color-income').trim() ||
-    'hsl(142 71% 45%)';
-  const expenseColor =
-    getComputedStyle(document.documentElement).getPropertyValue('--color-expense').trim() ||
-    (resolvedTheme === 'dark' ? 'hsl(0 62% 50%)' : 'hsl(0 84% 60%)');
+  if (txLoading || catLoading) return <DashboardSkeleton />;
 
-  if (isLoading) return <DashboardSkeleton />;
+  const visibleRows = showAll ? categoryRows : categoryRows.slice(0, VISIBLE_COUNT);
+  const hiddenCount = categoryRows.length - VISIBLE_COUNT;
 
   return (
     <div className="space-y-6">
@@ -123,26 +104,63 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Chart — desktop only; lazy-loaded so mobile never fetches the recharts chunk */}
-      {chartData.length > 0 && isDesktop && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold" as="h2">
-              Monthly overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <Suspense fallback={null}>
-              <MonthlyChart
-                data={chartData}
-                currency={currency}
-                incomeColor={incomeColor}
-                expenseColor={expenseColor}
-              />
-            </Suspense>
-          </CardContent>
-        </Card>
-      )}
+      {/* Expenses by category */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold" as="h2">
+            Expenses by category
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {categoryRows.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">No expenses this month</p>
+          ) : (
+            <>
+              <ul className="space-y-3">
+                {visibleRows.map((row) => {
+                  const color = getCategoryColor(row.name);
+                  return (
+                    <li key={row.name}>
+                      <div className="mb-1 flex items-center justify-between">
+                        <div className="mr-2 flex min-w-0 items-center gap-2">
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="truncate text-sm font-medium">{row.name}</span>
+                        </div>
+                        <span className="shrink-0 text-sm text-muted-foreground">
+                          {formatCurrency(row.amount, currency)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${row.pct}%`, backgroundColor: color }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {hiddenCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  onClick={() => setShowAll((v) => !v)}
+                >
+                  <ChevronDown
+                    className={`mr-1 h-4 w-4 transition-transform ${showAll ? 'rotate-180' : ''}`}
+                  />
+                  {showAll ? 'Show less' : `Show ${hiddenCount} more`}
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent transactions */}
       <Card>
@@ -153,13 +171,13 @@ export function DashboardPage() {
         </CardHeader>
         <CardContent className="p-0">
           {recent.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-12 px-6 text-center">
+            <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
               <div className="rounded-full bg-muted p-3">
                 <PlusCircle className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium">No transactions yet</p>
-                <p className="text-xs text-muted-foreground max-w-[200px]">
+                <p className="max-w-[200px] text-xs text-muted-foreground">
                   Start tracking your budget by adding your first transaction.
                 </p>
               </div>
@@ -173,7 +191,7 @@ export function DashboardPage() {
                 <li key={t.id}>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between px-6 py-3 transition-colors hover:bg-muted/30 cursor-pointer text-left focus-visible:outline-none"
+                    className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none"
                     onClick={() => navigate({ to: '/transactions' })}
                   >
                     <div className="min-w-0">

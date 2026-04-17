@@ -11,15 +11,16 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
 }));
 
-vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Bar: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-  Tooltip: () => null,
-  Cell: () => null,
+vi.mock('@/hooks/useTransactions', () => ({
+  useAllTransactions: vi.fn(),
 }));
+
+vi.mock('@/hooks/useCategories', () => ({
+  useCategories: vi.fn(),
+}));
+
+import { useCategories } from '@/hooks/useCategories';
+import { useAllTransactions } from '@/hooks/useTransactions';
 
 const mockTransactions = [
   {
@@ -40,22 +41,7 @@ const mockTransactions = [
     date: '2026-04-11',
     categoryId: '2',
   },
-  {
-    id: '3',
-    description: 'Income last month',
-    amount: 20000,
-    type: 'INCOME',
-    currency: 'EUR',
-    date: '2026-03-20',
-    categoryId: '1',
-  },
 ];
-
-vi.mock('@/hooks/useTransactions', () => ({
-  useAllTransactions: vi.fn(),
-}));
-
-import { useAllTransactions } from '@/hooks/useTransactions';
 
 describe('DashboardPage', () => {
   const queryClient = new QueryClient({
@@ -70,13 +56,23 @@ describe('DashboardPage', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-14'));
     vi.clearAllMocks();
+
+    vi.mocked(useCategories).mockReturnValue({
+      data: {
+        items: [
+          { id: '1', name: 'Food' },
+          { id: '2', name: 'Transport' },
+        ],
+      },
+      isLoading: false,
+    } as ReturnType<typeof useCategories>);
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('calculates totals based on current month only', async () => {
+  it('shows income, expense and balance totals for the month', async () => {
     vi.mocked(useAllTransactions).mockReturnValue({
       data: {
         items: mockTransactions,
@@ -90,7 +86,6 @@ describe('DashboardPage', () => {
       </QueryClientProvider>,
     );
 
-    // Current month: 2026-04
     // Items: 10000 income, 5000 expense. Balance = 50.00
 
     // Income card

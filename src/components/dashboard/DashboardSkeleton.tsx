@@ -25,12 +25,20 @@ export function DashboardSkeleton() {
         ))}
       </div>
 
-      <Card className="hidden md:block">
+      <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-6 w-48" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[180px] w-full" />
+        <CardContent className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-1.5 w-full rounded-full" />
+            </div>
+          ))}
         </CardContent>
       </Card>
 

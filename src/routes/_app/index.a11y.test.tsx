@@ -12,17 +12,16 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
 }));
 
-// Mock recharts to avoid rendering issues in JSDOM
-vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div style={{ width: '100%', height: '100%' }}>{children}</div>
-  ),
-  BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Bar: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-  Tooltip: () => null,
-  Cell: () => null,
+vi.mock('@/hooks/useCategories', () => ({
+  useCategories: () => ({
+    data: {
+      items: [
+        { id: '1', name: 'Test Category' },
+        { id: '2', name: 'Other' },
+      ],
+    },
+    isLoading: false,
+  }),
 }));
 
 vi.mock('@/hooks/useTransactions', () => {
