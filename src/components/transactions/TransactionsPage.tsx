@@ -64,7 +64,7 @@ export function TransactionsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Transactions"
-        subtitle="View and manage your income and expenses."
+        subtitle="View and manage your income and expenses"
         primaryAction={{
           label: 'Add',
           onClick: () => setShowForm((v) => !v),
@@ -84,7 +84,7 @@ export function TransactionsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Filter Transactions</DialogTitle>
-            <DialogDescription>Apply filters to your transaction history.</DialogDescription>
+            <DialogDescription>Apply filters to your transaction history</DialogDescription>
           </DialogHeader>
           <TransactionFilters
             categories={categories}
@@ -102,8 +102,8 @@ export function TransactionsPage() {
             <DialogTitle>{editingId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
             <DialogDescription>
               {editingId
-                ? 'Update your transaction details including amount, date, and category.'
-                : 'Record a new expense or income to track your budget.'}
+                ? 'Update your transaction details including amount, date, and category'
+                : 'Record a new expense or income to track your budget'}
             </DialogDescription>
           </DialogHeader>
           {isTransactionLoading && editingId ? (

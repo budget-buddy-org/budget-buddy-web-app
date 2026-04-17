@@ -7,7 +7,7 @@ export function CategoriesSkeleton() {
     <div className="space-y-6">
       <PageHeader
         title="Categories"
-        subtitle="Manage categories to organize your transactions."
+        subtitle="Manage categories to organize your transactions"
         primaryAction={{
           label: 'Add',
           onClick: () => {},

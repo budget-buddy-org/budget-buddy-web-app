@@ -139,7 +139,7 @@ export function CategoriesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Categories"
-        subtitle="Manage categories to organize your transactions."
+        subtitle="Manage categories to organize your transactions"
         primaryAction={{
           label: 'Add',
           onClick: () => setShowForm((v) => !v),
@@ -150,7 +150,7 @@ export function CategoriesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Category</DialogTitle>
-            <DialogDescription>Create a new category to group your transactions.</DialogDescription>
+            <DialogDescription>Create a new category to group your transactions</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-1">
@@ -204,7 +204,7 @@ export function CategoriesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Modify the name of your category.</DialogDescription>
+            <DialogDescription>Modify the name of your category</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-1">

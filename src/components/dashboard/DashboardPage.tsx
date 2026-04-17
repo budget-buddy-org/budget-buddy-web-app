@@ -125,7 +125,7 @@ export function DashboardPage() {
               type="button"
               onClick={() => handleMonthSelect(month)}
               className={cn(
-                'shrink-0 rounded-full px-3 py-1 text-sm font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                'shrink-0 rounded-full px-3 py-1 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] motion-reduce:transition-none',
                 isActive
                   ? cn(
                       'bg-primary text-primary-foreground shadow-sm',
@@ -201,7 +201,7 @@ export function DashboardPage() {
                           end: lastDayOfPeriod,
                           categoryId: row.categoryId,
                         }}
-                        className="block -mx-1 rounded-md p-1 transition-colors hover:bg-muted/30"
+                        className="block -mx-1 rounded-md p-1 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                       >
                         <div className="mb-1 flex items-center justify-between">
                           <div className="mr-2 flex min-w-0 items-center gap-2">
@@ -274,7 +274,7 @@ export function DashboardPage() {
                 <li key={t.id}>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none"
+                    className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:bg-muted/50"
                     onClick={() =>
                       navigate({
                         to: '/transactions',

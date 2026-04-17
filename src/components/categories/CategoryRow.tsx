@@ -17,7 +17,7 @@ export function CategoryRow({
       <button
         type="button"
         aria-label={`Edit category: ${name}`}
-        className="flex-1 text-left text-sm font-medium focus-visible:outline-none cursor-pointer"
+        className="flex-1 cursor-pointer text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         onClick={onStartEdit}
       >
         {name}
@@ -25,7 +25,7 @@ export function CategoryRow({
       <Button
         variant="ghost"
         size="icon"
-        className="h-9 w-9 text-muted-foreground hover:text-destructive"
+        className="h-9 w-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         onClick={onDelete}
         disabled={isDeleting}
         aria-label="Delete category"
