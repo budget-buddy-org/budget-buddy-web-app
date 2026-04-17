@@ -1,3 +1,9 @@
+## [3.7.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.7.1...v3.7.2) (2026-04-17)
+
+### Bug Fixes
+
+* **ui:** mobile UI enhancements ([#82](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/82)) ([7d77f96](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7d77f96fe85b5e266dda82e4d3d455daa75acc89))
+
 ## [3.7.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.7.0...v3.7.1) (2026-04-17)
 
 ### Bug Fixes
