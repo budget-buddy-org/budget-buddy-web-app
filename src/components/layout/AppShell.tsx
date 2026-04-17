@@ -8,7 +8,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex flex-1">
         {/* Sidebar — visible on md+ */}
-        <aside className="hidden w-56 shrink-0 border-r md:block sticky top-14 self-start h-[calc(100vh-3.5rem)] overflow-y-auto">
+        <aside className="hidden w-56 shrink-0 border-r md:block sticky top-14 self-start h-[calc(100dvh-3.5rem)] overflow-y-auto">
           <SidebarNav className="p-4" />
         </aside>
 

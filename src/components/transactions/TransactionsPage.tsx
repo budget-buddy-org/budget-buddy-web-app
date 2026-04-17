@@ -86,6 +86,11 @@ export function TransactionsPage() {
     setPage(0);
   }, []);
 
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -182,7 +187,7 @@ export function TransactionsPage() {
       />
 
       {!isLoading && transactions.length > 0 && (
-        <Pagination page={page} total={total} size={size} onPageChange={setPage} />
+        <Pagination page={page} total={total} size={size} onPageChange={handlePageChange} />
       )}
     </div>
   );

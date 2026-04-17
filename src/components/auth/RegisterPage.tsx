@@ -1,4 +1,4 @@
-import type { Problem, RegisterRequest } from '@budget-buddy-org/budget-buddy-contracts';
+import type { RegisterRequest } from '@budget-buddy-org/budget-buddy-contracts';
 import { registerUser } from '@budget-buddy-org/budget-buddy-contracts';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -6,6 +6,7 @@ import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getApiError } from '@/lib/api-error';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function RegisterPage() {
     },
   });
 
-  const fieldErrors = (register.error as unknown as Problem)?.errors;
+  const fieldErrors = getApiError(register.error)?.errors;
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   return (

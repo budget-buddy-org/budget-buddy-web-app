@@ -107,9 +107,7 @@ export function TransactionList({
                   >
                     <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
                     <p className="text-xs text-muted-foreground">
-                      {categoryMap[t.categoryId ?? '']
-                        ? categoryMap[t.categoryId ?? '']
-                        : 'No Category'}
+                      {(t.categoryId && categoryMap[t.categoryId]) || 'No Category'}
                     </p>
                   </button>
                   <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>

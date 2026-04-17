@@ -1,4 +1,4 @@
-import type { AuthToken, LoginRequest, Problem } from '@budget-buddy-org/budget-buddy-contracts';
+import type { AuthToken, LoginRequest } from '@budget-buddy-org/budget-buddy-contracts';
 import { loginUser } from '@budget-buddy-org/budget-buddy-contracts';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -6,6 +6,7 @@ import { LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getApiError } from '@/lib/api-error';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function LoginPage() {
@@ -26,7 +27,7 @@ export function LoginPage() {
     },
   });
 
-  const fieldErrors = (login.error as unknown as Problem)?.errors;
+  const fieldErrors = getApiError(login.error)?.errors;
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   return (

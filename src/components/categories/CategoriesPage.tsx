@@ -1,6 +1,5 @@
-import type { Problem } from '@budget-buddy-org/budget-buddy-contracts';
 import { Check, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { CategoryRow } from '@/components/categories/CategoryRow';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -23,6 +22,7 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from '@/hooks/useCategories';
+import { getApiError } from '@/lib/api-error';
 
 const PAGE_SIZE = 20;
 
@@ -35,15 +35,20 @@ export function CategoriesPage() {
   const createCategory = useCreateCategory();
   const deleteCategory = useDeleteCategory();
 
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const [newName, setNewName] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const [editName, setEditName] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const createFieldError = (createCategory.error as unknown as Problem)?.errors?.[0]?.message;
+  const createFieldError = getApiError(createCategory.error)?.errors?.[0]?.message;
   const updateCategory = useUpdateCategory(editingCategory?.id ?? '');
-  const updateFieldError = (updateCategory.error as unknown as Problem)?.errors?.[0]?.message;
+  const updateFieldError = getApiError(updateCategory.error)?.errors?.[0]?.message;
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,12 +67,14 @@ export function CategoriesPage() {
           });
         },
         onError: (error) => {
-          const apiError = error as unknown as Problem;
-          if (!apiError.errors) {
+          const apiError = getApiError(error);
+          if (!apiError?.errors) {
             toast({
               title: 'Error',
               description:
-                apiError.detail || apiError.title || 'Failed to create category. Please try again.',
+                apiError?.detail ||
+                apiError?.title ||
+                'Failed to create category. Please try again.',
               variant: 'destructive',
             });
           }
@@ -92,11 +99,11 @@ export function CategoriesPage() {
           });
         },
         onError: (error) => {
-          const apiError = error as unknown as Problem;
-          if (!apiError.errors) {
+          const apiError = getApiError(error);
+          if (!apiError?.errors) {
             toast({
               title: 'Error',
-              description: apiError.detail || apiError.title || 'Failed to update category.',
+              description: apiError?.detail || apiError?.title || 'Failed to update category.',
               variant: 'destructive',
             });
           }
@@ -283,7 +290,7 @@ export function CategoriesPage() {
       </Card>
 
       {!isLoading && categories.length > 0 && (
-        <Pagination page={page} total={total} size={PAGE_SIZE} onPageChange={setPage} />
+        <Pagination page={page} total={total} size={PAGE_SIZE} onPageChange={handlePageChange} />
       )}
 
       <ConfirmationDialog

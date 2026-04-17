@@ -1,6 +1,5 @@
 import type {
   FieldError,
-  Problem,
   Transaction,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts';
@@ -26,6 +25,7 @@ import {
   useDeleteTransaction,
   useUpdateTransaction,
 } from '@/hooks/useTransactions';
+import { getApiError } from '@/lib/api-error';
 import { todayIso, toMinorUnits } from '@/lib/formatters';
 
 const CURRENCIES = ['EUR', 'GBP', 'USD'];
@@ -76,9 +76,8 @@ export function TransactionForm({
     form.categoryId !== (transaction?.categoryId ?? '') ||
     (isAddingCategory && !!newCategoryName);
 
-  const fieldErrors = (currentMutation.error as unknown as Problem)?.errors as
-    | FieldError[]
-    | undefined;
+  const fieldErrors = getApiError(currentMutation.error)?.errors as FieldError[] | undefined;
+  const createCategoryError = getApiError(createCategory.error);
   const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,10 +90,10 @@ export function TransactionForm({
         const newCat = await createCategory.mutateAsync({ name: newCategoryName });
         categoryId = newCat.id;
       } catch (error) {
-        const apiError = error as unknown as Problem;
+        const apiError = getApiError(error);
         toast({
           title: 'Error',
-          description: apiError.detail || apiError.title || 'Failed to create new category.',
+          description: apiError?.detail || apiError?.title || 'Failed to create new category.',
           variant: 'destructive',
         });
         return;
@@ -122,13 +121,13 @@ export function TransactionForm({
         onSuccess();
       },
       onError: (error) => {
-        const apiError = error as unknown as Problem;
-        if (!apiError.errors) {
+        const apiError = getApiError(error);
+        if (!apiError?.errors) {
           toast({
             title: 'Error',
             description:
-              apiError.detail ||
-              apiError.title ||
+              apiError?.detail ||
+              apiError?.title ||
               `Failed to ${isEditing ? 'update' : 'create'} transaction.`,
             variant: 'destructive',
           });
@@ -326,13 +325,11 @@ export function TransactionForm({
                   }
                   autoFocus
                 />
-                {(createCategory.error as unknown as Problem)?.detail ||
-                (createCategory.error as unknown as Problem)?.title ? (
+                {(createCategoryError?.detail || createCategoryError?.title) && (
                   <p className="text-xs font-medium text-destructive">
-                    {(createCategory.error as unknown as Problem).detail ||
-                      (createCategory.error as unknown as Problem).title}
+                    {createCategoryError.detail || createCategoryError.title}
                   </p>
-                ) : null}
+                )}
               </div>
             ) : (
               <div className="space-y-1">
