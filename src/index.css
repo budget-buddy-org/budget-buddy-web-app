@@ -1,32 +1,15 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode so .dark on <html> controls dark: variants */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --primary-hue: 240;
   --font-size-base: 16px;
   font-size: var(--font-size-base);
+  /* color-scheme is managed entirely by JS (applyTheme) via inline style.
+     light dark here is just the before-JS-loads default. */
   color-scheme: light dark;
-
-  --color-background: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
-  --color-foreground: light-dark(hsl(240 10% 3.9%), hsl(0 0% 98%));
-  --color-card: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
-  --color-card-foreground: light-dark(hsl(240 10% 3.9%), hsl(0 0% 98%));
-  --color-popover: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
-  --color-popover-foreground: light-dark(hsl(240 10% 3.9%), hsl(0 0% 98%));
-  --color-primary: light-dark(hsl(var(--primary-hue) 70% 45%), hsl(var(--primary-hue) 70% 70%));
-  --color-primary-foreground: light-dark(hsl(0 0% 98%), hsl(var(--primary-hue) 70% 10%));
-  --color-secondary: light-dark(hsl(240 4.8% 95.9%), hsl(240 3.7% 15.9%));
-  --color-secondary-foreground: light-dark(hsl(var(--primary-hue) 70% 10%), hsl(0 0% 98%));
-  --color-muted: light-dark(hsl(240 4.8% 95.9%), hsl(240 3.7% 15.9%));
-  --color-muted-foreground: light-dark(hsl(240 3.8% 46.1%), hsl(240 5% 64.9%));
-  --color-accent: light-dark(hsl(var(--primary-hue) 15% 95%), hsl(var(--primary-hue) 20% 15%));
-  --color-accent-foreground: light-dark(hsl(var(--primary-hue) 70% 10%), hsl(var(--primary-hue) 70% 90%));
-  --color-destructive: light-dark(hsl(0 84.2% 60.2%), hsl(0 62.8% 30.6%));
-  --color-destructive-foreground: hsl(0 0% 98%);
-  --color-income: hsl(142 71% 45%);
-  --color-expense: light-dark(hsl(0 84% 60%), hsl(0 62% 50%));
-  --color-border: light-dark(hsl(240 5.9% 90%), hsl(240 3.7% 15.9%));
-  --color-input: light-dark(hsl(240 5.9% 90%), hsl(240 3.7% 15.9%));
-  --color-ring: light-dark(hsl(var(--primary-hue) 70% 45%), hsl(var(--primary-hue) 70% 70%));
 }
 
 @theme {

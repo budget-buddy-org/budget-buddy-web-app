@@ -48,6 +48,7 @@ describe('useThemeStore', () => {
     useThemeStore.getState().setTheme('system');
 
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe('light');
   });
 
   it('updates the document theme when the system theme changes', async () => {
@@ -58,5 +59,38 @@ describe('useThemeStore', () => {
     changeListener?.({ matches: true } as MediaQueryListEvent);
 
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.style.colorScheme).toBe('dark');
+  });
+
+  it('sets explicit light theme even when OS is dark', async () => {
+    mediaQueryMatches = true; // simulate OS dark
+    const { useThemeStore } = await import('./theme.store');
+
+    useThemeStore.getState().setTheme('light');
+
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe('light');
+  });
+
+  it('sets explicit dark theme even when OS is light', async () => {
+    mediaQueryMatches = false; // simulate OS light
+    const { useThemeStore } = await import('./theme.store');
+
+    useThemeStore.getState().setTheme('dark');
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.style.colorScheme).toBe('dark');
+  });
+
+  it('switching from dark OS system to explicit light removes .dark class', async () => {
+    mediaQueryMatches = true; // OS dark
+    const { useThemeStore } = await import('./theme.store');
+
+    useThemeStore.getState().setTheme('system'); // dark applied
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+    useThemeStore.getState().setTheme('light'); // explicit override
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe('light');
   });
 });

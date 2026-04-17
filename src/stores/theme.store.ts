@@ -23,7 +23,9 @@ function getSystemTheme(): 'light' | 'dark' {
 export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
   const resolved = theme === 'system' ? getSystemTheme() : theme;
   document.documentElement.classList.toggle('dark', resolved === 'dark');
-  document.documentElement.style.colorScheme = theme === 'system' ? 'light dark' : theme;
+  // Always set the resolved value so browser-native UI (scrollbars, inputs)
+  // matches the actual visible theme, even when explicit light/dark overrides the OS.
+  document.documentElement.style.colorScheme = resolved;
   document.documentElement.style.setProperty('--primary-hue', primaryHue.toString());
   document.documentElement.style.setProperty('--font-size-base', `${fontSize}px`);
 }
