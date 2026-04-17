@@ -10,18 +10,25 @@ import {
 
 describe('formatCurrency', () => {
   it('converts minor units to formatted EUR string', () => {
-    expect(formatCurrency(1299)).toBe('€12.99');
-    expect(formatCurrency(100)).toBe('€1.00');
-    expect(formatCurrency(0)).toBe('€0.00');
+    expect(formatCurrency(1299, 'EUR', 'en-US')).toBe('€12.99');
+    expect(formatCurrency(100, 'EUR', 'en-US')).toBe('€1.00');
+    expect(formatCurrency(0, 'EUR', 'en-US')).toBe('€0.00');
   });
 
   it('supports different currencies', () => {
-    expect(formatCurrency(1000, 'USD')).toBe('$10.00');
-    expect(formatCurrency(500, 'GBP')).toBe('£5.00');
+    expect(formatCurrency(1000, 'USD', 'en-US')).toBe('$10.00');
+    expect(formatCurrency(500, 'GBP', 'en-US')).toBe('£5.00');
   });
 
   it('handles large amounts', () => {
-    expect(formatCurrency(100000)).toBe('€1,000.00');
+    expect(formatCurrency(100000, 'EUR', 'en-US')).toBe('€1,000.00');
+  });
+
+  it('respects locale conventions', () => {
+    // German locale: symbol after amount, comma as decimal separator
+    expect(formatCurrency(1299, 'EUR', 'de-DE')).toBe('12,99\u00a0€');
+    // Japanese yen: no decimal places (jsdom renders fullwidth ¥ U+FFE5)
+    expect(formatCurrency(1299, 'JPY', 'ja-JP')).toMatch(/13/);
   });
 });
 
@@ -41,8 +48,8 @@ describe('toMinorUnits', () => {
 
 describe('formatDate', () => {
   it('formats ISO date string for display', () => {
-    expect(formatDate('2024-01-15')).toBe('Jan 15, 2024');
-    expect(formatDate('2023-12-01')).toBe('Dec 1, 2023');
+    expect(formatDate('2024-01-15', 'en-US')).toBe('Jan 15, 2024');
+    expect(formatDate('2023-12-01', 'en-US')).toBe('Dec 1, 2023');
   });
 });
 

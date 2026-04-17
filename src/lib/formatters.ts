@@ -1,6 +1,12 @@
+function browserLocale(): string {
+  return (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
+}
+
 /** Converts minor currency units (e.g. 1299) to a formatted string (e.g. "€12.99"). */
-export function formatCurrency(minorUnits: number, currency = 'EUR', locale = 'en-US'): string {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minorUnits / 100);
+export function formatCurrency(minorUnits: number, currency = 'EUR', locale?: string): string {
+  return new Intl.NumberFormat(locale ?? browserLocale(), { style: 'currency', currency }).format(
+    minorUnits / 100,
+  );
 }
 
 /** Converts a decimal amount (e.g. 12.99) to minor units (e.g. 1299). */
@@ -28,8 +34,8 @@ export function toLocalYearMonth(date: Date): string {
 }
 
 /** Formats an ISO date string (YYYY-MM-DD) for display. */
-export function formatDate(dateString: string, locale = 'en-US'): string {
-  return new Intl.DateTimeFormat(locale, {
+export function formatDate(dateString: string, locale?: string): string {
+  return new Intl.DateTimeFormat(locale ?? browserLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
