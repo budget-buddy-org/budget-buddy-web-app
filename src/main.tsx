@@ -11,14 +11,20 @@ import { router } from './lib/router';
 import { useAuthStore } from './stores/auth.store';
 import './index.css';
 
-// Global error monitoring
-window.addEventListener('error', (event) => {
-  logError(event.error, { source: 'GlobalError' });
-});
-
-window.addEventListener('unhandledrejection', (event) => {
+// Global error monitoring — guarded for HMR to avoid duplicate listeners
+const onError = (event: ErrorEvent) => logError(event.error, { source: 'GlobalError' });
+const onRejection = (event: PromiseRejectionEvent) =>
   logError(event.reason, { source: 'UnhandledRejection' });
-});
+
+window.addEventListener('error', onError);
+window.addEventListener('unhandledrejection', onRejection);
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    window.removeEventListener('error', onError);
+    window.removeEventListener('unhandledrejection', onRejection);
+  });
+}
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');

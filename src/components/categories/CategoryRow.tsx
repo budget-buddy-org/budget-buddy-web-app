@@ -30,7 +30,7 @@ export function CategoryRow({
         disabled={isDeleting}
         aria-label="Delete category"
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="size-4" />
       </Button>
     </li>
   );

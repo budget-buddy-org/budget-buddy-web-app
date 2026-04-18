@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn } from '@/lib/cn';
 import { formatCurrency } from '@/lib/formatters';
 import type { TransactionSearch } from '@/routes/_app/transactions/index';
 
-export function CardDescription({
+export function SummaryCardDescription({
   className,
   children,
 }: {
@@ -12,7 +13,7 @@ export function CardDescription({
   children: ReactNode;
 }) {
   return (
-    <p className={`flex items-center gap-1 text-xs text-muted-foreground ${className ?? ''}`}>
+    <p className={cn('flex items-center gap-1 text-xs text-muted-foreground', className)}>
       {children}
     </p>
   );
@@ -40,13 +41,13 @@ export function SummaryCard({
       }
     >
       <CardHeader className="pb-2">
-        <CardDescription className="flex items-center gap-1">
+        <SummaryCardDescription>
           {icon}
           {label}
-        </CardDescription>
+        </SummaryCardDescription>
       </CardHeader>
       <CardContent>
-        <p className={`text-xl font-bold ${className}`}>{formatCurrency(amount, currency)}</p>
+        <p className={cn('text-xl font-bold', className)}>{formatCurrency(amount, currency)}</p>
       </CardContent>
     </Card>
   );

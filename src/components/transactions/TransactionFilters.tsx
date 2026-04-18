@@ -97,7 +97,7 @@ export function TransactionFilters({
           disabled={!hasActiveFilters}
           className="flex-1"
         >
-          <RotateCcw className="mr-2 h-4 w-4" />
+          <RotateCcw className="mr-2 size-4" />
           Reset
         </Button>
         <Button onClick={onClose} className="flex-1">

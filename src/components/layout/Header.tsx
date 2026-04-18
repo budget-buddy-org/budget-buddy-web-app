@@ -18,14 +18,16 @@ const NEXT_THEME: Record<Theme, Theme> = {
 };
 
 export function Header() {
-  const { theme, setTheme, glassEffect } = useThemeStore();
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+  const glassEffect = useThemeStore((s) => s.glassEffect);
   const ThemeIcon = THEME_ICONS[theme];
   const logout = useLogout();
 
   return (
     <header
       className={cn(
-        'flex h-14 md:h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 z-50 transition-colors',
+        'flex h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 z-50 transition-colors',
         glassEffect ? 'bg-background/80 backdrop-blur' : 'bg-background',
       )}
     >
@@ -42,7 +44,7 @@ export function Header() {
             aria-label="Settings"
             className="cursor-pointer"
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="size-4" />
           </Button>
         </Link>
         <Button
@@ -53,7 +55,7 @@ export function Header() {
           aria-label={`Switch theme (current: ${theme})`}
           className="cursor-pointer hidden md:inline-flex"
         >
-          <ThemeIcon className="h-4 w-4" />
+          <ThemeIcon className="size-4" />
         </Button>
         <Button
           variant="ghost"
@@ -63,7 +65,7 @@ export function Header() {
           aria-label="Log out"
           className="cursor-pointer"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="size-4" />
         </Button>
       </div>
     </header>

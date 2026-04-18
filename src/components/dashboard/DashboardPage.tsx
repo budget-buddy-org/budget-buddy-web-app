@@ -2,7 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ArrowDownRight, ArrowUpRight, ChevronDown, PlusCircle, Wallet } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
-import { CardDescription, SummaryCard } from '@/components/dashboard/SummaryCard';
+import { SummaryCard, SummaryCardDescription } from '@/components/dashboard/SummaryCard';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,13 +33,14 @@ const MONTH_NAMES = [
 export function DashboardPage() {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
-  const { glassEffect } = useThemeStore();
+  const glassEffect = useThemeStore((s) => s.glassEffect);
 
-  // Computed on each mount so the dashboard never shows stale dates if the app
+  // Computed on initial mount so the dashboard never shows stale dates if the app
   // stays open overnight and the user navigates back after midnight.
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const [{ currentYear, currentMonth }] = useState(() => {
+    const now = new Date();
+    return { currentYear: now.getFullYear(), currentMonth: now.getMonth() };
+  });
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
@@ -144,10 +145,10 @@ export function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Card className="col-span-2 md:col-span-1">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1">
-              <Wallet className="h-4 w-4" />
+            <SummaryCardDescription>
+              <Wallet className="size-4" />
               Balance
-            </CardDescription>
+            </SummaryCardDescription>
           </CardHeader>
           <CardContent>
             <p className={`text-2xl font-bold ${balance >= 0 ? 'text-income' : 'text-expense'}`}>
@@ -160,7 +161,7 @@ export function DashboardPage() {
           label="Income"
           amount={totals.income}
           currency={currency}
-          icon={<ArrowUpRight className="h-4 w-4 text-income" />}
+          icon={<ArrowUpRight className="size-4 text-income" />}
           className="text-income"
           linkSearch={{ type: 'INCOME', start: firstDayOfPeriod, end: lastDayOfPeriod }}
         />
@@ -168,7 +169,7 @@ export function DashboardPage() {
           label="Expenses"
           amount={totals.expense}
           currency={currency}
-          icon={<ArrowDownRight className="h-4 w-4 text-expense" />}
+          icon={<ArrowDownRight className="size-4 text-expense" />}
           className="text-expense"
           linkSearch={{ type: 'EXPENSE', start: firstDayOfPeriod, end: lastDayOfPeriod }}
         />
@@ -235,7 +236,7 @@ export function DashboardPage() {
                   onClick={() => setShowAll((v) => !v)}
                 >
                   <ChevronDown
-                    className={`mr-1 h-4 w-4 transition-transform ${showAll ? 'rotate-180' : ''}`}
+                    className={cn('mr-1 size-4 transition-transform', showAll && 'rotate-180')}
                   />
                   {showAll ? 'Show less' : `Show ${hiddenCount} more`}
                 </Button>
@@ -256,7 +257,7 @@ export function DashboardPage() {
           {recent.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
               <div className="rounded-full bg-muted p-3">
-                <PlusCircle className="h-4 w-4 text-muted-foreground" />
+                <PlusCircle className="size-4 text-muted-foreground" />
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium">No transactions yet</p>

@@ -13,7 +13,8 @@ const NAV_ITEMS = [
 
 export function MobileNav() {
   const { fab } = useFABContext();
-  const { showNavLabels, glassEffect } = useThemeStore();
+  const showNavLabels = useThemeStore((s) => s.showNavLabels);
+  const glassEffect = useThemeStore((s) => s.glassEffect);
   const lastTapRef = useRef<{ [key: string]: number }>({});
 
   const handleTap = useCallback((to: string, timeStamp: number) => {
@@ -25,10 +26,7 @@ export function MobileNav() {
   }, []);
 
   return (
-    <div
-      className="fixed left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 md:hidden"
-      style={{ bottom: 'env(safe-area-inset-bottom)' }}
-    >
+    <div className="fixed left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 md:hidden bottom-[env(safe-area-inset-bottom)]">
       <nav
         className={cn(
           'flex items-center gap-0.5 rounded-full border border-border/40 px-1.5 py-1.5 shadow-xl',
@@ -43,13 +41,13 @@ export function MobileNav() {
             to={to}
             className={cn(
               'relative flex flex-col items-center justify-center gap-0.5 rounded-full px-3 text-muted-foreground transition-spring hover:text-foreground active:scale-95 active:bg-muted/50 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
-              showNavLabels ? 'h-12 min-w-[3.25rem]' : 'h-10 w-10',
+              showNavLabels ? 'h-12 min-w-[3.25rem]' : 'size-10',
             )}
             activeProps={{ className: 'text-primary bg-primary/10 ring-1 ring-primary/20' }}
             activeOptions={{ exact: to === '/' }}
             onClick={(e) => handleTap(to, e.timeStamp)}
           >
-            <Icon className="h-5 w-5 shrink-0" />
+            <Icon className="size-5 shrink-0" />
             {showNavLabels && <span className="text-[10px] leading-none font-medium">{label}</span>}
           </Link>
         ))}
@@ -62,11 +60,11 @@ export function MobileNav() {
           aria-label={fab.label}
           className={cn(
             'flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/20 transition-spring hover:brightness-110 active:scale-90 active:rotate-45 motion-reduce:transition-none starting:scale-75 starting:opacity-0',
-            showNavLabels ? 'h-12 w-12' : 'h-10 w-10',
+            showNavLabels ? 'size-12' : 'size-10',
             glassEffect && 'bg-primary/90 backdrop-blur-sm',
           )}
         >
-          {fab.icon ?? <Plus className={showNavLabels ? 'h-6 w-6' : 'h-5 w-5'} />}
+          {fab.icon ?? <Plus className={showNavLabels ? 'size-6' : 'size-5'} />}
         </button>
       )}
     </div>
@@ -84,7 +82,7 @@ export function SidebarNav({ className }: Readonly<{ className?: string }>) {
           activeProps={{ className: 'bg-accent text-foreground font-medium' }}
           activeOptions={{ exact: to === '/' }}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="size-4" />
           {label}
         </Link>
       ))}

@@ -29,7 +29,7 @@ export function PageHeader({ title, subtitle, primaryAction, children }: PageHea
           {children}
           {primaryAction && (
             <Button onClick={primaryAction.onClick} className="hidden md:flex">
-              {primaryAction.icon || <Plus className="h-4 w-4" />}
+              {primaryAction.icon || <Plus className="size-4" />}
               {primaryAction.label}
             </Button>
           )}

@@ -52,6 +52,14 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+function clearToastTimeout(toastId: string) {
+  const timeout = toastTimeouts.get(toastId);
+  if (timeout) {
+    clearTimeout(timeout);
+    toastTimeouts.delete(toastId);
+  }
+}
+
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return;
@@ -105,9 +113,11 @@ export const reducer = (state: State, action: Action): State => {
   }
 };
 
-const listeners: Array<(state: State) => void> = [];
-
 let memoryState: State = { toasts: [] };
+
+function getSnapshot() {
+  return memoryState;
+}
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
@@ -121,9 +131,27 @@ function dispatch(action: Action) {
     }
   }
 
-  listeners.forEach((listener) => {
-    listener(memoryState);
-  });
+  // Clean up timeouts when toasts are removed
+  if (action.type === actionTypes.REMOVE_TOAST) {
+    if (action.toastId) {
+      clearToastTimeout(action.toastId);
+    } else {
+      for (const [id] of toastTimeouts) clearToastTimeout(id);
+    }
+  }
+
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 type Toast = Omit<ToasterToast, 'id'>;
@@ -158,17 +186,7 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState);
-
-  React.useEffect(() => {
-    listeners.push(setState);
-    return () => {
-      const index = listeners.indexOf(setState);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
-    };
-  }, []);
+  const state = React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   return {
     ...state,

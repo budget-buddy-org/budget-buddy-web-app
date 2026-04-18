@@ -165,11 +165,7 @@ export function CategoriesPage() {
                 maxLength={255}
                 autoFocus
                 autoComplete="off"
-                className={
-                  createFieldError
-                    ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                    : ''
-                }
+                error={!!createFieldError}
               />
               {createFieldError && (
                 <p className="text-xs font-medium text-destructive">{createFieldError}</p>
@@ -182,7 +178,7 @@ export function CategoriesPage() {
                 loading={createCategory.isPending}
                 disabled={!newName.trim()}
               >
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="size-4 mr-2" />
                 Save
               </Button>
               <Button
@@ -192,7 +188,7 @@ export function CategoriesPage() {
                 onClick={() => setShowForm(false)}
                 disabled={createCategory.isPending}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="size-4 mr-2" />
                 Cancel
               </Button>
             </div>
@@ -222,11 +218,7 @@ export function CategoriesPage() {
                 maxLength={255}
                 autoFocus
                 autoComplete="off"
-                className={
-                  updateFieldError
-                    ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                    : ''
-                }
+                error={!!updateFieldError}
               />
               {updateFieldError && (
                 <p className="text-xs font-medium text-destructive">{updateFieldError}</p>
@@ -239,7 +231,7 @@ export function CategoriesPage() {
                 loading={updateCategory.isPending}
                 disabled={!editName.trim() || editName.trim() === editingCategory?.name}
               >
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="size-4 mr-2" />
                 Save
               </Button>
               <Button
@@ -249,7 +241,7 @@ export function CategoriesPage() {
                 onClick={() => setEditingCategory(null)}
                 disabled={updateCategory.isPending}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="size-4 mr-2" />
                 Cancel
               </Button>
             </div>

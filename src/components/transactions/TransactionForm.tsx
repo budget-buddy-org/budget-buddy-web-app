@@ -193,11 +193,7 @@ export function TransactionForm({
               placeholder="Coffee, salary…"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className={
-                getFieldError('description')
-                  ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                  : ''
-              }
+              error={!!getFieldError('description')}
               autoFocus
             />
             {getFieldError('description') && (
@@ -214,11 +210,7 @@ export function TransactionForm({
                 id="tx-currency"
                 value={form.currency}
                 onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-                className={
-                  getFieldError('currency')
-                    ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                    : ''
-                }
+                error={!!getFieldError('currency')}
               >
                 {CURRENCIES.map((c) => (
                   <option key={c} value={c}>
@@ -241,11 +233,7 @@ export function TransactionForm({
                 value={form.amount}
                 onChange={(val) => setForm((f) => ({ ...f, amount: val }))}
                 required
-                className={
-                  getFieldError('amount')
-                    ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                    : ''
-                }
+                error={!!getFieldError('amount')}
               />
               {getFieldError('amount') && (
                 <p className="text-xs font-medium text-destructive">{getFieldError('amount')}</p>
@@ -262,11 +250,7 @@ export function TransactionForm({
               value={form.date}
               onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
               required
-              className={
-                getFieldError('date')
-                  ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                  : ''
-              }
+              error={!!getFieldError('date')}
             />
             {getFieldError('date') && (
               <p className="text-xs font-medium text-destructive">{getFieldError('date')}</p>
@@ -291,12 +275,12 @@ export function TransactionForm({
               >
                 {isAddingCategory ? (
                   <>
-                    <RotateCcw className="h-4 w-4 mr-1" />
+                    <RotateCcw className="size-4 mr-1" />
                     Choose existing
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus className="size-4 mr-1" />
                     Add new
                   </>
                 )}
@@ -312,11 +296,7 @@ export function TransactionForm({
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   disabled={isPending}
                   autoComplete="off"
-                  className={
-                    createCategory.error
-                      ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                      : ''
-                  }
+                  error={!!createCategory.error}
                   autoFocus
                 />
                 {(createCategoryError?.detail || createCategoryError?.title) && (
@@ -332,11 +312,7 @@ export function TransactionForm({
                   value={form.categoryId}
                   onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
                   disabled={isPending}
-                  className={
-                    getFieldError('categoryId')
-                      ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                      : ''
-                  }
+                  error={!!getFieldError('categoryId')}
                 >
                   <option value="">No category</option>
                   {categories.map((c) => (
@@ -357,7 +333,7 @@ export function TransactionForm({
 
         <div className="flex gap-2 pt-2">
           <Button type="submit" className="flex-1" loading={isPending} disabled={isFormDisabled}>
-            <Check className="h-4 w-4 mr-2" />
+            <Check className="size-4 mr-2" />
             Save
           </Button>
           <Button
@@ -367,7 +343,7 @@ export function TransactionForm({
             onClick={onCancel}
             disabled={isPending}
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="size-4 mr-2" />
             Cancel
           </Button>
         </div>
@@ -380,7 +356,7 @@ export function TransactionForm({
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isPending}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="size-4" />
             <span className="sr-only">Delete transaction</span>
           </button>
         )}

@@ -58,11 +58,7 @@ export function LoginPage() {
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
             required
-            className={
-              usernameError
-                ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                : ''
-            }
+            error={!!usernameError}
           />
           {usernameError && <p className="text-sm font-medium text-destructive">{usernameError}</p>}
         </div>
@@ -79,11 +75,7 @@ export function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             required
-            className={
-              passwordError
-                ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                : ''
-            }
+            error={!!passwordError}
           />
           {passwordError && <p className="text-sm font-medium text-destructive">{passwordError}</p>}
         </div>
@@ -93,7 +85,7 @@ export function LoginPage() {
         )}
 
         <Button type="submit" className="w-full" loading={login.isPending}>
-          {!login.isPending && <LogIn className="h-4 w-4 mr-2" />}
+          {!login.isPending && <LogIn className="size-4 mr-2" />}
           Sign in
         </Button>
       </form>

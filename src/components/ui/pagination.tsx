@@ -29,7 +29,7 @@ export function Pagination({ page, total, size, onPageChange, className }: Pagin
           disabled={!canPrevious}
           aria-label="Previous page"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
           <span className="hidden sm:inline">Previous</span>
         </Button>
         <Button
@@ -40,7 +40,7 @@ export function Pagination({ page, total, size, onPageChange, className }: Pagin
           aria-label="Next page"
         >
           <span className="hidden sm:inline">Next</span>
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </Button>
       </div>
     </div>

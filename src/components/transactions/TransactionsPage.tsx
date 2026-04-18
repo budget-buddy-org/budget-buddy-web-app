@@ -75,7 +75,7 @@ export function TransactionsPage() {
           onClick={() => setShowFilters((v) => !v)}
           aria-label="Toggle filters"
         >
-          <Filter className="h-4 w-4" />
+          <Filter className="size-4" />
           {hasActiveFilters && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
         </Button>
       </PageHeader>

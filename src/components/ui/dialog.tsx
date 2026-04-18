@@ -12,25 +12,35 @@ const DialogPortal = DialogPrimitives.Portal;
 
 const DialogClose = DialogPrimitives.Close;
 
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitives.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitives.Overlay
-    ref={ref}
-    className={cn(
-      'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
-      className,
-    )}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitives.Overlay.displayName;
+function DialogOverlay({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Overlay> & {
+  ref?: React.Ref<React.ElementRef<typeof DialogPrimitives.Overlay>>;
+}) {
+  return (
+    <DialogPrimitives.Overlay
+      ref={ref}
+      className={cn(
+        'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitives.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Content> & { hideClose?: boolean }
->(({ className, children, hideClose, ...props }, forwardedRef) => {
+function DialogContent({
+  className,
+  children,
+  hideClose,
+  ref: forwardedRef,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Content> & {
+  hideClose?: boolean;
+  ref?: React.Ref<React.ElementRef<typeof DialogPrimitives.Content>>;
+}) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const hiddenCloseRef = React.useRef<HTMLButtonElement>(null);
   const dragState = React.useRef({ isDragging: false, startY: 0 });
@@ -51,12 +61,14 @@ const DialogContent = React.forwardRef<
     dragState.current.isDragging = false;
     el.style.transition = 'transform 0.3s ease';
     el.style.transform = 'translateY(0)';
-    setTimeout(() => {
+    const onEnd = () => {
       if (contentRef.current) {
         contentRef.current.style.transform = '';
         contentRef.current.style.transition = '';
       }
-    }, 300);
+      el.removeEventListener('transitionend', onEnd);
+    };
+    el.addEventListener('transitionend', onEnd);
   }, []);
 
   const handlePointerDown = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -81,8 +93,12 @@ const DialogContent = React.forwardRef<
         if (el) {
           el.style.transition = 'transform 0.22s ease-in';
           el.style.transform = 'translateY(100vh)';
+          const onEnd = () => {
+            hiddenCloseRef.current?.click();
+            el.removeEventListener('transitionend', onEnd);
+          };
+          el.addEventListener('transitionend', onEnd);
         }
-        setTimeout(() => hiddenCloseRef.current?.click(), 220);
       } else {
         snapBack();
       }
@@ -130,52 +146,64 @@ const DialogContent = React.forwardRef<
 
         {!hideClose && (
           <DialogPrimitives.Close className="absolute right-4 top-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground cursor-pointer active:scale-90 motion-reduce:transition-none">
-            <X className="h-4 w-4" />
+            <X className="size-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitives.Close>
         )}
       </DialogPrimitives.Content>
     </DialogPortal>
   );
-});
-DialogContent.displayName = DialogPrimitives.Content.displayName;
+}
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
-);
-DialogHeader.displayName = 'DialogHeader';
+function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)}
+      {...props}
+    />
+  );
+}
 
-const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
-    {...props}
-  />
-);
-DialogFooter.displayName = 'DialogFooter';
+function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+      {...props}
+    />
+  );
+}
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitives.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitives.Title
-    ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitives.Title.displayName;
+function DialogTitle({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Title> & {
+  ref?: React.Ref<React.ElementRef<typeof DialogPrimitives.Title>>;
+}) {
+  return (
+    <DialogPrimitives.Title
+      ref={ref}
+      className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+      {...props}
+    />
+  );
+}
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitives.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitives.Description
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitives.Description.displayName;
+function DialogDescription({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Description> & {
+  ref?: React.Ref<React.ElementRef<typeof DialogPrimitives.Description>>;
+}) {
+  return (
+    <DialogPrimitives.Description
+      ref={ref}
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  );
+}
 
 export {
   Dialog,

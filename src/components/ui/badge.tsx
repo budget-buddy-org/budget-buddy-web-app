@@ -3,7 +3,7 @@ import { useThemeStore } from '@/stores/theme.store';
 import { type BadgeProps, badgeVariants } from './badge-variants';
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  const { glassEffect } = useThemeStore();
+  const glassEffect = useThemeStore((s) => s.glassEffect);
 
   return (
     <div

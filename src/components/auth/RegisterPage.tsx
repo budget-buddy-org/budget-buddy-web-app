@@ -56,11 +56,7 @@ export function RegisterPage() {
             minLength={3}
             maxLength={50}
             required
-            className={
-              usernameError
-                ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                : ''
-            }
+            error={!!usernameError}
           />
           {usernameError && <p className="text-sm font-medium text-destructive">{usernameError}</p>}
         </div>
@@ -78,11 +74,7 @@ export function RegisterPage() {
             autoComplete="new-password"
             minLength={8}
             required
-            className={
-              passwordError
-                ? 'border-destructive ring-destructive focus-visible:ring-destructive'
-                : ''
-            }
+            error={!!passwordError}
           />
           {passwordError && <p className="text-sm font-medium text-destructive">{passwordError}</p>}
         </div>
@@ -98,7 +90,7 @@ export function RegisterPage() {
         )}
 
         <Button type="submit" className="w-full" loading={register.isPending}>
-          {!register.isPending && <UserPlus className="h-4 w-4 mr-2" />}
+          {!register.isPending && <UserPlus className="size-4 mr-2" />}
           Create account
         </Button>
       </form>

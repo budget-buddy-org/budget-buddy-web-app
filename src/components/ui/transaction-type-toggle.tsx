@@ -27,10 +27,11 @@ export function TransactionTypeToggle({
   className,
   error,
 }: TransactionTypeToggleProps) {
-  const { glassEffect } = useThemeStore();
+  const glassEffect = useThemeStore((s) => s.glassEffect);
 
   return (
     <div
+      role="tablist"
       className={cn(
         'flex h-10 p-1 bg-muted rounded-lg transition-colors',
         glassEffect && 'bg-muted/50 backdrop-blur-md',
@@ -41,7 +42,8 @@ export function TransactionTypeToggle({
       {nullable && (
         <button
           type="button"
-          aria-pressed={value === ''}
+          role="tab"
+          aria-selected={value === ''}
           onClick={() => (onChange as NullableProps['onChange'])('')}
           className={cn(
             'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
@@ -58,7 +60,8 @@ export function TransactionTypeToggle({
       )}
       <button
         type="button"
-        aria-pressed={value === 'EXPENSE'}
+        role="tab"
+        aria-selected={value === 'EXPENSE'}
         onClick={() => onChange('EXPENSE')}
         className={cn(
           'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
@@ -70,12 +73,13 @@ export function TransactionTypeToggle({
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
         )}
       >
-        <ArrowDownRight className="h-4 w-4" />
+        <ArrowDownRight className="size-4" />
         Expense
       </button>
       <button
         type="button"
-        aria-pressed={value === 'INCOME'}
+        role="tab"
+        aria-selected={value === 'INCOME'}
         onClick={() => onChange('INCOME')}
         className={cn(
           'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
@@ -87,7 +91,7 @@ export function TransactionTypeToggle({
             : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
         )}
       >
-        <ArrowUpRight className="h-4 w-4" />
+        <ArrowUpRight className="size-4" />
         Income
       </button>
     </div>

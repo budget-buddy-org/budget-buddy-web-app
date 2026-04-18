@@ -54,7 +54,7 @@ export function ConfirmationDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="size-4 mr-2" />
             {cancelText}
           </Button>
           <Button
@@ -66,9 +66,9 @@ export function ConfirmationDialog({
           >
             {!isLoading &&
               (variant === 'destructive' ? (
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="size-4 mr-2" />
               ) : (
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="size-4 mr-2" />
               ))}
             {confirmText}
           </Button>

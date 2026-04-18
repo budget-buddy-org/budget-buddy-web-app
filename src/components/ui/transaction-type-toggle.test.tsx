@@ -6,11 +6,11 @@ describe('TransactionTypeToggle', () => {
   it('renders correctly with Expense selected', () => {
     render(<TransactionTypeToggle value="EXPENSE" onChange={() => {}} />);
 
-    const expenseBtn = screen.getByRole('button', { name: /expense/i });
-    const incomeBtn = screen.getByRole('button', { name: /income/i });
+    const expenseBtn = screen.getByRole('tab', { name: /expense/i });
+    const incomeBtn = screen.getByRole('tab', { name: /income/i });
 
-    expect(expenseBtn).toHaveAttribute('aria-pressed', 'true');
-    expect(incomeBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(expenseBtn).toHaveAttribute('aria-selected', 'true');
+    expect(incomeBtn).toHaveAttribute('aria-selected', 'false');
 
     // Check for icons
     expect(expenseBtn.querySelector('svg')).toBeDefined();
@@ -20,23 +20,23 @@ describe('TransactionTypeToggle', () => {
   it('renders correctly with Income selected', () => {
     render(<TransactionTypeToggle value="INCOME" onChange={() => {}} />);
 
-    const expenseBtn = screen.getByRole('button', { name: /expense/i });
-    const incomeBtn = screen.getByRole('button', { name: /income/i });
+    const expenseBtn = screen.getByRole('tab', { name: /expense/i });
+    const incomeBtn = screen.getByRole('tab', { name: /income/i });
 
-    expect(expenseBtn).toHaveAttribute('aria-pressed', 'false');
-    expect(incomeBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(expenseBtn).toHaveAttribute('aria-selected', 'false');
+    expect(incomeBtn).toHaveAttribute('aria-selected', 'true');
   });
 
   it('calls onChange when buttons are clicked', () => {
     const onChange = vi.fn();
     render(<TransactionTypeToggle value="EXPENSE" onChange={onChange} />);
 
-    const incomeBtn = screen.getByRole('button', { name: /income/i });
+    const incomeBtn = screen.getByRole('tab', { name: /income/i });
     fireEvent.click(incomeBtn);
 
     expect(onChange).toHaveBeenCalledWith('INCOME');
 
-    const expenseBtn = screen.getByRole('button', { name: /expense/i });
+    const expenseBtn = screen.getByRole('tab', { name: /expense/i });
     fireEvent.click(expenseBtn);
     expect(onChange).toHaveBeenCalledWith('EXPENSE');
   });
