@@ -102,6 +102,13 @@ jobs:
         id: digest
         run: echo "sha=sha256:$(ls /tmp/digests)" >> "$GITHUB_OUTPUT"
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       # Scan CRITICAL+HIGH findings and upload to the Security tab for full
       # visibility. Non-blocking — HIGH findings appear as warnings only.
       - name: Scan image with Trivy (SARIF)
