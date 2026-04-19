@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { LogOut, Monitor, Moon, Settings, Sun } from 'lucide-react';
+import { useAuth } from 'react-oidc-context';
 import { Button } from '@/components/ui/button';
-import { useLogout } from '@/hooks/useLogout';
 import { cn } from '@/lib/cn';
 import { type Theme, useThemeStore } from '@/stores/theme.store';
 
@@ -22,7 +22,7 @@ export function Header() {
   const setTheme = useThemeStore((s) => s.setTheme);
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const ThemeIcon = THEME_ICONS[theme];
-  const logout = useLogout();
+  const auth = useAuth();
 
   return (
     <header
@@ -60,7 +60,7 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => logout.mutate()}
+          onClick={() => void auth.signoutRedirect()}
           title="Log out"
           aria-label="Log out"
           className="cursor-pointer"

@@ -1,7 +1,7 @@
 import type { AuthToken, LoginRequest } from '@budget-buddy-org/budget-buddy-contracts';
 import { loginUser } from '@budget-buddy-org/budget-buddy-contracts';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -91,13 +91,7 @@ export function LoginPage() {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{' '}
-        <Link
-          to="/register"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          Sign up
-        </Link>
+        Account registration is handled by your identity provider.
       </p>
     </div>
   );

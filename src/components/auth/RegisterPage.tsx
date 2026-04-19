@@ -1,7 +1,7 @@
 import type { RegisterRequest } from '@budget-buddy-org/budget-buddy-contracts';
 import { registerUser } from '@budget-buddy-org/budget-buddy-contracts';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ export function RegisterPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      navigate({ to: '/login' });
+      navigate({ to: '/' });
     },
   });
 
@@ -85,9 +85,7 @@ export function RegisterPage() {
           </p>
         )}
 
-        {register.isSuccess && (
-          <p className="text-sm text-income">Account created! Redirecting to login…</p>
-        )}
+        {register.isSuccess && <p className="text-sm text-income">Account created! Redirecting…</p>}
 
         <Button type="submit" className="w-full" loading={register.isPending}>
           {!register.isPending && <UserPlus className="size-4 mr-2" />}
@@ -96,13 +94,7 @@ export function RegisterPage() {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
-        <Link
-          to="/login"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          Sign in
-        </Link>
+        Sign in is handled by your identity provider.
       </p>
     </div>
   );

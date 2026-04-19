@@ -74,7 +74,7 @@ export function refreshAuth() {
   return refreshPromise;
 }
 
-// On 401: attempt refresh → retry; on refresh failure → clear auth + redirect to login
+// On 401: attempt refresh → retry; on refresh failure → clear auth + return to app root
 client.interceptors.response.use(
   async (response: Response, _request: Request, options: unknown) => {
     const opts = options as InternalOptions;
@@ -108,7 +108,7 @@ client.interceptors.response.use(
     if (!token) {
       const { refreshToken } = useAuthStore.getState();
       if (!refreshToken) {
-        router.navigate({ to: '/login' });
+        router.navigate({ to: '/' });
         // Throw so the caller's promise rejects instead of processing the stale 401.
         // The component is about to unmount due to navigation, so this is safe.
         throw new Error('Session expired');

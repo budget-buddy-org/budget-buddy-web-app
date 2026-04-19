@@ -120,10 +120,9 @@ describe('API response interceptor', () => {
     expect(mockClientRequest).toHaveBeenCalled();
   });
 
-  it('redirects to /login but preserves auth state when refresh fails with a network error', async () => {
+  it('does not redirect but preserves auth state when refresh fails with a network error', async () => {
     // Network errors (no response) should NOT clear the refresh token — the token
-    // may still be valid once the server recovers. The user is redirected to /login
-    // where the bootstrap sequence will retry the refresh on reload.
+    // may still be valid once the server recovers.
     vi.mocked(refreshToken).mockRejectedValue(new Error('network error'));
 
     const res = makeResponse(401);
@@ -133,14 +132,14 @@ describe('API response interceptor', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('clears auth and redirects to /login when there is no refresh token', async () => {
+  it('clears auth and redirects to / when there is no refresh token', async () => {
     mockAuthState.refreshToken = null;
 
     const res = makeResponse(401);
     await expect(responseInterceptor?.(res, makeRequest(), {})).rejects.toThrow('Session expired');
 
     expect(mockAuthState.clearAuth).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/' });
   });
 
   it('queues concurrent 401s and replays them once the refresh resolves', async () => {
@@ -192,7 +191,7 @@ describe('API response interceptor', () => {
     );
 
     expect(mockAuthState.clearAuth).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/' });
   });
 
   it('does not leave isRefreshing=true after the no-refresh-token path (regression)', async () => {
