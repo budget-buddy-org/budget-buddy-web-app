@@ -7,22 +7,20 @@ const mockUserManager = {
 };
 
 vi.mock('@/lib/oidc', () => ({
-  userManager: mockUserManager,
+  getUserManager: () => mockUserManager,
 }));
 
-let authCallback: (() => Promise<string | undefined>) | undefined;
+let requestInterceptor: ((req: Request) => Promise<Request>) | undefined;
 let responseInterceptor: ((res: Response, req: Request) => Promise<Response>) | undefined;
 
 vi.mock('@budget-buddy-org/budget-buddy-contracts/client.gen', () => ({
   client: {
-    setConfig: vi.fn((config) => {
-      if (config.auth) {
-        authCallback = config.auth;
-      }
-    }),
+    setConfig: vi.fn(),
     interceptors: {
       request: {
-        use: vi.fn(),
+        use: vi.fn((fn) => {
+          requestInterceptor = fn;
+        }),
       },
       response: {
         use: vi.fn((fn) => {
@@ -33,8 +31,9 @@ vi.mock('@budget-buddy-org/budget-buddy-contracts/client.gen', () => ({
   },
 }));
 
-// Import module to trigger side-effect registration
+// Import module to trigger side-effect interceptor registration
 await import('./api');
+const { getAuthToken } = await import('./api');
 
 function makeResponse(status: number): Response {
   return new Response(null, { status });
@@ -44,68 +43,114 @@ function makeRequest(url = 'http://localhost/test'): Request {
   return new Request(url);
 }
 
-describe('API config & interceptors', () => {
+describe('getAuthToken', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('auth callback', () => {
-    it('returns access token when user is logged in and token is fresh', async () => {
-      mockUserManager.getUser.mockResolvedValue({
-        access_token: 'fresh-token',
-        expired: false,
-        expires_at: Date.now() / 1000 + 3600,
-      });
-
-      const token = await authCallback?.();
-
-      expect(token).toBe('fresh-token');
-      expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
+  it('returns the access token when user is logged in and token is fresh', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'fresh-token',
+      expires_at: Date.now() / 1000 + 3600,
     });
 
-    it('attempts silent refresh when token is about to expire', async () => {
-      mockUserManager.getUser.mockResolvedValue({
-        access_token: 'old-token',
-        expired: false,
-        expires_at: Date.now() / 1000 + 30, // 30s remaining
-      });
-      mockUserManager.signinSilent.mockResolvedValue({
-        access_token: 'new-token',
-      });
+    const token = await getAuthToken();
 
-      const token = await authCallback?.();
-
-      expect(mockUserManager.signinSilent).toHaveBeenCalled();
-      expect(token).toBe('new-token');
-    });
-
-    it('returns undefined when user is not logged in', async () => {
-      mockUserManager.getUser.mockResolvedValue(null);
-
-      const token = await authCallback?.();
-
-      expect(token).toBeUndefined();
-    });
+    expect(token).toBe('fresh-token');
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
   });
 
-  describe('response interceptor', () => {
-    it('triggers signinRedirect on 401', async () => {
-      const res = makeResponse(401);
-      const req = makeRequest();
+  it('proactively refreshes when the token expires within 60 seconds', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'old-token',
+      expires_at: Date.now() / 1000 + 30, // 30s remaining — under the 60s threshold
+    });
+    mockUserManager.signinSilent.mockResolvedValue({ access_token: 'new-token' });
 
-      await responseInterceptor?.(res, req);
+    const token = await getAuthToken();
 
-      expect(mockUserManager.signinRedirect).toHaveBeenCalled();
+    expect(mockUserManager.signinSilent).toHaveBeenCalled();
+    expect(token).toBe('new-token');
+  });
+
+  it('returns undefined when no user is logged in', async () => {
+    mockUserManager.getUser.mockResolvedValue(null);
+
+    const token = await getAuthToken();
+
+    expect(token).toBeUndefined();
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
+  });
+
+  it('returns undefined when silent refresh fails', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'old-token',
+      expires_at: Date.now() / 1000 + 10,
+    });
+    mockUserManager.signinSilent.mockRejectedValue(new Error('network error'));
+
+    const token = await getAuthToken();
+
+    expect(token).toBeUndefined();
+  });
+});
+
+describe('request interceptor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('sets Authorization header when a token is available', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'test-token',
+      expires_at: Date.now() / 1000 + 3600,
     });
 
-    it('avoids redirect loop for login/register/callback pages', async () => {
-      const res = makeResponse(401);
+    const req = makeRequest();
+    const result = await requestInterceptor?.(req);
 
-      await responseInterceptor?.(res, makeRequest('http://localhost/auth/login'));
-      await responseInterceptor?.(res, makeRequest('http://localhost/auth/register'));
-      await responseInterceptor?.(res, makeRequest('http://localhost/auth/callback'));
+    expect(result?.headers.get('Authorization')).toBe('Bearer test-token');
+  });
 
-      expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();
-    });
+  it('does not set Authorization header when user is not logged in', async () => {
+    mockUserManager.getUser.mockResolvedValue(null);
+
+    const req = makeRequest();
+    const result = await requestInterceptor?.(req);
+
+    expect(result?.headers.get('Authorization')).toBeNull();
+  });
+});
+
+describe('response interceptor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('triggers signinRedirect on 401', async () => {
+    const res = makeResponse(401);
+
+    await responseInterceptor?.(res, makeRequest());
+
+    expect(mockUserManager.signinRedirect).toHaveBeenCalled();
+  });
+
+  it('passes through non-401 responses unchanged', async () => {
+    const res = makeResponse(200);
+
+    const result = await responseInterceptor?.(res, makeRequest());
+
+    expect(result).toBe(res);
+    expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();
+  });
+
+  it('avoids redirect loops for all /auth/ routes', async () => {
+    const res = makeResponse(401);
+
+    await responseInterceptor?.(res, makeRequest('http://localhost/auth/login'));
+    await responseInterceptor?.(res, makeRequest('http://localhost/auth/register'));
+    await responseInterceptor?.(res, makeRequest('http://localhost/auth/callback'));
+
+    expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();
   });
 });
