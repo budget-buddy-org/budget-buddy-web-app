@@ -1,3 +1,9 @@
+## [4.0.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.2...v4.0.3) (2026-04-20)
+
+### Bug Fixes
+
+* revert nginx.security-headers.conf.template ([094312e](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/094312e943460474a29dac66e761412a20d36cc5))
+
 ## [4.0.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.1...v4.0.2) (2026-04-20)
 
 ### Bug Fixes
