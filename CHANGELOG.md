@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.0...v4.0.1) (2026-04-20)
+
+### Bug Fixes
+
+* rollback nginx ([e0bcb6d](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e0bcb6dfaa6cb4f794bb65f653c3e086ec4cbde3))
+
 ## [4.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.9.0...v4.0.0) (2026-04-20)
 
 ### ⚠ BREAKING CHANGES
