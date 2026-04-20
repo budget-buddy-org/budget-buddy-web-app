@@ -8,9 +8,11 @@ services:
       secrets:
         - github_token
     environment:
-      # Inject the API URL at runtime via the docker-entrypoint.sh script.
-      # Default to localhost if not specified in the environment.
+      # All three values are injected at runtime via docker-entrypoint.sh —
+      # no image rebuild needed when these change.
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+      VITE_OIDC_ISSUER: ${VITE_OIDC_ISSUER:-}
+      VITE_OIDC_CLIENT_ID: ${VITE_OIDC_CLIENT_ID:-}
     ports:
       - "${WEB_PORT:-3000}:80"
     healthcheck:

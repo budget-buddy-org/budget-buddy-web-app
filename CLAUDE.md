@@ -38,9 +38,8 @@ pnpm test:a11y       # Run accessibility tests
 
 TanStack Router v1 with file-based routing. Routes live in `src/routes/`. The route tree is auto-generated into `src/routeTree.gen.ts` by the Vite plugin — never edit that file by hand.
 
-Two layout routes act as auth guards:
-- `_app.tsx` — requires authentication; redirects to Identity Provider if not. Wraps pages in `AppShell`.
-- `_auth.tsx` — redirects already-authenticated users to `/`.
+One layout route acts as an auth guard:
+- `_app.tsx` — requires authentication; delegates to `ProtectedAppLayout` which calls `useAuth()` from `react-oidc-context` and triggers `signinRedirect()` if the user is not authenticated.
 
 Child routes are nested under these layouts by naming convention (`_app/`, `_auth/`).
 
@@ -53,10 +52,10 @@ Child routes are nested under these layouts by naming convention (`_app/`, `_aut
 ### API Client
 
 `src/lib/api.ts` configures the OpenAPI Fetch-based client from `@budget-buddy-org/budget-buddy-contracts`. It:
-- Uses `client.setConfig` only in `src/main.tsx` after the configuration is loaded for the `baseUrl`.
-- The `src/lib/api.ts` module configures the global client's `auth` property with a callback that retrieves the access token from the Zitadel OIDC SDK and performs proactive silent refreshes if the token is about to expire.
-- Handles "hard" 401 errors via a response interceptor by triggering a redirect to the Identity Provider.
-- Auth-related redirects are handled automatically by the OIDC SDK.
+- Uses `client.setConfig` in `src/main.tsx` after `loadConfig()` resolves, setting only `baseUrl`.
+- Exports `getAuthToken()` — a request interceptor helper that reads the current OIDC user via `getUserManager().getUser()` and proactively calls `signinSilent()` when the token expires within 60 seconds.
+- On 401: triggers `getUserManager().signinRedirect()` to re-authenticate. All `/auth/*` paths are excluded from this behaviour to prevent redirect loops on the callback route.
+- Auth-related redirects (`signinRedirect`, `signoutRedirect`) are handled by the OIDC SDK; no manual router navigation is needed.
 
 The application uses standalone functional API calls (e.g. `listTransactions`, `createCategory`) exported directly from the contracts package, which share the configured global client.
 

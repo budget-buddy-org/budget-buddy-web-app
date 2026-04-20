@@ -1,0 +1,29 @@
+# Generated at container startup by docker-entrypoint.sh via envsubst.
+# $VITE_OIDC_ISSUER and $VITE_API_URL are substituted at runtime so the CSP
+# always reflects the actual IdP and API origin — no image rebuild required.
+
+# Prevent clickjacking — superseded by frame-ancestors below but kept for
+# legacy browser compatibility.
+add_header X-Frame-Options        "DENY"                                              always;
+add_header X-Content-Type-Options "nosniff"                                           always;
+add_header Referrer-Policy        "strict-origin-when-cross-origin"                   always;
+add_header Permissions-Policy     "camera=(), microphone=(), geolocation=()"          always;
+
+# Content Security Policy
+# - script-src 'unsafe-inline': required for the inline theme-init script in
+#   index.html. Replace with a SHA-256 hash if the script is ever extracted.
+# - connect-src includes the API and OIDC issuer for token/userinfo endpoints.
+# - frame-src includes the OIDC issuer for the silent-renew hidden iframe.
+# - frame-ancestors 'none': blocks all framing (replaces X-Frame-Options).
+add_header Content-Security-Policy "
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  font-src 'self';
+  connect-src 'self' $VITE_API_URL $VITE_OIDC_ISSUER;
+  frame-src $VITE_OIDC_ISSUER;
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'none';
+" always;

@@ -19,7 +19,15 @@ export function ProtectedAppLayout() {
     );
   }
 
-  if (!auth.isAuthenticated) return null;
+  // signinRedirect() is in-flight — show a loading state so the user never
+  // sees a blank screen between the unauthenticated render and the redirect.
+  if (!auth.isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 text-center">
+        <p className="text-sm text-muted-foreground">Redirecting to sign-in…</p>
+      </div>
+    );
+  }
 
   return <AppLayout />;
 }

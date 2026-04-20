@@ -1,33 +1,30 @@
 import { render } from '@testing-library/react';
 import 'vitest-axe/extend-expect';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import { LoginPage } from '@/components/auth/LoginPage';
 
-vi.mock('@tanstack/react-router', () => ({
-  createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
-  useNavigate: () => vi.fn(),
-  Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
+vi.mock('react-oidc-context', () => ({
+  useAuth: () => ({ signinRedirect: vi.fn() }),
+}));
+
+vi.mock('@/components/ui/button', () => ({
+  Button: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: React.MouseEventHandler;
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  ),
 }));
 
 describe('LoginPage a11y', () => {
   it('should have no accessibility violations', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-
-    const { container } = render(
-      <QueryClientProvider client={queryClient}>
-        <LoginPage />
-      </QueryClientProvider>,
-    );
-
+    const { container } = render(<LoginPage />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
