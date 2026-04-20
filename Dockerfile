@@ -65,11 +65,11 @@ FROM nginx:1.29-alpine AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
-# Create the snippets directory and copy the shared security-headers snippet.
-# nginx's add_header is not inherited by child location blocks that define their
-# own add_header, so the snippet is included explicitly inside each location.
+# Create the snippets directory and copy the security-headers template.
+# docker-entrypoint.sh runs envsubst at startup to produce the final
+# security-headers.conf with the runtime OIDC issuer baked into the CSP.
 RUN mkdir -p /etc/nginx/snippets
-COPY --link nginx.security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY --link nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
 
 # Replace default config with our SPA-aware configuration.
 COPY --link nginx.conf /etc/nginx/conf.d/default.conf
