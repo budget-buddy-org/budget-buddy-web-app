@@ -53,9 +53,9 @@ Child routes are nested under these layouts by naming convention (`_app/`, `_aut
 ### API Client
 
 `src/lib/api.ts` configures the OpenAPI Fetch-based client from `@budget-buddy-org/budget-buddy-contracts`. It:
-- Uses `client.setConfig` only in `src/main.tsx` after the configuration is loaded. The `src/lib/api.ts` module only registers interceptors to ensure the global client is correctly configured before first use.
-- Attaches the access token from Zitadel OIDC SDK to every request via interceptors.
-- Handles "hard" 401 errors by triggering a redirect to the Identity Provider.
+- Uses `client.setConfig` only in `src/main.tsx` after the configuration is loaded for the `baseUrl`.
+- The `src/lib/api.ts` module configures the global client's `auth` property with a callback that retrieves the access token from the Zitadel OIDC SDK and performs proactive silent refreshes if the token is about to expire.
+- Handles "hard" 401 errors via a response interceptor by triggering a redirect to the Identity Provider.
 - Auth-related redirects are handled automatically by the OIDC SDK.
 
 The application uses standalone functional API calls (e.g. `listTransactions`, `createCategory`) exported directly from the contracts package, which share the configured global client.

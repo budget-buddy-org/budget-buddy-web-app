@@ -1,9 +1,9 @@
-import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthProvider } from 'react-oidc-context';
+import { client } from './lib/api.ts';
 import { loadConfig } from './lib/config';
 import { logError } from './lib/error-logger';
 import { onOidcSigninCallback, userManager } from './lib/oidc';
@@ -16,13 +16,13 @@ const onError = (event: ErrorEvent) => logError(event.error, { source: 'GlobalEr
 const onRejection = (event: PromiseRejectionEvent) =>
   logError(event.reason, { source: 'UnhandledRejection' });
 
-window.addEventListener('error', onError);
-window.addEventListener('unhandledrejection', onRejection);
+globalThis.addEventListener('error', onError);
+globalThis.addEventListener('unhandledrejection', onRejection);
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
-    window.removeEventListener('error', onError);
-    window.removeEventListener('unhandledrejection', onRejection);
+    globalThis.removeEventListener('error', onError);
+    globalThis.removeEventListener('unhandledrejection', onRejection);
   });
 }
 

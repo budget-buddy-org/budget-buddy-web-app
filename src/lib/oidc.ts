@@ -16,6 +16,11 @@ export function getOidcConfig(): UserManagerSettings {
     post_logout_redirect_uri: `${window.location.origin}/`,
     response_type: 'code',
     scope: 'openid profile email offline_access',
+    // Enable background token refresh
+    automaticSilentRenew: true,
+    // Helps with 401s if the server returns extra claims Zitadel adds
+    filterProtocolClaims: true,
+    loadUserInfo: true,
   };
 }
 
