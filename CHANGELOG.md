@@ -1,3 +1,13 @@
+## [4.0.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.9.0...v4.0.0) (2026-04-20)
+
+### ⚠ BREAKING CHANGES
+
+* migrate authentication to external OIDC provider (#90)
+
+### Features
+
+* migrate authentication to external OIDC provider ([#90](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/90)) ([71ed001](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/71ed0012cb1f86e519379e3be22b167b7aa38667)), closes [#61](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/61) [#62](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/62) [#63](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/63) [#91](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/91)
+
 ## [3.9.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v3.8.3...v3.9.0) (2026-04-18)
 
 ### Features
