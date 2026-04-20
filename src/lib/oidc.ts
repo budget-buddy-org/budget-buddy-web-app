@@ -1,4 +1,4 @@
-import type { UserManagerSettings } from 'oidc-client-ts';
+import { UserManager, type UserManagerSettings } from 'oidc-client-ts';
 
 function requiredEnv(name: 'VITE_OIDC_ISSUER' | 'VITE_OIDC_CLIENT_ID'): string {
   const value = import.meta.env[name];
@@ -18,6 +18,8 @@ export function getOidcConfig(): UserManagerSettings {
     scope: 'openid profile email offline_access',
   };
 }
+
+export const userManager = new UserManager(getOidcConfig());
 
 export function onOidcSigninCallback(): void {
   window.history.replaceState({}, document.title, '/');

@@ -4,13 +4,11 @@ import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthProvider } from 'react-oidc-context';
-import { refreshAuth } from './lib/api';
 import { loadConfig } from './lib/config';
 import { logError } from './lib/error-logger';
-import { getOidcConfig, onOidcSigninCallback } from './lib/oidc';
+import { onOidcSigninCallback, userManager } from './lib/oidc';
 import { queryClient } from './lib/query-client';
 import { router } from './lib/router';
-import { useAuthStore } from './stores/auth.store';
 import './index.css';
 
 // Global error monitoring — guarded for HMR to avoid duplicate listeners
@@ -34,27 +32,13 @@ if (!rootEl) throw new Error('Root element not found');
 // Bootstrapping: Load runtime config, update the API client, then render the app.
 loadConfig()
   .then(async (config) => {
-    const oidcConfig = getOidcConfig();
-
     client.setConfig({
       baseUrl: config.VITE_API_URL,
-      auth: () => useAuthStore.getState().accessToken ?? undefined,
     });
-
-    // Try to refresh the token on app load if we have a refresh token but no access token.
-    // This avoids unnecessary redirects to the login page on page reload.
-    const { accessToken, refreshToken } = useAuthStore.getState();
-    if (!accessToken && refreshToken) {
-      try {
-        await refreshAuth();
-      } catch (err) {
-        console.error('[BOOTSTRAP] Auth refresh failed:', err);
-      }
-    }
 
     createRoot(rootEl).render(
       <StrictMode>
-        <AuthProvider {...oidcConfig} onSigninCallback={onOidcSigninCallback}>
+        <AuthProvider userManager={userManager} onSigninCallback={onOidcSigninCallback}>
           <QueryClientProvider client={queryClient}>
             <RouterProvider router={router} />
           </QueryClientProvider>

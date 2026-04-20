@@ -1,100 +1,26 @@
-import type { RegisterRequest } from '@budget-buddy-org/budget-buddy-contracts';
-import { registerUser } from '@budget-buddy-org/budget-buddy-contracts';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 import { UserPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useAuth } from 'react-oidc-context';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { getApiError } from '@/lib/api-error';
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const register = useMutation({
-    mutationFn: async (body: RegisterRequest) => {
-      const { error } = await registerUser({ body });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      navigate({ to: '/' });
-    },
-  });
-
-  const fieldErrors = getApiError(register.error)?.errors;
-  const getFieldError = (field: string) => fieldErrors?.find((e) => e.field === field)?.message;
-  const usernameError = getFieldError('username');
-  const passwordError = getFieldError('password');
+  const auth = useAuth();
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="text-center">
         <h2 className="text-lg font-medium">Create account</h2>
-        <p className="text-sm text-muted-foreground">Choose a username and password</p>
+        <p className="text-sm text-muted-foreground">
+          Log in with your identity provider to continue
+        </p>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          register.mutate({ username, password });
-        }}
-        className="space-y-3"
-      >
-        <div className="space-y-1">
-          <label className="text-sm font-medium" htmlFor="username">
-            Username
-          </label>
-          <Input
-            id="username"
-            type="text"
-            placeholder="choose_username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            minLength={3}
-            maxLength={50}
-            required
-            error={!!usernameError}
-          />
-          {usernameError && <p className="text-sm font-medium text-destructive">{usernameError}</p>}
-        </div>
+      <Button onClick={() => void auth.signinRedirect()} className="w-full" size="lg">
+        <UserPlus className="size-4 mr-2" />
+        Create account with Zitadel
+      </Button>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium" htmlFor="password">
-            Password
-          </label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-            minLength={8}
-            required
-            error={!!passwordError}
-          />
-          {passwordError && <p className="text-sm font-medium text-destructive">{passwordError}</p>}
-        </div>
-
-        {register.isError && !fieldErrors?.length && (
-          <p className="text-sm text-destructive">
-            Registration failed. The username may already be taken.
-          </p>
-        )}
-
-        {register.isSuccess && <p className="text-sm text-income">Account created! Redirecting…</p>}
-
-        <Button type="submit" className="w-full" loading={register.isPending}>
-          {!register.isPending && <UserPlus className="size-4 mr-2" />}
-          Create account
-        </Button>
-      </form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Sign in is handled by your identity provider.
+      <p className="text-center text-xs text-muted-foreground pt-4">
+        Account registration and password management are handled by your identity provider.
       </p>
     </div>
   );
