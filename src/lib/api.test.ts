@@ -147,8 +147,6 @@ describe('response interceptor', () => {
   it('avoids redirect loops for all /auth/ routes', async () => {
     const res = makeResponse(401);
 
-    await responseInterceptor?.(res, makeRequest('http://localhost/auth/login'));
-    await responseInterceptor?.(res, makeRequest('http://localhost/auth/register'));
     await responseInterceptor?.(res, makeRequest('http://localhost/auth/callback'));
 
     expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();

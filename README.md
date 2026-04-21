@@ -45,7 +45,8 @@ pnpm preview      # Preview production build locally
 - **Vite** + **React 19** + **TypeScript** (strict)
 - **TanStack Router v1** — file-based routing
 - **TanStack Query v5** — server state, caching, mutations
-- **Zustand v5** — auth tokens + theme preference
+- **react-oidc-context** — OIDC authentication
+- **Zustand v5** — theme and appearance preferences
 - **shadcn/ui** (Radix UI + Tailwind v4)
 - **ESLint** + **Biome** — lint + format
 - **Vitest** + **Testing Library** — unit tests
