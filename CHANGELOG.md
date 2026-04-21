@@ -1,3 +1,9 @@
+## [4.0.6](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.5...v4.0.6) (2026-04-21)
+
+### Bug Fixes
+
+* **nginx:** fix assets routing ([8969528](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/8969528670b797657cc84503136bbed970459896))
+
 ## [4.0.5](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.4...v4.0.5) (2026-04-21)
 
 ### Bug Fixes
