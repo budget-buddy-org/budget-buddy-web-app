@@ -95,7 +95,7 @@ export function TransactionForm({
     }
 
     const body: TransactionWrite = {
-      description: form.description || undefined,
+      description: form.description || null,
       amount: toMinorUnits(Number(form.amount)),
       type: form.type,
       currency: form.currency,

@@ -255,7 +255,7 @@ describe('TransactionForm', () => {
     expect(screen.getByText(/Delete Transaction/)).toBeInTheDocument();
 
     // Mock delete success
-    mockDeleteTx.mutate.mockImplementationOnce((_id, options) => {
+    mockDeleteTx.mutate.mockImplementationOnce((_id: string, options: { onSuccess: () => void }) => {
       options.onSuccess();
     });
 
@@ -265,6 +265,74 @@ describe('TransactionForm', () => {
     expect(mockDeleteTx.mutate).toHaveBeenCalledWith('tx-1', expect.any(Object));
     expect(onDeleteSuccess).toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  describe('PATCH body construction', () => {
+    const existingTransaction = {
+      id: 'tx-1',
+      description: 'Old Description',
+      amount: 500,
+      currency: 'EUR',
+      type: 'EXPENSE' as const,
+      date: '2024-01-01',
+      categoryId: 'cat-1',
+    };
+
+    it('sends null for description when cleared (not undefined)', async () => {
+      renderForm({ transaction: existingTransaction });
+      const user = userEvent.setup();
+
+      // Clear description — user wants to remove it
+      const descInput = screen.getByPlaceholderText(/Coffee/i);
+      await user.clear(descInput);
+
+      await user.click(screen.getByRole('button', { name: /Save/i }));
+
+      expect(mockUpdateTx.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({ description: null }),
+        expect.any(Object),
+      );
+      // Explicitly verify undefined is NOT sent — that would silently skip the field in JSON
+      const calledWith = mockUpdateTx.mutate.mock.calls[0][0];
+      expect(calledWith).not.toMatchObject({ description: undefined });
+      expect('description' in calledWith).toBe(true);
+    });
+
+    it('sends the description value when non-empty', async () => {
+      renderForm({ transaction: existingTransaction });
+      const user = userEvent.setup();
+
+      const descInput = screen.getByPlaceholderText(/Coffee/i);
+      await user.clear(descInput);
+      await user.type(descInput, 'New Description');
+
+      await user.click(screen.getByRole('button', { name: /Save/i }));
+
+      expect(mockUpdateTx.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({ description: 'New Description' }),
+        expect.any(Object),
+      );
+    });
+
+    it('sends null for description when form is submitted without one (create)', async () => {
+      renderForm();
+      const user = userEvent.setup();
+
+      // Fill required fields only — leave description empty
+      const amountInput = screen.getAllByRole('spinbutton')[0];
+      await user.type(amountInput, '5.00');
+
+      // Two comboboxes: currency (index 0) and category (index 1)
+      const [, categorySelect] = screen.getAllByRole('combobox');
+      await user.selectOptions(categorySelect, 'cat-1');
+
+      await user.click(screen.getByRole('button', { name: /Save/i }));
+
+      expect(mockCreateTx.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({ description: null }),
+        expect.any(Object),
+      );
+    });
   });
 
   it('handles autoFocus always', () => {
