@@ -19,9 +19,9 @@ describe('buildOidcSettings', () => {
 
     // extraQueryParams is optional; when provided it should contain the audience
     // The typings are loose on the exact shape, so check presence via index access.
-    // @ts-ignore - test-time access
+    // @ts-expect-error - test-time access
     expect(settings.extraQueryParams).toBeDefined();
-    // @ts-ignore
+    // @ts-expect-error - runtime property added by buildOidcSettings
     expect(settings.extraQueryParams?.audience).toBe('my-audience');
   });
 

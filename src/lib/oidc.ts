@@ -31,7 +31,11 @@ export function buildOidcSettings(
  * Initializes the shared UserManager with runtime-loaded OIDC config.
  * Must be called once in main.tsx after loadConfig() resolves, before rendering.
  */
-export function initUserManager(issuer: string, clientId: string, jwtAudience?: string): UserManager {
+export function initUserManager(
+  issuer: string,
+  clientId: string,
+  jwtAudience?: string,
+): UserManager {
   _userManager = new UserManager(buildOidcSettings(issuer, clientId, jwtAudience));
   return _userManager;
 }
