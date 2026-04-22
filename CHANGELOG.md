@@ -1,3 +1,9 @@
+## [4.0.8](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.7...v4.0.8) (2026-04-22)
+
+### Bug Fixes
+
+* **transactions:** send null for empty description on PATCH so it is cleared ([#109](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/109)) ([deb4850](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/deb4850638aa537d01c20d40df6353f640a9c1f6))
+
 ## [4.0.7](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.6...v4.0.7) (2026-04-22)
 
 ### Bug Fixes
