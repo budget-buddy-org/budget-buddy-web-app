@@ -39,8 +39,7 @@ loadConfig()
     const userManager = initUserManager(
       config.VITE_OIDC_ISSUER,
       config.VITE_OIDC_CLIENT_ID,
-      config.VITE_OIDC_JWT_AUD,
-      config.VITE_OIDC_JWT_AUD_PARAM,
+      config.VITE_OIDC_SCOPES,
     );
 
     createRoot(rootEl).render(

@@ -39,8 +39,7 @@ All three settings are injected at container startup via `envsubst` — **no ima
 | `VITE_API_URL` | Backend API base URL |
 | `VITE_OIDC_ISSUER` | OIDC issuer URL (e.g. `https://your-tenant.zitadel.cloud`) |
 | `VITE_OIDC_CLIENT_ID` | SPA client ID registered in Zitadel |
-| `VITE_OIDC_JWT_AUD` | (optional) audience to request in the access token; sent to the IdP as an extra query parameter when set |
-| `VITE_OIDC_JWT_AUD_PARAM` | (optional) name of the query parameter used to request the audience. Defaults to `audience` |
+| `VITE_OIDC_SCOPES` | (optional) space-separated scopes string to request from the IdP; when set it overrides the default scopes |
 
 In Docker, the entrypoint substitutes these into `config.json` (served at `/config.json`) and into the nginx Content-Security-Policy header. `src/lib/config.ts` reads `config.json` at startup before the app renders.
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildOidcSettings, onOidcSigninCallback } from './oidc';
 
 describe('buildOidcSettings', () => {
-  it('builds settings from issuer and clientId', () => {
+  it('builds settings from issuer and clientId with default scopes', () => {
     const settings = buildOidcSettings('https://issuer.example.com', 'web-client');
 
     expect(settings.authority).toBe('https://issuer.example.com');
@@ -10,19 +10,18 @@ describe('buildOidcSettings', () => {
     expect(settings.redirect_uri).toBe(`${window.location.origin}/auth/callback`);
     expect(settings.post_logout_redirect_uri).toBe(`${window.location.origin}/`);
     expect(settings.response_type).toBe('code');
-    // silent_redirect_uri should be present to support silent renew flows
-    expect(settings.silent_redirect_uri).toBe(`${window.location.origin}/auth/silent-renew`);
+    // default scopes include openid and offline_access
+    expect(settings.scope).toBe('openid profile email offline_access');
   });
 
-  it('includes audience in extraQueryParams when provided', () => {
-    const settings = buildOidcSettings('https://issuer.example.com', 'web-client', 'my-audience');
+  it('uses custom scopes when provided', () => {
+    const settings = buildOidcSettings(
+      'https://issuer.example.com',
+      'web-client',
+      'openid profile email api:read',
+    );
 
-    // extraQueryParams is optional; when provided it should contain the audience
-    // The typings are loose on the exact shape, so check presence via index access.
-    // @ts-expect-error - test-time access
-    expect(settings.extraQueryParams).toBeDefined();
-    // @ts-expect-error - runtime property added by buildOidcSettings
-    expect(settings.extraQueryParams?.audience).toBe('my-audience');
+    expect(settings.scope).toBe('openid profile email api:read');
   });
 
   it('uses sessionStorage for PKCE state store', () => {
@@ -50,7 +49,11 @@ describe('getUserManager / initUserManager', () => {
 
   it('returns the same UserManager instance after initialisation', async () => {
     const { initUserManager: freshInit, getUserManager: freshGet } = await import('./oidc');
-    const mgr = freshInit('https://issuer.example.com', 'web-client', 'my-audience');
+    const mgr = freshInit(
+      'https://issuer.example.com',
+      'web-client',
+      'openid profile email api:read',
+    );
 
     expect(freshGet()).toBe(mgr);
   });

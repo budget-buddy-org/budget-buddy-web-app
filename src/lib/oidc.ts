@@ -5,10 +5,9 @@ let _userManager: UserManager | null = null;
 export function buildOidcSettings(
   issuer: string,
   clientId: string,
-  jwtAudience?: string,
-  audienceParamName = 'audience',
+  scopes?: string,
 ): UserManagerSettings {
-  const extraQueryParams = jwtAudience ? { [audienceParamName]: jwtAudience } : undefined;
+  const scopeValue = scopes ?? 'openid profile email offline_access';
 
   return {
     authority: issuer,
@@ -19,12 +18,11 @@ export function buildOidcSettings(
     // refresh tokens without navigating the top-level application.
     silent_redirect_uri: `${globalThis.location.origin}/auth/silent-renew`,
     response_type: 'code',
-    scope: 'openid profile email offline_access',
+    scope: scopeValue,
     automaticSilentRenew: true,
     filterProtocolClaims: true,
     loadUserInfo: true,
     stateStore: new WebStorageStateStore({ store: globalThis.sessionStorage }),
-    ...(extraQueryParams ? { extraQueryParams } : {}),
   };
 }
 
@@ -32,15 +30,8 @@ export function buildOidcSettings(
  * Initializes the shared UserManager with runtime-loaded OIDC config.
  * Must be called once in main.tsx after loadConfig() resolves, before rendering.
  */
-export function initUserManager(
-  issuer: string,
-  clientId: string,
-  jwtAudience?: string,
-  audienceParamName?: string,
-): UserManager {
-  _userManager = new UserManager(
-    buildOidcSettings(issuer, clientId, jwtAudience, audienceParamName ?? 'audience'),
-  );
+export function initUserManager(issuer: string, clientId: string, scopes?: string): UserManager {
+  _userManager = new UserManager(buildOidcSettings(issuer, clientId, scopes));
   return _userManager;
 }
 

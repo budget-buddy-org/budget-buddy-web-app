@@ -24,8 +24,7 @@ Required OIDC environment variables:
 
 - `VITE_OIDC_ISSUER` — OIDC issuer URL (e.g. your Zitadel issuer)
 - `VITE_OIDC_CLIENT_ID` — frontend SPA client ID
-- `VITE_OIDC_JWT_AUD` — (optional) audience to request in the access token. When set, the frontend sends this as an extra query parameter to the IdP so the issued access token contains the desired `aud` claim.
-- `VITE_OIDC_JWT_AUD_PARAM` — (optional) name of the query parameter used to request the audience. Defaults to `audience`. Some IdPs use `resource` or `aud` instead of `audience`.
+- `VITE_OIDC_SCOPES` — (optional) space-separated list of scopes to request from the IdP (overrides default `openid profile email offline_access`). Use this when your API requires additional scopes or a different scope shape.
 
 ## Commands
 
