@@ -9,8 +9,14 @@ describe('buildOidcSettings', () => {
     expect(settings.client_id).toBe('web-client');
     expect(settings.redirect_uri).toBe(`${window.location.origin}/auth/callback`);
     expect(settings.post_logout_redirect_uri).toBe(`${window.location.origin}/`);
-    expect(settings.silent_redirect_uri).toBe(`${window.location.origin}/silent-renew.html`);
     expect(settings.response_type).toBe('code');
+    expect(settings.silent_redirect_uri).toBeUndefined();
+  });
+
+  it('uses sessionStorage for PKCE state store', () => {
+    const settings = buildOidcSettings('https://issuer.example.com', 'web-client');
+
+    expect(settings.stateStore).toBeDefined();
   });
 });
 

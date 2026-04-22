@@ -1,4 +1,4 @@
-import { UserManager, type UserManagerSettings } from 'oidc-client-ts';
+import { UserManager, WebStorageStateStore, type UserManagerSettings } from 'oidc-client-ts';
 
 let _userManager: UserManager | null = null;
 
@@ -8,14 +8,14 @@ export function buildOidcSettings(issuer: string, clientId: string): UserManager
     client_id: clientId,
     redirect_uri: `${window.location.origin}/auth/callback`,
     post_logout_redirect_uri: `${window.location.origin}/`,
-    // Dedicated minimal page for background token renewal via hidden iframe.
-    // Using a separate page avoids loading the full React bundle inside the iframe.
-    silent_redirect_uri: `${window.location.origin}/silent-renew.html`,
-    response_type: 'code', // Authorization Code Flow with PKCE (oidc-client-ts default)
+    response_type: 'code',
     scope: 'openid profile email offline_access',
     automaticSilentRenew: true,
     filterProtocolClaims: true,
     loadUserInfo: true,
+    // Keep PKCE verifier/state/nonce in sessionStorage (tab-scoped, clears on close),
+    // consistent with where oidc-client-ts stores the tokens themselves.
+    stateStore: new WebStorageStateStore({ store: window.sessionStorage }),
   };
 }
 
