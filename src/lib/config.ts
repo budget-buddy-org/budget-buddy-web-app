@@ -4,6 +4,8 @@ export interface AppConfig {
   VITE_OIDC_CLIENT_ID: string;
   // Optional space-separated scopes string to request from the IdP (overrides default scopes)
   VITE_OIDC_SCOPES?: string;
+  // Optional fallback URL for the identity provider's user management page
+  VITE_OIDC_USER_MANAGEMENT_URL?: string;
 }
 
 let config: AppConfig | null = null;
@@ -45,6 +47,7 @@ export async function loadConfig(): Promise<AppConfig> {
       VITE_OIDC_ISSUER: import.meta.env.VITE_OIDC_ISSUER ?? '',
       VITE_OIDC_CLIENT_ID: import.meta.env.VITE_OIDC_CLIENT_ID ?? '',
       VITE_OIDC_SCOPES: import.meta.env.VITE_OIDC_SCOPES ?? undefined,
+      VITE_OIDC_USER_MANAGEMENT_URL: import.meta.env.VITE_OIDC_USER_MANAGEMENT_URL ?? undefined,
     };
   }
 
@@ -62,6 +65,7 @@ export function getConfig(): AppConfig {
       VITE_OIDC_ISSUER: import.meta.env.VITE_OIDC_ISSUER ?? '',
       VITE_OIDC_CLIENT_ID: import.meta.env.VITE_OIDC_CLIENT_ID ?? '',
       VITE_OIDC_SCOPES: import.meta.env.VITE_OIDC_SCOPES ?? undefined,
+      VITE_OIDC_USER_MANAGEMENT_URL: import.meta.env.VITE_OIDC_USER_MANAGEMENT_URL ?? undefined,
     };
   }
   return config;

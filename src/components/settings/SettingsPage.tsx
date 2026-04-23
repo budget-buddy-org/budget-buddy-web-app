@@ -1,11 +1,25 @@
-import { Monitor, Moon, Navigation, Palette, RefreshCw, Sun, Type } from 'lucide-react';
+import {
+  LogOut,
+  Monitor,
+  Moon,
+  Navigation,
+  Palette,
+  RefreshCw,
+  Sun,
+  Type,
+  User,
+} from 'lucide-react';
+import { useAuth } from 'react-oidc-context';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { getConfig } from '@/lib/config';
 import { useThemeStore } from '@/stores/theme.store';
 
 export function SettingsPage() {
+  const { user, signoutRedirect } = useAuth();
+  const config = getConfig();
   const {
     theme,
     setTheme,
@@ -19,11 +33,61 @@ export function SettingsPage() {
     setGlassEffect,
   } = useThemeStore();
 
+  const profileUrl = user?.profile?.profile || config.VITE_OIDC_USER_MANAGEMENT_URL;
+
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
 
       <div className="grid gap-6">
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <User className="size-4 text-primary" />
+            <h2 className="text-lg font-semibold">Account</h2>
+          </div>
+          <Card className="p-4 space-y-4">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium">
+                {user?.profile.name || user?.profile.preferred_username || 'Authenticated User'}
+              </p>
+              <p className="text-xs text-muted-foreground">{user?.profile.email}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {profileUrl && (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 cursor-pointer w-full sm:w-auto"
+                >
+                  <a href={profileUrl} target="_blank" rel="noopener noreferrer">
+                    <User className="size-4" />
+                    Manage Profile
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 cursor-pointer w-full sm:w-auto text-destructive hover:text-destructive"
+                onClick={() => void signoutRedirect()}
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </Button>
+            </div>
+            {profileUrl ? (
+              <p className="text-xs text-muted-foreground mt-2">
+                You will be redirected to your identity provider to manage your account.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">
+                External profile management is not provided by your identity provider.
+              </p>
+            )}
+          </Card>
+        </section>
+
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Sun className="size-4 text-primary" />

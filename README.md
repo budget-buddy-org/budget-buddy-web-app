@@ -25,6 +25,7 @@ Required OIDC environment variables:
 - `VITE_OIDC_ISSUER` — OIDC issuer URL (e.g. your Zitadel issuer)
 - `VITE_OIDC_CLIENT_ID` — frontend SPA client ID
 - `VITE_OIDC_SCOPES` — (optional) space-separated list of scopes to request from the IdP (overrides default `openid profile email offline_access`). Use this when your API requires additional scopes or a different scope shape.
+- `VITE_OIDC_USER_MANAGEMENT_URL` — (optional) URL for the identity provider's user management page (e.g. Zitadel console or Keycloak account page).
 
 ## Commands
 
@@ -70,11 +71,12 @@ GITHUB_TOKEN=$(gh auth token) \
 VITE_API_URL=http://localhost:8080 \
 VITE_OIDC_ISSUER=https://issuer.example.com \
 VITE_OIDC_CLIENT_ID=web-client \
+VITE_OIDC_USER_MANAGEMENT_URL=https://issuer.example.com/ui/console/users/me \
 VITE_OIDC_JWT_AUD=test-audience \
 docker compose up --build
 ```
 
-`VITE_API_URL`, `VITE_OIDC_ISSUER`, and `VITE_OIDC_CLIENT_ID` are injected into the container at runtime — no need to rebuild the image when these values change.
+`VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, and `VITE_OIDC_USER_MANAGEMENT_URL` are injected into the container at runtime — no need to rebuild the image when these values change.
 
 Pre-built images are published to `ghcr.io/budget-buddy-org/budget-buddy-web-app` on every merge to `main` and every GitHub Release.
 

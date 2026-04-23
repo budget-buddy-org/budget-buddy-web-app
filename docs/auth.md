@@ -40,6 +40,7 @@ All three settings are injected at container startup via `envsubst` — **no ima
 | `VITE_OIDC_ISSUER` | OIDC issuer URL (e.g. `https://your-tenant.zitadel.cloud`) |
 | `VITE_OIDC_CLIENT_ID` | SPA client ID registered in Zitadel |
 | `VITE_OIDC_SCOPES` | (optional) space-separated scopes string to request from the IdP; when set it overrides the default scopes |
+| `VITE_OIDC_USER_MANAGEMENT_URL` | (optional) fallback URL for the identity provider's user management page |
 
 In Docker, the entrypoint substitutes these into `config.json` (served at `/config.json`) and into the nginx Content-Security-Policy header. `src/lib/config.ts` reads `config.json` at startup before the app renders.
 
@@ -49,6 +50,7 @@ For local development, set these in `.env.local`:
 VITE_API_URL=http://localhost:8080
 VITE_OIDC_ISSUER=https://your-tenant.zitadel.cloud
 VITE_OIDC_CLIENT_ID=your-client-id
+VITE_OIDC_USER_MANAGEMENT_URL=https://your-tenant.zitadel.cloud/ui/console/users/me
 ```
 
 ## Zitadel Client Setup

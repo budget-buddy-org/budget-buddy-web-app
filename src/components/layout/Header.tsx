@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { LogOut, Monitor, Moon, Settings, Sun } from 'lucide-react';
-import { useAuth } from 'react-oidc-context';
+import { Monitor, Moon, Settings, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { type Theme, useThemeStore } from '@/stores/theme.store';
@@ -22,7 +21,6 @@ export function Header() {
   const setTheme = useThemeStore((s) => s.setTheme);
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const ThemeIcon = THEME_ICONS[theme];
-  const auth = useAuth();
 
   return (
     <header
@@ -56,16 +54,6 @@ export function Header() {
           className="cursor-pointer hidden md:inline-flex"
         >
           <ThemeIcon className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => void auth.signoutRedirect()}
-          title="Log out"
-          aria-label="Log out"
-          className="cursor-pointer"
-        >
-          <LogOut className="size-4" />
         </Button>
       </div>
     </header>
