@@ -1,4 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
@@ -45,11 +46,47 @@ export function VersionCheck() {
   } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
-      // Periodically check for SW updates (same cadence as version.json)
+      // Trigger SW update check periodically
       setInterval(() => registration.update(), CHECK_INTERVAL);
     },
   });
 
+  // version.json polling — using TanStack Query for robust focus and interval refetching
+  const { data: latestVersion } = useQuery({
+    queryKey: ['app-version'],
+    queryFn: async ({ signal }) => {
+      const response = await fetch(`/version.json?t=${Date.now()}`, {
+        cache: 'no-store',
+        signal,
+      });
+
+      if (!response.ok) return null;
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) return null;
+
+      const data = await response.json();
+      return data.version as string;
+    },
+    refetchInterval: CHECK_INTERVAL,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always check fresh
+    gcTime: 0,
+  });
+
+  // Handle updates from version.json
+  useEffect(() => {
+    if (
+      latestVersion &&
+      latestVersion !== __APP_VERSION__ &&
+      latestVersion !== lastCheckedVersion.current
+    ) {
+      lastCheckedVersion.current = latestVersion;
+      showUpdateToast(`A new version (${latestVersion}) is available. Please reload to update.`);
+    }
+  }, [latestVersion, showUpdateToast]);
+
+  // Handle updates from Service Worker
   useEffect(() => {
     if (needRefresh) {
       showUpdateToast('A new version is ready. Please reload to update.', () =>
@@ -57,50 +94,6 @@ export function VersionCheck() {
       );
     }
   }, [needRefresh, showUpdateToast, updateServiceWorker]);
-
-  // version.json polling — catches updates even if the SW precache hasn't changed
-  const checkForUpdate = useCallback(async () => {
-    try {
-      const response = await fetch(`/version.json?t=${Date.now()}`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-      const latestVersion = data.version;
-
-      if (
-        latestVersion &&
-        latestVersion !== __APP_VERSION__ &&
-        latestVersion !== lastCheckedVersion.current
-      ) {
-        lastCheckedVersion.current = latestVersion;
-        showUpdateToast(`A new version (${latestVersion}) is available. Please reload to update.`);
-      }
-    } catch (error) {
-      console.debug('[VersionCheck] Update check failed', error);
-    }
-  }, [showUpdateToast]);
-
-  useEffect(() => {
-    checkForUpdate();
-
-    const interval = setInterval(checkForUpdate, CHECK_INTERVAL);
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkForUpdate();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [checkForUpdate]);
 
   return null;
 }

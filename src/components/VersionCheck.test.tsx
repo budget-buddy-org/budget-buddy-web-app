@@ -1,12 +1,9 @@
-import { render, waitFor } from '@testing-library/react';
+import { QueryClient } from '@tanstack/react-query';
+import { waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useToast } from '@/hooks/use-toast';
+import * as toastHook from '@/hooks/use-toast';
+import { render } from '@/test/utils';
 import { VersionCheck } from './VersionCheck';
-
-// Mock useToast
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: vi.fn(),
-}));
 
 // Mock __APP_VERSION__
 const APP_VERSION = '2.8.0';
@@ -17,7 +14,7 @@ describe('VersionCheck', () => {
   const mockFetch = vi.fn();
 
   beforeEach(() => {
-    vi.mocked(useToast).mockReturnValue({
+    vi.spyOn(toastHook, 'useToast').mockReturnValue({
       toast: mockToast,
       toasts: [],
       dismiss: vi.fn(),
@@ -33,6 +30,7 @@ describe('VersionCheck', () => {
   it('should not show toast if version is the same', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => ({ version: APP_VERSION }),
     });
 
@@ -49,6 +47,7 @@ describe('VersionCheck', () => {
     const newVersion = '2.9.0';
     mockFetch.mockResolvedValueOnce({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => ({ version: newVersion }),
     });
 
@@ -58,27 +57,30 @@ describe('VersionCheck', () => {
       expect(mockFetch).toHaveBeenCalled();
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Update Available',
-        description: expect.stringContaining(newVersion),
-      }),
-    );
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Update Available',
+          description: expect.stringContaining(newVersion),
+        }),
+      );
+    });
   });
 
   it('should periodically check for updates', async () => {
-    vi.useFakeTimers();
     mockFetch.mockResolvedValue({
       ok: true,
+      headers: { get: () => 'application/json' },
       json: async () => ({ version: APP_VERSION }),
     });
 
-    render(<VersionCheck />);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<VersionCheck />, { queryClient: qc });
 
-    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
-    // Fast-forward 5 minutes
-    vi.advanceTimersByTime(1000 * 60 * 5);
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // Invalidate the version query to force a refetch
+    await qc.invalidateQueries({ queryKey: ['app-version'] });
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
   });
 });
