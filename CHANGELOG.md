@@ -1,3 +1,9 @@
+## [4.1.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.8...v4.1.0) (2026-04-23)
+
+### Features
+
+* **transactions-form:** Swap form rows ([#111](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/111)) ([43ec11f](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/43ec11fe5d24f8bab017c39726659d38f4472423))
+
 ## [4.0.8](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.0.7...v4.0.8) (2026-04-22)
 
 ### Bug Fixes
