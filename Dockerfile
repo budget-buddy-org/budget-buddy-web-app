@@ -14,11 +14,11 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm
+RUN corepack enable pnpm && corepack prepare pnpm@10.33.1 --activate
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — deps: resolve and install npm packages
