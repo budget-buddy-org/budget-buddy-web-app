@@ -221,7 +221,7 @@ export function TransactionForm({
                 onChange={(val) => setForm((f) => ({ ...f, amount: val }))}
                 required
                 error={!!getFieldError('amount')}
-                autoFocus
+                autoFocus={!isEditing}
               />
               {getFieldError('amount') && (
                 <p className="text-xs font-medium text-destructive">{getFieldError('amount')}</p>

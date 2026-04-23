@@ -349,12 +349,14 @@ describe('TransactionForm', () => {
     });
   });
 
-  it('handles autoFocus always', () => {
+  it('handles autoFocus correctly', () => {
+    // Create mode: should have autofocus
     const { unmount } = renderForm();
     const createInput = screen.getByPlaceholderText(/0\.00/i);
     expect(createInput).toHaveAttribute('data-autofocus', 'true');
     unmount();
 
+    // Edit mode: should NOT have autofocus
     const transaction = {
       id: 'tx-1',
       description: 'Old Coffee',
@@ -366,6 +368,6 @@ describe('TransactionForm', () => {
     };
     renderForm({ transaction });
     const editInput = screen.getByPlaceholderText(/0\.00/i);
-    expect(editInput).toHaveAttribute('data-autofocus', 'true');
+    expect(editInput).toHaveAttribute('data-autofocus', 'false');
   });
 });
