@@ -74,7 +74,7 @@ Default query `staleTime` is 1 minute; `retry` is 1.
 ### Auth State
 
 The application uses `react-oidc-context` and `oidc-client-ts` for authentication.
-- **Zitadel OIDC:** Manages tokens internally with memory storage and silent renewal.
+- **Authentication:** Manages tokens internally with memory storage and silent renewal via OIDC.
 - **UserManager:** Shared instance exported from `src/lib/oidc.ts` for accessing auth state outside of React components.
 - **ProtectedAppLayout:** Component that guards routes and handles OIDC login redirection.
 

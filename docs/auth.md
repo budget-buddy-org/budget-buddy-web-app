@@ -1,6 +1,6 @@
 # Authentication Architecture
 
-Budget Buddy uses **OpenID Connect (OIDC)** with [Zitadel](https://zitadel.com) as the identity provider. All authentication is handled by the IdP — the frontend never manages credentials or issues tokens.
+Budget Buddy uses **OpenID Connect (OIDC)** for authentication. All authentication is handled by an external identity provider (IdP) — the frontend never manages credentials or issues tokens.
 
 ## Flow
 
@@ -22,7 +22,7 @@ Tokens are stored in **`sessionStorage`** by `oidc-client-ts` (the library defau
 
 ## Background Token Renewal
 
-`automaticSilentRenew: true` instructs `oidc-client-ts` to refresh tokens in the background before they expire. The library creates a hidden iframe pointing to the IdP's authorization endpoint and redirects to the configured silent redirect URI. The app uses `/auth/silent-renew` as the silent redirect callback; configure your IdP's silent redirect URI accordingly (see Zitadel setup below). The callback returns the response to the parent frame via `postMessage` so the React bundle is not loaded in the iframe.
+`automaticSilentRenew: true` instructs `oidc-client-ts` to refresh tokens in the background before they expire. The library creates a hidden iframe pointing to the IdP's authorization endpoint and redirects to the configured silent redirect URI. The app uses `/auth/silent-renew` as the silent redirect callback; configure your IdP's silent redirect URI accordingly (see IdP setup below). The callback returns the response to the parent frame via `postMessage` so the React bundle is not loaded in the iframe.
 
 In addition, `getAuthToken()` in `src/lib/api.ts` performs a **proactive refresh** via `signinSilent()` if the token expires within 60 seconds. This prevents mid-request token expiry in the window between `automaticSilentRenew` cycles.
 
@@ -32,13 +32,13 @@ If a request returns HTTP 401, the response interceptor in `src/lib/api.ts` call
 
 ## Runtime Configuration
 
-All three settings are injected at container startup via `envsubst` — **no image rebuild** is required when they change.
+All settings are injected at container startup via `envsubst` — **no image rebuild** is required when they change.
 
 | Variable | Purpose |
 |---|---|
 | `VITE_API_URL` | Backend API base URL |
-| `VITE_OIDC_ISSUER` | OIDC issuer URL (e.g. `https://your-tenant.zitadel.cloud`) |
-| `VITE_OIDC_CLIENT_ID` | SPA client ID registered in Zitadel |
+| `VITE_OIDC_ISSUER` | OIDC issuer URL (e.g. `https://auth.example.com`) |
+| `VITE_OIDC_CLIENT_ID` | SPA client ID registered in the IdP |
 | `VITE_OIDC_SCOPES` | (optional) space-separated scopes string to request from the IdP; when set it overrides the default scopes |
 | `VITE_OIDC_USER_MANAGEMENT_URL` | (optional) fallback URL for the identity provider's user management page |
 
@@ -48,14 +48,14 @@ For local development, set these in `.env.local`:
 
 ```
 VITE_API_URL=http://localhost:8080
-VITE_OIDC_ISSUER=https://your-tenant.zitadel.cloud
+VITE_OIDC_ISSUER=https://auth.example.com
 VITE_OIDC_CLIENT_ID=your-client-id
-VITE_OIDC_USER_MANAGEMENT_URL=https://your-tenant.zitadel.cloud/ui/console/users/me
+VITE_OIDC_USER_MANAGEMENT_URL=https://auth.example.com/account
 ```
 
-## Zitadel Client Setup
+## OIDC Client Setup
 
-Register a **SPA** application in Zitadel with:
+Register a **SPA** application in your IdP with:
 
 - **Grant type:** Authorization Code
 - **Auth method:** None (PKCE only — no client secret)
