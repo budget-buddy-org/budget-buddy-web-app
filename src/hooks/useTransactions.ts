@@ -39,6 +39,7 @@ const MAX_PAGES_ALL = 10;
 
 const KEYS = {
   all: ['transactions'] as const,
+  lists: ['transactions', 'list'] as const,
   list: (filters: TransactionFilters) => ['transactions', 'list', filters] as const,
   infinite: (filters: TransactionFilters) => ['transactions', 'infinite', filters] as const,
   detail: (id: string) => ['transactions', id] as const,
@@ -192,12 +193,20 @@ export function useDeleteTransaction() {
     },
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: KEYS.all });
-      const previous = qc.getQueriesData<PaginatedTransactions>({ queryKey: KEYS.all });
+      const previous = qc.getQueriesData<PaginatedTransactions>({ queryKey: KEYS.lists });
 
-      // Optimistically update all paginated lists
-      qc.setQueriesData<PaginatedTransactions>({ queryKey: ['transactions', 'list'] }, (old) =>
-        old ? { ...old, items: old.items.filter((t) => t.id !== id) } : old,
-      );
+      // Optimistically update every cached list view — removing the tx by id
+      // is safe regardless of the filters each list was fetched with.
+      qc.setQueriesData<PaginatedTransactions>({ queryKey: KEYS.lists }, (old) => {
+        if (!old) return old;
+        const nextItems = old.items.filter((t) => t.id !== id);
+        if (nextItems.length === old.items.length) return old;
+        return {
+          ...old,
+          items: nextItems,
+          meta: { ...old.meta, total: Math.max(0, old.meta.total - 1) },
+        };
+      });
 
       return { previous };
     },

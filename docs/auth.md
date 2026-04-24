@@ -10,7 +10,7 @@ User visits /                   ProtectedAppLayout checks auth state
   → browser redirects to IdP    Authorization Code Flow + PKCE
   → user authenticates
   → IdP redirects to /auth/callback   AuthCallbackPage shown briefly
-  → react-oidc-context exchanges code  tokens stored in sessionStorage
+  → react-oidc-context exchanges code  tokens stored in localStorage
   → onOidcSigninCallback() clears URL  app renders normally
 ```
 
@@ -18,13 +18,57 @@ User visits /                   ProtectedAppLayout checks auth state
 
 ## Token Storage
 
-Tokens are stored in **`sessionStorage`** by `oidc-client-ts` (the library default). `sessionStorage` is tab-scoped and cleared when the tab is closed, limiting the blast radius of XSS compared to `localStorage`. A Backend-for-Frontend (BFF) with HttpOnly cookies would further reduce exposure but requires server infrastructure.
+The signed-in user (access token + refresh token) is stored in **`localStorage`** via an explicit `userStore: new WebStorageStateStore({ store: localStorage })` in `src/lib/oidc.ts`. `localStorage` persists across tab close and browser restart — without this override `oidc-client-ts` defaults to `sessionStorage`, which wipes the session every time the last tab closes and forces a full round-trip to the IdP on next visit.
+
+Short-lived PKCE state (`state`, `code_verifier`) is kept in `sessionStorage` (`stateStore`). It only needs to survive the redirect round-trip, so the tighter scope is appropriate.
+
+The XSS blast-radius tradeoff is mitigated by two layers:
+
+1. The strict CSP (see below) — any script not in `script-src` cannot read `localStorage` because it will not execute.
+2. **DPoP sender-constrained tokens** (see next section) — even if an access or refresh token is exfiltrated via XSS, it is cryptographically bound to a non-extractable `CryptoKey` held in this browser's IndexedDB, so an attacker cannot replay it from another origin or device.
+
+## DPoP — Sender-constrained tokens (RFC 9449)
+
+The app enables **DPoP** (*Demonstration of Proof-of-Possession*) in `src/lib/oidc.ts`:
+
+```ts
+dpop: {
+  bind_authorization_code: true,
+  store: new IndexedDbDPoPStore(),
+}
+```
+
+- On first sign-in, `oidc-client-ts` generates a non-extractable `CryptoKeyPair` using WebCrypto and stores it in IndexedDB via `IndexedDbDPoPStore`. The private key cannot be exported by any JavaScript.
+- Every token-endpoint call (auth-code exchange, silent renew) includes a DPoP proof JWT that proves possession of the private key. The IdP (Zitadel) embeds the public key's JWK thumbprint in the access token's `cnf.jkt` claim.
+- Because `bind_authorization_code: true` is set, the auth code itself is bound to the key — a leaked redirect (e.g. via logging or browser history) cannot be exchanged for tokens by an attacker without the key.
+- `user.token_type` is set to `"DPoP"` after a successful exchange.
+
+### Per-request proofs
+
+For every outgoing API call, the request interceptor in `src/lib/api.ts`:
+
+1. Reads `user.token_type` and uses it as the `Authorization` scheme (`DPoP <access_token>` instead of `Bearer <access_token>`).
+2. Calls `getUserManager().dpopProof(url, user, method)` to generate a short-lived proof JWT bound to the specific URL and HTTP method.
+3. Attaches the proof on the `DPoP` header.
+
+The resource server (Spring Security 7) auto-detects the `DPoP` scheme via `DPoPAuthenticationConfigurer` and validates the proof's signature, `htm`/`htu` (method/URL), `ath` (access-token hash), and `jti` (replay cache) claims.
+
+### Key lifecycle
+
+- The keypair lives in IndexedDB (`oidc` database, default store) keyed by `client_id`.
+- It is reused across all tabs/windows of this browser profile.
+- It is **not** automatically deleted on `signoutRedirect()`; if you need to rotate the key, clear the `oidc` IndexedDB database explicitly. Rotation typically happens naturally when the user clears site data.
+- iOS / Telegram / other non-browser clients should not enable DPoP unless they have a hardware-backed key store (Keychain / Secure Enclave). Plain Bearer tokens are acceptable there.
 
 ## Background Token Renewal
 
-`automaticSilentRenew: true` instructs `oidc-client-ts` to refresh tokens in the background before they expire. The library creates a hidden iframe pointing to the IdP's authorization endpoint and redirects to the configured silent redirect URI. The app uses `/auth/silent-renew` as the silent redirect callback; configure your IdP's silent redirect URI accordingly (see IdP setup below). The callback returns the response to the parent frame via `postMessage` so the React bundle is not loaded in the iframe.
+`automaticSilentRenew: true` instructs `oidc-client-ts` to refresh tokens in the background before they expire. When a refresh token is present (from `offline_access` scope), the SDK uses it directly; otherwise it falls back to a hidden iframe pointing at the IdP's authorization endpoint. The iframe is redirected to `/auth/silent-renew.html`, which posts the resulting URL back to the parent window via `postMessage` so the React bundle is not re-loaded inside the iframe. Configure the matching silent redirect URI in your IdP (see IdP setup below).
 
-In addition, `getAuthToken()` in `src/lib/api.ts` performs a **proactive refresh** via `signinSilent()` if the token expires within 60 seconds. This prevents mid-request token expiry in the window between `automaticSilentRenew` cycles.
+### Safety-net refresh
+
+`getAuthToken()` in `src/lib/api.ts` performs a **safety-net refresh** via `signinSilent()` only when the token is within **10 seconds** of expiry. The threshold is deliberately well below the SDK's 60-second `automaticSilentRenew` trigger so the two paths don't race — overlapping refreshes both redeem the same refresh token, which providers with rotation enabled (Zitadel by default) treat as theft and invalidate.
+
+Concurrent calls to `getAuthToken()` are **deduped** onto a single in-flight `signinSilent()` promise (`pendingSilentRenew`). Without dedupe, a burst of API requests firing simultaneously would each trigger their own refresh and invalidate the session.
 
 ## Session Expiry
 
@@ -61,8 +105,17 @@ Register a **SPA** application in your IdP with:
 - **Auth method:** None (PKCE only — no client secret)
 - **Redirect URI:** `https://your-app.example.com/auth/callback`
 - **Post-logout redirect URI:** `https://your-app.example.com/`
-- **Silent renew URI:** `https://your-app.example.com/auth/silent-renew`
-- **Scopes:** `openid profile email offline_access`
+- **Silent renew URI:** `https://your-app.example.com/auth/silent-renew.html`
+- **Scopes:** `openid profile email offline_access` — `offline_access` is **required** to receive a refresh token. Without it, the session ends when the short-lived access token expires (~1 hour on most providers).
+
+### Zitadel-specific settings
+
+If the user is being logged out more often than expected, check these in the Zitadel console under the SPA app's settings:
+
+1. **Refresh Token**: enable it on the application. Without the toggle, Zitadel will not issue a refresh token even when `offline_access` is in the scope.
+2. **Token Lifetime & Expiration** (under the project settings): increase **Refresh Token Idle Expiration** (default: 24h) and **Refresh Token Expiration** (default: 30d) to match how long you want sessions to stay alive across idle periods.
+3. **Access Token Type**: must be `JWT` so the API can validate locally.
+4. **Proof of Possession (DPoP)**: enable *Require Proof of Possession (DPoP)* (or equivalent setting) on the SPA app so Zitadel issues DPoP-bound tokens. The app always sends a DPoP proof on the token endpoint; Zitadel must honor it for the `cnf.jkt` binding to land in access tokens.
 
 ## Content Security Policy
 
@@ -86,6 +139,6 @@ This prevents credentials from being exfiltrated to unexpected origins even if a
 | `src/lib/config.ts` | Runtime config loader (reads `/config.json`) |
 | `src/components/layout/ProtectedAppLayout.tsx` | Auth guard for all `_app/` routes |
 | `src/routes/auth/callback.tsx` | OIDC callback landing page |
-| `src/routes/auth/silent-renew` | Silent renew callback route used by the OIDC SDK |
+| `public/auth/silent-renew.html` | Static page loaded in the silent-renew iframe; posts the response URL back to the parent window |
 | `nginx.security-headers.conf.template` | CSP + security headers template |
 | `docker/docker-entrypoint.sh` | `envsubst` injection at container startup |

@@ -4,6 +4,7 @@ const mockUserManager = {
   getUser: vi.fn(),
   signinSilent: vi.fn(),
   signinRedirect: vi.fn(),
+  dpopProof: vi.fn(),
 };
 
 vi.mock('@/lib/oidc', () => ({
@@ -60,10 +61,24 @@ describe('getAuthToken', () => {
     expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
   });
 
-  it('proactively refreshes when the token expires within 60 seconds', async () => {
+  it('does not refresh when the token is more than 10 seconds from expiry', async () => {
+    // Trust the SDK's automaticSilentRenew (which fires at ~60s before expiry)
+    // for anything above the safety-net threshold.
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'still-fresh',
+      expires_at: Date.now() / 1000 + 30,
+    });
+
+    const token = await getAuthToken();
+
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
+    expect(token).toBe('still-fresh');
+  });
+
+  it('proactively refreshes when the token expires within 10 seconds', async () => {
     mockUserManager.getUser.mockResolvedValue({
       access_token: 'old-token',
-      expires_at: Date.now() / 1000 + 30, // 30s remaining — under the 60s threshold
+      expires_at: Date.now() / 1000 + 5, // 5s remaining — under the 10s safety-net threshold
     });
     mockUserManager.signinSilent.mockResolvedValue({ access_token: 'new-token' });
 
@@ -71,6 +86,21 @@ describe('getAuthToken', () => {
 
     expect(mockUserManager.signinSilent).toHaveBeenCalled();
     expect(token).toBe('new-token');
+  });
+
+  it('dedupes concurrent refresh calls onto a single signinSilent invocation', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'old-token',
+      expires_at: Date.now() / 1000 + 5,
+    });
+    mockUserManager.signinSilent.mockResolvedValue({ access_token: 'new-token' });
+
+    const [t1, t2, t3] = await Promise.all([getAuthToken(), getAuthToken(), getAuthToken()]);
+
+    expect(mockUserManager.signinSilent).toHaveBeenCalledTimes(1);
+    expect(t1).toBe('new-token');
+    expect(t2).toBe('new-token');
+    expect(t3).toBe('new-token');
   });
 
   it('returns undefined when no user is logged in', async () => {
@@ -85,7 +115,7 @@ describe('getAuthToken', () => {
   it('returns undefined when silent refresh fails', async () => {
     mockUserManager.getUser.mockResolvedValue({
       access_token: 'old-token',
-      expires_at: Date.now() / 1000 + 10,
+      expires_at: Date.now() / 1000 + 5,
     });
     mockUserManager.signinSilent.mockRejectedValue(new Error('network error'));
 
@@ -100,7 +130,22 @@ describe('request interceptor', () => {
     vi.clearAllMocks();
   });
 
-  it('sets Authorization header when a token is available', async () => {
+  it('sets a Bearer Authorization header when token_type is Bearer', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'test-token',
+      token_type: 'Bearer',
+      expires_at: Date.now() / 1000 + 3600,
+    });
+
+    const req = makeRequest();
+    const result = await requestInterceptor?.(req);
+
+    expect(result?.headers.get('Authorization')).toBe('Bearer test-token');
+    expect(result?.headers.get('DPoP')).toBeNull();
+    expect(mockUserManager.dpopProof).not.toHaveBeenCalled();
+  });
+
+  it('defaults to Bearer when token_type is missing', async () => {
     mockUserManager.getUser.mockResolvedValue({
       access_token: 'test-token',
       expires_at: Date.now() / 1000 + 3600,
@@ -110,6 +155,28 @@ describe('request interceptor', () => {
     const result = await requestInterceptor?.(req);
 
     expect(result?.headers.get('Authorization')).toBe('Bearer test-token');
+    expect(result?.headers.get('DPoP')).toBeNull();
+  });
+
+  it('sets DPoP Authorization scheme and attaches a proof when token_type is DPoP', async () => {
+    const user = {
+      access_token: 'dpop-token',
+      token_type: 'DPoP',
+      expires_at: Date.now() / 1000 + 3600,
+    };
+    mockUserManager.getUser.mockResolvedValue(user);
+    mockUserManager.dpopProof.mockResolvedValue('proof-jwt');
+
+    const req = makeRequest('http://localhost/v1/transactions');
+    const result = await requestInterceptor?.(req);
+
+    expect(result?.headers.get('Authorization')).toBe('DPoP dpop-token');
+    expect(result?.headers.get('DPoP')).toBe('proof-jwt');
+    expect(mockUserManager.dpopProof).toHaveBeenCalledWith(
+      'http://localhost/v1/transactions',
+      user,
+      'GET',
+    );
   });
 
   it('does not set Authorization header when user is not logged in', async () => {
@@ -119,6 +186,22 @@ describe('request interceptor', () => {
     const result = await requestInterceptor?.(req);
 
     expect(result?.headers.get('Authorization')).toBeNull();
+    expect(result?.headers.get('DPoP')).toBeNull();
+  });
+
+  it('omits the DPoP header when dpopProof returns undefined (DPoP disabled client-side)', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'dpop-token',
+      token_type: 'DPoP',
+      expires_at: Date.now() / 1000 + 3600,
+    });
+    mockUserManager.dpopProof.mockResolvedValue(undefined);
+
+    const req = makeRequest();
+    const result = await requestInterceptor?.(req);
+
+    expect(result?.headers.get('Authorization')).toBe('DPoP dpop-token');
+    expect(result?.headers.get('DPoP')).toBeNull();
   });
 });
 
