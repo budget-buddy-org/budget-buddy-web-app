@@ -8,7 +8,11 @@ export function ProtectedAppLayout() {
   useEffect(() => {
     if (auth.isLoading || auth.activeNavigator || auth.isAuthenticated) return;
 
-    void auth.signinRedirect();
+    void auth.signinRedirect({
+      // Preserve the current URL so onOidcSigninCallback can restore it after
+      // the IdP redirect, instead of always landing on "/".
+      url_state: window.location.pathname + window.location.search,
+    });
   }, [auth]);
 
   if (auth.isLoading || auth.activeNavigator) {

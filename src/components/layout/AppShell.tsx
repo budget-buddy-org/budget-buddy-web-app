@@ -1,4 +1,5 @@
 import type * as React from 'react';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { FABProvider } from '@/contexts/fab-context';
 import { Header } from './Header';
 import { MobileNav, SidebarNav } from './MobileNav';
@@ -7,6 +8,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <FABProvider>
       <div className="flex min-h-dvh flex-col">
+        <OfflineBanner />
         <Header />
         <div className="flex flex-1">
           {/* Sidebar — visible on md+ */}

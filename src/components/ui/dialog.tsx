@@ -44,6 +44,31 @@ function DialogContent({
   const contentRef = React.useRef<HTMLDivElement>(null);
   const hiddenCloseRef = React.useRef<HTMLButtonElement>(null);
   const dragState = React.useRef({ isDragging: false, startY: 0 });
+  // Track pending transitionend listeners so we can clean them up if the
+  // component unmounts mid-animation (e.g. portal destruction).
+  const pendingListeners = React.useRef<Set<{ el: HTMLElement; fn: () => void }>>(new Set());
+
+  React.useEffect(() => {
+    const listeners = pendingListeners.current;
+    return () => {
+      for (const { el, fn } of listeners) {
+        el.removeEventListener('transitionend', fn);
+      }
+      listeners.clear();
+    };
+  }, []);
+
+  const addTransitionEndListener = React.useCallback((el: HTMLElement, fn: () => void) => {
+    const entry = { el, fn };
+    const wrapped = () => {
+      fn();
+      el.removeEventListener('transitionend', wrapped);
+      pendingListeners.current.delete(entry);
+    };
+    entry.fn = wrapped;
+    pendingListeners.current.add(entry);
+    el.addEventListener('transitionend', wrapped);
+  }, []);
 
   const combinedRef = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -61,15 +86,13 @@ function DialogContent({
     dragState.current.isDragging = false;
     el.style.transition = 'transform 0.3s ease';
     el.style.transform = 'translateY(0)';
-    const onEnd = () => {
+    addTransitionEndListener(el, () => {
       if (contentRef.current) {
         contentRef.current.style.transform = '';
         contentRef.current.style.transition = '';
       }
-      el.removeEventListener('transitionend', onEnd);
-    };
-    el.addEventListener('transitionend', onEnd);
-  }, []);
+    });
+  }, [addTransitionEndListener]);
 
   const handlePointerDown = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -93,17 +116,15 @@ function DialogContent({
         if (el) {
           el.style.transition = 'transform 0.22s ease-in';
           el.style.transform = 'translateY(100vh)';
-          const onEnd = () => {
+          addTransitionEndListener(el, () => {
             hiddenCloseRef.current?.click();
-            el.removeEventListener('transitionend', onEnd);
-          };
-          el.addEventListener('transitionend', onEnd);
+          });
         }
       } else {
         snapBack();
       }
     },
-    [snapBack],
+    [snapBack, addTransitionEndListener],
   );
 
   return (

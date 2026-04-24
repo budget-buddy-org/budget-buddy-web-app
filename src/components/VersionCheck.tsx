@@ -10,6 +10,7 @@ export function VersionCheck() {
   const { toast } = useToast();
   const lastCheckedVersion = useRef<string>(__APP_VERSION__);
   const isToastActive = useRef(false);
+  const swCheckInterval = useRef<ReturnType<typeof setInterval>>(undefined);
 
   const showUpdateToast = useCallback(
     (description: string, onReload?: () => void) => {
@@ -47,9 +48,14 @@ export function VersionCheck() {
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
       // Trigger SW update check periodically
-      setInterval(() => registration.update(), CHECK_INTERVAL);
+      swCheckInterval.current = setInterval(() => registration.update(), CHECK_INTERVAL);
     },
   });
+
+  // Clean up the SW update-check interval on unmount
+  useEffect(() => {
+    return () => clearInterval(swCheckInterval.current);
+  }, []);
 
   // version.json polling — using TanStack Query for robust focus and interval refetching
   const { data: latestVersion } = useQuery({

@@ -16,7 +16,7 @@ export function buildOidcSettings(
     post_logout_redirect_uri: `${globalThis.location.origin}/`,
     // Enable silent renew with a dedicated callback route so the SDK can
     // refresh tokens without navigating the top-level application.
-    silent_redirect_uri: `${globalThis.location.origin}/auth/silent-renew`,
+    silent_redirect_uri: `${globalThis.location.origin}/auth/silent-renew.html`,
     response_type: 'code',
     scope: scopeValue,
     automaticSilentRenew: true,
@@ -46,6 +46,19 @@ export function getUserManager(): UserManager {
   return _userManager;
 }
 
-export function onOidcSigninCallback(): void {
-  window.history.replaceState({}, document.title, '/');
+/**
+ * Called by react-oidc-context after signinCallback completes.
+ * Restores the original URL that was saved in url_state before the IdP
+ * redirect, so deep links survive the authentication round-trip.
+ */
+export function onOidcSigninCallback(user: unknown): void {
+  const returnUrl =
+    user &&
+    typeof user === 'object' &&
+    'url_state' in user &&
+    typeof (user as { url_state: unknown }).url_state === 'string'
+      ? (user as { url_state: string }).url_state
+      : '/';
+
+  window.history.replaceState({}, document.title, returnUrl);
 }

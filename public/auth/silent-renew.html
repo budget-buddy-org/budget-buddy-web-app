@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Silent Renew</title>
+  </head>
+  <body>
+    <script>
+      // This page is loaded inside a hidden iframe by oidc-client-ts during
+      // automatic silent token renewal.  The IdP redirects here with the
+      // authorization response in the URL.  We post the full URL back to the
+      // parent window so the UserManager can extract the new tokens.
+      (window.opener || window.parent).postMessage(location.href, location.origin);
+    </script>
+  </body>
+</html>

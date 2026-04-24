@@ -10,9 +10,12 @@ add_header Referrer-Policy        "strict-origin-when-cross-origin"             
 add_header Permissions-Policy     "camera=(), microphone=(), geolocation=()"          always;
 
 # Content Security Policy
-# - script-src 'unsafe-inline': required for the inline theme-init script in
-#   index.html. Replace with a SHA-256 hash if the script is ever extracted.
+# - script-src uses SHA-256 hashes to allow only the known inline scripts:
+#   1. Theme-init script in index.html (prevents FOUC)
+#   2. postMessage relay in auth/silent-renew.html (OIDC iframe callback)
+#   If either script changes, recompute the hash — see docs/auth.md.
+# - style-src 'unsafe-inline' is kept for inline <style> and runtime CSS-in-JS.
 # - connect-src includes the API and OIDC issuer for token/userinfo endpoints.
 # - frame-src includes the OIDC issuer for the silent-renew hidden iframe.
 # - frame-ancestors 'none': blocks all framing (replaces X-Frame-Options).
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' $VITE_API_URL $VITE_OIDC_ISSUER; frame-src $VITE_OIDC_ISSUER; base-uri 'self'; form-action 'self'; frame-ancestors 'none';" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-NMORQXDsnbTEJVfSVVpuaXvBwmcSGdd7JxLvj5PEb8Y=' 'sha256-PqpSHUa4HxMFpu3j4OHiDc+9gi646pi3yrc/zB3s0qE='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' $VITE_API_URL $VITE_OIDC_ISSUER; frame-src $VITE_OIDC_ISSUER; base-uri 'self'; form-action 'self'; frame-ancestors 'none';" always;

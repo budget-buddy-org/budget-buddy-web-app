@@ -1,4 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
+  Download,
   LogOut,
   Monitor,
   Moon,
@@ -14,11 +16,14 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { useInstallPrompt } from '@/hooks/useInstallPrompt';
 import { getConfig } from '@/lib/config';
 import { useThemeStore } from '@/stores/theme.store';
 
 export function SettingsPage() {
   const { user, signoutRedirect } = useAuth();
+  const queryClient = useQueryClient();
+  const { canInstall, promptInstall } = useInstallPrompt();
   const config = getConfig();
   const {
     theme,
@@ -70,7 +75,10 @@ export function SettingsPage() {
                 variant="outline"
                 size="sm"
                 className="gap-2 cursor-pointer w-full sm:w-auto text-destructive hover:text-destructive"
-                onClick={() => void signoutRedirect()}
+                onClick={() => {
+                  queryClient.clear();
+                  void signoutRedirect();
+                }}
               >
                 <LogOut className="size-4" />
                 Sign out
@@ -230,6 +238,25 @@ export function SettingsPage() {
                 Reload App
               </Button>
             </div>
+            {canInstall && (
+              <div className="flex items-center justify-between pt-2 border-t">
+                <div>
+                  <p className="text-sm font-medium">Install App</p>
+                  <p className="text-xs text-muted-foreground">
+                    Add Budget Buddy to your home screen for a native app experience.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 cursor-pointer"
+                  onClick={() => void promptInstall()}
+                >
+                  <Download className="size-4" />
+                  Install
+                </Button>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               Manually reload the application to ensure you're using the latest version.
             </p>

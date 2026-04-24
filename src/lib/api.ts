@@ -39,7 +39,9 @@ client.interceptors.response.use(async (response, request) => {
     const url = request.url ?? '';
     // Exclude all /auth/* paths to avoid redirect loops on the callback route.
     if (!url.includes('/auth/')) {
-      await getUserManager().signinRedirect();
+      await getUserManager().signinRedirect({
+        url_state: window.location.pathname + window.location.search,
+      });
     }
   }
   return response;

@@ -67,9 +67,26 @@ describe('onOidcSigninCallback', () => {
   it('strips OIDC params from the URL after signin', () => {
     window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
 
-    onOidcSigninCallback();
+    onOidcSigninCallback(undefined);
 
     expect(window.location.pathname).toBe('/');
     expect(window.location.search).toBe('');
+  });
+
+  it('restores the original deep-link URL from url_state', () => {
+    window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
+
+    onOidcSigninCallback({ url_state: '/transactions?page=2' });
+
+    expect(window.location.pathname).toBe('/transactions');
+    expect(window.location.search).toBe('?page=2');
+  });
+
+  it('falls back to "/" when url_state is not a string', () => {
+    window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
+
+    onOidcSigninCallback({ url_state: 42 });
+
+    expect(window.location.pathname).toBe('/');
   });
 });

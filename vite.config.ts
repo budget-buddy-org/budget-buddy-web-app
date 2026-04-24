@@ -71,7 +71,7 @@ export default defineConfig({
         globIgnores: ['config.json', 'version.json'],
         // Navigation fallback for SPA routing
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/config\.json/, /^\/version\.json/],
+        navigateFallbackDenylist: [/^\/api/, /^\/auth\/silent-renew/, /^\/config\.json/, /^\/version\.json/],
         runtimeCaching: [
           {
             // Cache images with a CacheFirst strategy
