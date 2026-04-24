@@ -1,3 +1,9 @@
+## [4.2.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.2.0...v4.2.1) (2026-04-24)
+
+### Bug Fixes
+
+* **oidc:** various improvements ([72fb9f2](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/72fb9f20a2a9e49cfce23873359cc1699e5fc4d9))
+
 ## [4.2.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.1.0...v4.2.0) (2026-04-23)
 
 ### Features
