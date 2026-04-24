@@ -19,7 +19,13 @@ vi.mock('@/hooks/useTransactions', () => ({
   useDeleteTransaction: () => mockDeleteTx,
 }));
 
-const mockCreateCategory = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false, error: null };
+const mockCreateCategory = {
+  mutate: vi.fn(),
+  mutateAsync: vi.fn(),
+  reset: vi.fn(),
+  isPending: false,
+  error: null,
+};
 vi.mock('@/hooks/useCategories', () => ({
   useCreateCategory: () => mockCreateCategory,
 }));

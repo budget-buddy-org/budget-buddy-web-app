@@ -35,12 +35,11 @@ export function DashboardPage() {
   const [showAll, setShowAll] = useState(false);
   const glassEffect = useThemeStore((s) => s.glassEffect);
 
-  // Computed on initial mount so the dashboard never shows stale dates if the app
-  // stays open overnight and the user navigates back after midnight.
-  const [{ currentYear, currentMonth }] = useState(() => {
-    const now = new Date();
-    return { currentYear: now.getFullYear(), currentMonth: now.getMonth() };
-  });
+  // Recomputed every render so the dashboard rolls over correctly when the app
+  // stays open past midnight (especially across a month boundary).
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 

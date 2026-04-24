@@ -83,6 +83,12 @@ export function TransactionForm({
       try {
         const newCat = await createCategory.mutateAsync({ name: newCategoryName });
         categoryId = newCat.id;
+        // Commit the new category to the form so that if the transaction
+        // mutation below fails, retrying won't re-run createCategory (which
+        // would either duplicate or error with "already exists").
+        setForm((f) => ({ ...f, categoryId: newCat.id }));
+        setIsAddingCategory(false);
+        setNewCategoryName('');
       } catch (error) {
         const apiError = getApiError(error);
         toast({
@@ -274,7 +280,11 @@ export function TransactionForm({
                 variant="ghost"
                 size="sm"
                 className="h-6 px-2 text-xs font-medium"
-                onClick={() => setIsAddingCategory((v) => !v)}
+                onClick={() => {
+                  setIsAddingCategory((v) => !v);
+                  setNewCategoryName('');
+                  createCategory.reset();
+                }}
                 disabled={isPending}
               >
                 {isAddingCategory ? (
