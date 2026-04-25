@@ -35,14 +35,6 @@ describe('buildOidcSettings', () => {
 
     expect(settings.userStore).toBeDefined();
   });
-
-  it('enables DPoP with authorization-code binding and a persistent DPoP store', () => {
-    const settings = buildOidcSettings('https://issuer.example.com', 'web-client');
-
-    expect(settings.dpop).toBeDefined();
-    expect(settings.dpop?.bind_authorization_code).toBe(true);
-    expect(settings.dpop?.store).toBeDefined();
-  });
 });
 
 describe('getUserManager / initUserManager', () => {

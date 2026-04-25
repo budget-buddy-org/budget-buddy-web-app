@@ -1,9 +1,4 @@
-import {
-  IndexedDbDPoPStore,
-  UserManager,
-  type UserManagerSettings,
-  WebStorageStateStore,
-} from 'oidc-client-ts';
+import { UserManager, type UserManagerSettings, WebStorageStateStore } from 'oidc-client-ts';
 
 let _userManager: UserManager | null = null;
 
@@ -31,18 +26,8 @@ export function buildOidcSettings(
     // Persist the signed-in user (access token + refresh token) in localStorage
     // so the session survives tab close and browser restart. The SDK default is
     // sessionStorage, which logs the user out on every new tab / cold start.
-    // Exposure is mitigated by binding the token to a non-extractable DPoP key
-    // (see `dpop` below) and the strict CSP enforced by the proxy.
+    // Exposure to XSS is mitigated by the strict CSP enforced by the proxy.
     userStore: new WebStorageStateStore({ store: globalThis.localStorage }),
-    // DPoP (RFC 9449): issues a non-extractable keypair in IndexedDB and binds
-    // every access/refresh token to it. A token stolen via XSS cannot be used
-    // from another origin/device because the private key never leaves this
-    // browser. `bind_authorization_code` extends the binding to the auth code
-    // so a leaked redirect can't be traded for tokens either.
-    dpop: {
-      bind_authorization_code: true,
-      store: new IndexedDbDPoPStore(),
-    },
   };
 }
 

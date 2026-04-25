@@ -4,9 +4,10 @@ import { getUserManager } from '@/lib/oidc';
 
 // Only proactively refresh when the token is basically gone. The SDK's
 // automaticSilentRenew already fires 60s before expiry; overlapping with it
-// causes duplicate refresh-token redemptions which Zitadel (with rotation on)
-// treats as theft and invalidates the session. This safety net only kicks in
-// when the SDK's setTimeout was throttled/killed in a backgrounded tab.
+// causes duplicate refresh-token redemptions, which IdPs that enable
+// refresh-token rotation treat as token theft and invalidate the session.
+// This safety net only kicks in when the SDK's setTimeout was throttled or
+// killed in a backgrounded tab.
 const REFRESH_THRESHOLD_SECONDS = 10;
 
 // Dedupe concurrent refreshes. Multiple in-flight API requests must share a
@@ -25,47 +26,29 @@ function refreshSilently(): Promise<User | null> {
 }
 
 /**
- * Returns a fresh signed-in User for the current session.
+ * Returns a fresh access token for the current user.
  * Proactively triggers a silent refresh only when the token is within
  * REFRESH_THRESHOLD_SECONDS of expiry (safety net for throttled background tabs).
  */
-export async function getAuthUser(): Promise<User | null> {
+export async function getAuthToken(): Promise<string | undefined> {
   const user = await getUserManager().getUser();
-  if (!user) return null;
+  if (!user) return undefined;
 
   const now = Date.now() / 1000;
   if (user.expires_at !== undefined && user.expires_at - now < REFRESH_THRESHOLD_SECONDS) {
-    return await refreshSilently();
+    const refreshed = await refreshSilently();
+    return refreshed?.access_token ?? undefined;
   }
 
-  return user;
+  return user.access_token ?? undefined;
 }
 
-/**
- * @deprecated Prefer `getAuthUser()`. Kept for call sites that only need the raw token.
- */
-export async function getAuthToken(): Promise<string | undefined> {
-  return (await getAuthUser())?.access_token ?? undefined;
-}
-
-// Attach the access token to every outgoing request, using `user.token_type`
-// as the auth scheme. When DPoP is enabled on the IdP, `token_type` comes back
-// as "DPoP" and we also attach a freshly signed proof JWT bound to the request
-// URL + method. With plain Bearer tokens the DPoP branch is a no-op.
+// Attach a fresh Bearer token to every outgoing request.
 client.interceptors.request.use(async (request) => {
-  const user = await getAuthUser();
-  if (!user?.access_token) return request;
-
-  const scheme = user.token_type || 'Bearer';
-  request.headers.set('Authorization', `${scheme} ${user.access_token}`);
-
-  if (scheme.toLowerCase() === 'dpop') {
-    const proof = await getUserManager().dpopProof(request.url, user, request.method);
-    if (proof) {
-      request.headers.set('DPoP', proof);
-    }
+  const token = await getAuthToken();
+  if (token) {
+    request.headers.set('Authorization', `Bearer ${token}`);
   }
-
   return request;
 });
 

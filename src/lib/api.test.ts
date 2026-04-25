@@ -4,7 +4,6 @@ const mockUserManager = {
   getUser: vi.fn(),
   signinSilent: vi.fn(),
   signinRedirect: vi.fn(),
-  dpopProof: vi.fn(),
 };
 
 vi.mock('@/lib/oidc', () => ({
@@ -130,22 +129,7 @@ describe('request interceptor', () => {
     vi.clearAllMocks();
   });
 
-  it('sets a Bearer Authorization header when token_type is Bearer', async () => {
-    mockUserManager.getUser.mockResolvedValue({
-      access_token: 'test-token',
-      token_type: 'Bearer',
-      expires_at: Date.now() / 1000 + 3600,
-    });
-
-    const req = makeRequest();
-    const result = await requestInterceptor?.(req);
-
-    expect(result?.headers.get('Authorization')).toBe('Bearer test-token');
-    expect(result?.headers.get('DPoP')).toBeNull();
-    expect(mockUserManager.dpopProof).not.toHaveBeenCalled();
-  });
-
-  it('defaults to Bearer when token_type is missing', async () => {
+  it('sets Authorization header when a token is available', async () => {
     mockUserManager.getUser.mockResolvedValue({
       access_token: 'test-token',
       expires_at: Date.now() / 1000 + 3600,
@@ -155,28 +139,6 @@ describe('request interceptor', () => {
     const result = await requestInterceptor?.(req);
 
     expect(result?.headers.get('Authorization')).toBe('Bearer test-token');
-    expect(result?.headers.get('DPoP')).toBeNull();
-  });
-
-  it('sets DPoP Authorization scheme and attaches a proof when token_type is DPoP', async () => {
-    const user = {
-      access_token: 'dpop-token',
-      token_type: 'DPoP',
-      expires_at: Date.now() / 1000 + 3600,
-    };
-    mockUserManager.getUser.mockResolvedValue(user);
-    mockUserManager.dpopProof.mockResolvedValue('proof-jwt');
-
-    const req = makeRequest('http://localhost/v1/transactions');
-    const result = await requestInterceptor?.(req);
-
-    expect(result?.headers.get('Authorization')).toBe('DPoP dpop-token');
-    expect(result?.headers.get('DPoP')).toBe('proof-jwt');
-    expect(mockUserManager.dpopProof).toHaveBeenCalledWith(
-      'http://localhost/v1/transactions',
-      user,
-      'GET',
-    );
   });
 
   it('does not set Authorization header when user is not logged in', async () => {
@@ -186,22 +148,6 @@ describe('request interceptor', () => {
     const result = await requestInterceptor?.(req);
 
     expect(result?.headers.get('Authorization')).toBeNull();
-    expect(result?.headers.get('DPoP')).toBeNull();
-  });
-
-  it('omits the DPoP header when dpopProof returns undefined (DPoP disabled client-side)', async () => {
-    mockUserManager.getUser.mockResolvedValue({
-      access_token: 'dpop-token',
-      token_type: 'DPoP',
-      expires_at: Date.now() / 1000 + 3600,
-    });
-    mockUserManager.dpopProof.mockResolvedValue(undefined);
-
-    const req = makeRequest();
-    const result = await requestInterceptor?.(req);
-
-    expect(result?.headers.get('Authorization')).toBe('DPoP dpop-token');
-    expect(result?.headers.get('DPoP')).toBeNull();
   });
 });
 

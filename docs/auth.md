@@ -22,43 +22,7 @@ The signed-in user (access token + refresh token) is stored in **`localStorage`*
 
 Short-lived PKCE state (`state`, `code_verifier`) is kept in `sessionStorage` (`stateStore`). It only needs to survive the redirect round-trip, so the tighter scope is appropriate.
 
-The XSS blast-radius tradeoff is mitigated by two layers:
-
-1. The strict CSP (see below) — any script not in `script-src` cannot read `localStorage` because it will not execute.
-2. **DPoP sender-constrained tokens** (see next section) — even if an access or refresh token is exfiltrated via XSS, it is cryptographically bound to a non-extractable `CryptoKey` held in this browser's IndexedDB, so an attacker cannot replay it from another origin or device.
-
-## DPoP — Sender-constrained tokens (RFC 9449)
-
-The app enables **DPoP** (*Demonstration of Proof-of-Possession*) in `src/lib/oidc.ts`:
-
-```ts
-dpop: {
-  bind_authorization_code: true,
-  store: new IndexedDbDPoPStore(),
-}
-```
-
-- On first sign-in, `oidc-client-ts` generates a non-extractable `CryptoKeyPair` using WebCrypto and stores it in IndexedDB via `IndexedDbDPoPStore`. The private key cannot be exported by any JavaScript.
-- Every token-endpoint call (auth-code exchange, silent renew) includes a DPoP proof JWT that proves possession of the private key. The IdP (Zitadel) embeds the public key's JWK thumbprint in the access token's `cnf.jkt` claim.
-- Because `bind_authorization_code: true` is set, the auth code itself is bound to the key — a leaked redirect (e.g. via logging or browser history) cannot be exchanged for tokens by an attacker without the key.
-- `user.token_type` is set to `"DPoP"` after a successful exchange.
-
-### Per-request proofs
-
-For every outgoing API call, the request interceptor in `src/lib/api.ts`:
-
-1. Reads `user.token_type` and uses it as the `Authorization` scheme (`DPoP <access_token>` instead of `Bearer <access_token>`).
-2. Calls `getUserManager().dpopProof(url, user, method)` to generate a short-lived proof JWT bound to the specific URL and HTTP method.
-3. Attaches the proof on the `DPoP` header.
-
-The resource server (Spring Security 7) auto-detects the `DPoP` scheme via `DPoPAuthenticationConfigurer` and validates the proof's signature, `htm`/`htu` (method/URL), `ath` (access-token hash), and `jti` (replay cache) claims.
-
-### Key lifecycle
-
-- The keypair lives in IndexedDB (`oidc` database, default store) keyed by `client_id`.
-- It is reused across all tabs/windows of this browser profile.
-- It is **not** automatically deleted on `signoutRedirect()`; if you need to rotate the key, clear the `oidc` IndexedDB database explicitly. Rotation typically happens naturally when the user clears site data.
-- iOS / Telegram / other non-browser clients should not enable DPoP unless they have a hardware-backed key store (Keychain / Secure Enclave). Plain Bearer tokens are acceptable there.
+The XSS blast-radius tradeoff is mitigated by the strict CSP (see below) — any script not in `script-src` will not execute and therefore cannot read `localStorage`.
 
 ## Background Token Renewal
 
@@ -66,7 +30,7 @@ The resource server (Spring Security 7) auto-detects the `DPoP` scheme via `DPoP
 
 ### Safety-net refresh
 
-`getAuthToken()` in `src/lib/api.ts` performs a **safety-net refresh** via `signinSilent()` only when the token is within **10 seconds** of expiry. The threshold is deliberately well below the SDK's 60-second `automaticSilentRenew` trigger so the two paths don't race — overlapping refreshes both redeem the same refresh token, which providers with rotation enabled (Zitadel by default) treat as theft and invalidate.
+`getAuthToken()` in `src/lib/api.ts` performs a **safety-net refresh** via `signinSilent()` only when the token is within **10 seconds** of expiry. The threshold is deliberately well below the SDK's 60-second `automaticSilentRenew` trigger so the two paths don't race — overlapping refreshes both redeem the same refresh token, which IdPs that enable refresh-token rotation treat as token theft and invalidate the session.
 
 Concurrent calls to `getAuthToken()` are **deduped** onto a single in-flight `signinSilent()` promise (`pendingSilentRenew`). Without dedupe, a burst of API requests firing simultaneously would each trigger their own refresh and invalidate the session.
 
@@ -108,14 +72,13 @@ Register a **SPA** application in your IdP with:
 - **Silent renew URI:** `https://your-app.example.com/auth/silent-renew.html`
 - **Scopes:** `openid profile email offline_access` — `offline_access` is **required** to receive a refresh token. Without it, the session ends when the short-lived access token expires (~1 hour on most providers).
 
-### Zitadel-specific settings
+### IdP settings to verify if users are logged out more often than expected
 
-If the user is being logged out more often than expected, check these in the Zitadel console under the SPA app's settings:
+Names vary across providers, but most IdPs expose equivalents of the following. Check each in your IdP's admin console under the SPA app's configuration:
 
-1. **Refresh Token**: enable it on the application. Without the toggle, Zitadel will not issue a refresh token even when `offline_access` is in the scope.
-2. **Token Lifetime & Expiration** (under the project settings): increase **Refresh Token Idle Expiration** (default: 24h) and **Refresh Token Expiration** (default: 30d) to match how long you want sessions to stay alive across idle periods.
-3. **Access Token Type**: must be `JWT` so the API can validate locally.
-4. **Proof of Possession (DPoP)**: enable *Require Proof of Possession (DPoP)* (or equivalent setting) on the SPA app so Zitadel issues DPoP-bound tokens. The app always sends a DPoP proof on the token endpoint; Zitadel must honor it for the `cnf.jkt` binding to land in access tokens.
+1. **Refresh Token issuance**: must be enabled on the application. Without it, the IdP will not issue a refresh token even when `offline_access` is requested in the scope, and the session ends as soon as the access token expires.
+2. **Refresh Token idle / absolute expiration**: governs how long a session can stay alive across idle periods and total elapsed time. If users are forced to re-sign-in more often than expected, these are the levers.
+3. **Access Token type / format**: must be **JWT** so the API can validate it locally against the issuer's JWKS without an introspection round-trip.
 
 ## Content Security Policy
 
