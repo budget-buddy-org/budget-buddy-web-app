@@ -101,13 +101,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # wrangler-action auto-detects pnpm from pnpm-lock.yaml and uses it to
-      # install wrangler. We need pnpm + node available, but no pnpm install
-      # — wrangler is the only dep, and the action installs it itself.
-      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6
-        with:
-          version: 10.33.1
-
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
@@ -118,12 +111,17 @@ jobs:
           name: dist
           path: dist
 
+      # Invoke wrangler directly via npx instead of cloudflare/wrangler-action.
+      # The action shells out to pnpm (auto-detected from pnpm-lock.yaml) which
+      # then tries to resolve the entire workspace dep tree — including the
+      # private @budget-buddy-org/budget-buddy-contracts package — just to add
+      # wrangler. npx pulls wrangler from the public npm registry directly,
+      # bypassing the project's pnpm + GH Packages setup entirely.
       - name: Deploy preview to Cloudflare Pages
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=budget-buddy-web-app --branch=${{ github.head_ref }}
+        run: npx --yes wrangler@3.90.0 pages deploy dist --project-name=budget-buddy-web-app --branch=${{ github.head_ref }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   release:
     needs: [ci, commitlint]
