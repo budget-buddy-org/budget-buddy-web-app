@@ -149,7 +149,7 @@ Biome handles both lint and format (single quotes, 2-space indent, 100 char line
 
 Two parallel targets, both shipped from the same release:
 
-- **Cloudflare Pages** — static `dist/` on the edge. Runtime config served by [functions/config.json.ts](./functions/config.json.ts) (a Pages Function reading CF env vars). Headers in [public/_headers](./public/_headers); SPA fallback in [public/_redirects](./public/_redirects). Deployed by the `deploy-cloudflare` job in `.github/workflows/publish.yml`; PR previews by `preview-cloudflare` in `ci.yml`. The `functions/` directory is excluded from ESLint (CF compiles it with its own toolchain).
+- **Cloudflare Pages** — static `dist/` on the edge. Runtime config served by [functions/config.json.ts](./functions/config.json.ts) (a Pages Function reading CF env vars). Headers in [public/_headers](./public/_headers); SPA fallback in [public/_redirects](./public/_redirects).
 - **Self-hosted (Pi)** — Docker image published to GHCR, served by nginx with runtime config injected by `docker/docker-entrypoint.sh`. Deployed via `../budget-buddy-deployment/deploy.sh`.
 
 When changing runtime config shape (the keys in `AppConfig`), update **both** [functions/config.json.ts](./functions/config.json.ts) and [public/config.json.template](./public/config.json.template) so neither target drifts.

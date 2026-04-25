@@ -88,8 +88,6 @@ The app supports two deployment targets in parallel — neither path blocks the 
 
 Static `dist/` is served from Cloudflare's edge. Runtime configuration is served by a Pages Function ([functions/config.json.ts](./functions/config.json.ts)) that reads CF environment variables — same shape as the Docker `envsubst` model, no rebuild needed when env values change.
 
-- Wired from `.github/workflows/publish.yml` (`deploy-cloudflare` job) on every release, and from `.github/workflows/ci.yml` (`preview-cloudflare` job) on every same-repo PR for unique preview URLs.
-- Required GitHub secrets: `CLOUDFLARE_API_TOKEN` (Pages: Read + Pages: Edit) and `CLOUDFLARE_ACCOUNT_ID`.
 - Required CF Pages env vars (set per Production / Preview environment in the dashboard): `VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, `VITE_OIDC_SCOPES`, `VITE_OIDC_USER_MANAGEMENT_URL`.
 - HTTP headers and SPA fallback come from [public/_headers](./public/_headers) and [public/_redirects](./public/_redirects).
 - Test the Functions setup locally with `pnpm dlx wrangler pages dev ./dist` after `pnpm build`.
