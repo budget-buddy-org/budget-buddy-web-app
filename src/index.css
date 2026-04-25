@@ -37,6 +37,14 @@
   --radius: 0.625rem;
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 
+  /* Typography scale — bumped from Tailwind defaults for readability.
+     Body text aims for 15–16px, labels/meta for 13px (above the
+     12px "too small" threshold). */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
+
   --easing-spring: linear(
     0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25%, 0.849,
     0.937 38.1%, 0.968 41.1%, 1.022 50.9%, 1.003 60.1%, 1
@@ -86,8 +94,11 @@ body {
   margin: 0;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Tabular numerals so currency/amounts align in lists and tables.
+     Only affects digit width — letters stay proportional. */
+  font-variant-numeric: tabular-nums;
   /* Prevent pull-to-refresh and bounce effect on mobile */
   overscroll-behavior-y: none;
   /* Enable smooth scrolling */

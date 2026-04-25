@@ -22,7 +22,7 @@ export function PageHeader({ title, subtitle, primaryAction, children }: PageHea
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold">{title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
           {subtitle && <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div>}
         </div>
         <div className="flex items-center gap-2">

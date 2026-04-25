@@ -61,6 +61,7 @@ vi.mock('@/components/ui/button', () => ({
     variant,
     size,
     className,
+    'aria-label': ariaLabel,
   }: {
     children: React.ReactNode;
     disabled?: boolean;
@@ -69,6 +70,7 @@ vi.mock('@/components/ui/button', () => ({
     variant?: string;
     size?: string;
     className?: string;
+    'aria-label'?: string;
   }) =>
     React.createElement(
       'button',
@@ -79,6 +81,7 @@ vi.mock('@/components/ui/button', () => ({
         'data-variant': variant,
         'data-size': size,
         className,
+        'aria-label': ariaLabel,
       },
       children,
     ),
@@ -162,8 +165,8 @@ describe('CategoriesPage', () => {
       isLoading: true,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
-    // 6 items, each has 2 skeletons (name + delete button)
-    expect(screen.getAllByTestId('skeleton')).toHaveLength(12);
+    // 6 skeleton rows, one name placeholder each
+    expect(screen.getAllByTestId('skeleton')).toHaveLength(6);
   });
 
   it('shows an empty state message when there are no categories', () => {
@@ -289,15 +292,10 @@ describe('CategoriesPage', () => {
     renderPage();
     const user = userEvent.setup();
 
-    // The delete button contains the Trash2 icon text "delete"
-    const deleteButtons = screen.getAllByRole('button');
-    const deleteBtn = deleteButtons.find(
-      (btn) => btn.querySelector('span')?.textContent === 'delete',
-    );
-    expect(deleteBtn).toBeDefined();
-    if (deleteBtn) {
-      await user.click(deleteBtn);
-    }
+    // Open the edit dialog — delete now lives there, not on the row
+    await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
+
+    await user.click(screen.getByRole('button', { name: /delete category/i }));
 
     // Mutation should not be called yet
     expect(mockDeleteCategory.mutate).not.toHaveBeenCalled();

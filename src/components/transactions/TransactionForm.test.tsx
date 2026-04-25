@@ -5,7 +5,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionForm } from './TransactionForm';
 
-const mockToast = vi.fn();
+const mockToast = vi.fn(() => ({ id: '1', dismiss: vi.fn(), update: vi.fn() }));
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
@@ -38,16 +38,23 @@ vi.mock('@/components/ui/button', () => ({
     disabled,
     type,
     loading,
+    'aria-label': ariaLabel,
   }: {
     children: React.ReactNode;
     onClick: () => void;
     disabled: boolean;
     type: 'button' | 'submit';
     loading: boolean;
+    'aria-label'?: string;
   }) =>
     React.createElement(
       'button',
-      { onClick, disabled: disabled || loading, type: type || 'button' },
+      {
+        onClick,
+        disabled: disabled || loading,
+        type: type || 'button',
+        'aria-label': ariaLabel,
+      },
       children,
     ),
 }));

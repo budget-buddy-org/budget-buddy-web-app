@@ -1,4 +1,4 @@
-import { Check, X } from 'lucide-react';
+import { Check, Trash2, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { CategoryRow } from '@/components/categories/CategoryRow';
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import {
   useCategories,
@@ -44,7 +45,7 @@ export function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const [editName, setEditName] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const createFieldError = getApiError(createCategory.error)?.errors?.[0]?.message;
   const updateCategory = useUpdateCategory(editingCategory?.id ?? '');
@@ -62,19 +63,15 @@ export function CategoriesPage() {
           setPage(0);
           toast({
             title: 'Category created',
-            description: 'Your new category has been added successfully.',
-            variant: 'default',
+            variant: 'success',
           });
         },
         onError: (error) => {
           const apiError = getApiError(error);
           if (!apiError?.errors) {
             toast({
-              title: 'Error',
-              description:
-                apiError?.detail ||
-                apiError?.title ||
-                'Failed to create category. Please try again.',
+              title: "Couldn't create category",
+              description: apiError?.detail || apiError?.title,
               variant: 'destructive',
             });
           }
@@ -94,16 +91,15 @@ export function CategoriesPage() {
           setEditName('');
           toast({
             title: 'Category updated',
-            description: 'The category name has been changed.',
-            variant: 'default',
+            variant: 'success',
           });
         },
         onError: (error) => {
           const apiError = getApiError(error);
           if (!apiError?.errors) {
             toast({
-              title: 'Error',
-              description: apiError?.detail || apiError?.title || 'Failed to update category.',
+              title: "Couldn't update category",
+              description: apiError?.detail || apiError?.title,
               variant: 'destructive',
             });
           }
@@ -113,20 +109,40 @@ export function CategoriesPage() {
   };
 
   const handleDelete = () => {
-    if (!deleteId) return;
-    deleteCategory.mutate(deleteId, {
+    if (!editingCategory) return;
+    const snapshot = { name: editingCategory.name };
+    deleteCategory.mutate(editingCategory.id, {
       onSuccess: () => {
-        setDeleteId(null);
-        toast({
+        setShowDeleteConfirm(false);
+        setEditingCategory(null);
+        setEditName('');
+        const { dismiss } = toast({
           title: 'Category deleted',
-          description: 'The category has been removed.',
-          variant: 'default',
+          variant: 'success',
+          duration: 6000,
+          action: (
+            <ToastAction
+              altText="Undo delete"
+              onClick={() => {
+                createCategory.mutate(snapshot, {
+                  onSuccess: () => {
+                    toast({ title: 'Category restored', variant: 'success' });
+                  },
+                  onError: () => {
+                    toast({ title: "Couldn't restore category", variant: 'destructive' });
+                  },
+                });
+                dismiss();
+              }}
+            >
+              Undo
+            </ToastAction>
+          ),
         });
       },
       onError: () => {
         toast({
-          title: 'Error',
-          description: 'Failed to delete category.',
+          title: "Couldn't delete category",
           variant: 'destructive',
         });
       },
@@ -224,26 +240,39 @@ export function CategoriesPage() {
                 <p className="text-xs font-medium text-destructive">{updateFieldError}</p>
               )}
             </div>
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="submit"
-                className="flex-1"
-                loading={updateCategory.isPending}
-                disabled={!editName.trim() || editName.trim() === editingCategory?.name}
-              >
-                <Check className="size-4 mr-2" />
-                Save
-              </Button>
+            <div className="flex items-center gap-2 pt-2">
               <Button
                 type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setEditingCategory(null)}
-                disabled={updateCategory.isPending}
+                variant="ghost"
+                size="icon"
+                aria-label="Delete category"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={updateCategory.isPending || deleteCategory.isPending}
               >
-                <X className="size-4 mr-2" />
-                Cancel
+                <Trash2 className="size-4" />
               </Button>
+              <div className="flex flex-1 gap-2">
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  loading={updateCategory.isPending}
+                  disabled={!editName.trim() || editName.trim() === editingCategory?.name}
+                >
+                  <Check className="size-4 mr-2" />
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setEditingCategory(null)}
+                  disabled={updateCategory.isPending}
+                >
+                  <X className="size-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>
@@ -254,9 +283,8 @@ export function CategoriesPage() {
           {isLoading ? (
             <div className="divide-y">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-3">
+                <div key={i} className="flex items-center px-4 py-3">
                   <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-9 w-9 rounded-md" />
                 </div>
               ))}
             </div>
@@ -272,8 +300,6 @@ export function CategoriesPage() {
                     setEditingCategory(c);
                     setEditName(c.name);
                   }}
-                  onDelete={() => setDeleteId(c.id)}
-                  isDeleting={deleteCategory.isPending && deleteId === c.id}
                 />
               ))}
             </ul>
@@ -286,8 +312,8 @@ export function CategoriesPage() {
       )}
 
       <ConfirmationDialog
-        isOpen={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
+        isOpen={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
         onConfirm={handleDelete}
         title="Delete Category"
         description="Are you sure you want to delete this category? This action cannot be undone."

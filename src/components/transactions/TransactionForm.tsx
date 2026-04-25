@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { ToastAction } from '@/components/ui/toast';
 import { TransactionTypeToggle } from '@/components/ui/transaction-type-toggle';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateCategory } from '@/hooks/useCategories';
@@ -92,8 +93,8 @@ export function TransactionForm({
       } catch (error) {
         const apiError = getApiError(error);
         toast({
-          title: 'Error',
-          description: apiError?.detail || apiError?.title || 'Failed to create new category.',
+          title: "Couldn't create category",
+          description: apiError?.detail || apiError?.title,
           variant: 'destructive',
         });
         return;
@@ -117,10 +118,7 @@ export function TransactionForm({
       onSuccess: () => {
         toast({
           title: isEditing ? 'Transaction updated' : 'Transaction created',
-          description: isEditing
-            ? 'Your changes have been saved.'
-            : 'The transaction has been recorded successfully.',
-          variant: 'default',
+          variant: 'success',
         });
         onSuccess();
       },
@@ -128,11 +126,8 @@ export function TransactionForm({
         const apiError = getApiError(error);
         if (!apiError?.errors) {
           toast({
-            title: 'Error',
-            description:
-              apiError?.detail ||
-              apiError?.title ||
-              `Failed to ${isEditing ? 'update' : 'create'} transaction.`,
+            title: isEditing ? "Couldn't update transaction" : "Couldn't create transaction",
+            description: apiError?.detail || apiError?.title,
             variant: 'destructive',
           });
         }
@@ -142,12 +137,38 @@ export function TransactionForm({
 
   const handleDelete = () => {
     if (!transaction?.id) return;
+    const snapshot: TransactionWrite = {
+      description: transaction.description ?? null,
+      amount: transaction.amount,
+      type: transaction.type,
+      currency: transaction.currency,
+      date: transaction.date,
+      categoryId: transaction.categoryId,
+    } as unknown as TransactionWrite;
     deleteTx.mutate(transaction.id, {
       onSuccess: () => {
-        toast({
+        const { dismiss } = toast({
           title: 'Transaction deleted',
-          description: 'The transaction has been removed.',
-          variant: 'default',
+          variant: 'success',
+          duration: 6000,
+          action: (
+            <ToastAction
+              altText="Undo delete"
+              onClick={() => {
+                createTx.mutate(snapshot, {
+                  onSuccess: () => {
+                    toast({ title: 'Transaction restored', variant: 'success' });
+                  },
+                  onError: () => {
+                    toast({ title: "Couldn't restore transaction", variant: 'destructive' });
+                  },
+                });
+                dismiss();
+              }}
+            >
+              Undo
+            </ToastAction>
+          ),
         });
         if (onDeleteSuccess) {
           onDeleteSuccess();
@@ -157,8 +178,7 @@ export function TransactionForm({
       },
       onError: () => {
         toast({
-          title: 'Error',
-          description: 'Failed to delete transaction.',
+          title: "Couldn't delete transaction",
           variant: 'destructive',
         });
       },
@@ -345,35 +365,37 @@ export function TransactionForm({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2">
-          <Button type="submit" className="flex-1" loading={isPending} disabled={isFormDisabled}>
-            <Check className="size-4 mr-2" />
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={onCancel}
-            disabled={isPending}
-          >
-            <X className="size-4 mr-2" />
-            Cancel
-          </Button>
+        <div className="flex items-center gap-2 pt-2">
+          {isEditing && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Delete transaction"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isPending}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
+          <div className="flex flex-1 gap-2">
+            <Button type="submit" className="flex-1" loading={isPending} disabled={isFormDisabled}>
+              <Check className="size-4 mr-2" />
+              Save
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={onCancel}
+              disabled={isPending}
+            >
+              <X className="size-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
         </div>
-
-        {isEditing && (
-          <button
-            type="button"
-            aria-label="Delete transaction"
-            className="absolute top-4 left-4 rounded-sm text-destructive opacity-70 ring-offset-background transition hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none cursor-pointer active:scale-90 motion-reduce:transition-none"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={isPending}
-          >
-            <Trash2 className="size-4" />
-            <span className="sr-only">Delete transaction</span>
-          </button>
-        )}
       </form>
 
       <ConfirmationDialog
