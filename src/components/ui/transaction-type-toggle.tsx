@@ -46,7 +46,7 @@ export function TransactionTypeToggle({
           aria-selected={value === ''}
           onClick={() => (onChange as NullableProps['onChange'])('')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+            'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             value === ''
               ? cn(
                   'bg-background text-foreground shadow-sm',
@@ -64,7 +64,7 @@ export function TransactionTypeToggle({
         aria-selected={value === 'EXPENSE'}
         onClick={() => onChange('EXPENSE')}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'EXPENSE'
             ? cn(
                 'bg-background text-foreground shadow-sm',
@@ -82,7 +82,7 @@ export function TransactionTypeToggle({
         aria-selected={value === 'INCOME'}
         onClick={() => onChange('INCOME')}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+          'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'INCOME'
             ? cn(
                 'bg-background text-income shadow-sm',

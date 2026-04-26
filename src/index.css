@@ -161,7 +161,7 @@ textarea {
 }
 
 @utility transition-spring {
-  transition-property: transform, opacity, background-color, box-shadow, color, width, height, min-width;
+  transition-property: transform, opacity, background-color, box-shadow, color;
   transition-timing-function: var(--easing-spring);
   transition-duration: 350ms;
 }
