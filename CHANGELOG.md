@@ -1,3 +1,9 @@
+## [4.3.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.3.0...v4.3.1) (2026-04-26)
+
+### Performance Improvements
+
+* render and bundle improvements ([#119](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/119)) ([e3bb16b](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e3bb16b4fba7ddfe96f548ffb50aae50f543874a))
+
 ## [4.3.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.2.1...v4.3.0) (2026-04-24)
 
 ### Features
