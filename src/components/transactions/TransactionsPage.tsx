@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Filter } from 'lucide-react';
+import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
@@ -42,6 +43,12 @@ export function TransactionsPage() {
     handlePageChange,
   } = useTransactionPageState();
 
+  const [dialogTitle, setDialogTitle] = useState('Add Transaction');
+  const [dialogDesc, setDialogDesc] = useState(
+    'Record a new expense or income to track your budget',
+  );
+  const isDialogOpen = showForm || !!editingId;
+
   const { data: editingTransaction, isLoading: isTransactionLoading } = useTransaction(
     editingId ?? '',
   );
@@ -67,7 +74,11 @@ export function TransactionsPage() {
         subtitle="View and manage your income and expenses"
         primaryAction={{
           label: 'Add',
-          onClick: () => setShowForm((v) => !v),
+          onClick: () => {
+            setDialogTitle('Add Transaction');
+            setDialogDesc('Record a new expense or income to track your budget');
+            setShowForm((v) => !v);
+          },
         }}
       >
         <Button
@@ -96,15 +107,11 @@ export function TransactionsPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showForm || !!editingId} onOpenChange={(open) => !open && closeForm()}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeForm()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
-            <DialogDescription>
-              {editingId
-                ? 'Update your transaction details including amount, date, and category'
-                : 'Record a new expense or income to track your budget'}
-            </DialogDescription>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDesc}</DialogDescription>
           </DialogHeader>
           {isTransactionLoading && editingId ? (
             <div className="space-y-6 py-4">
@@ -152,7 +159,11 @@ export function TransactionsPage() {
         isLoading={isLoading}
         isFiltering={isFiltered}
         onResetFilters={resetFilters}
-        onEdit={(id) => setEditingId(id)}
+        onEdit={(id) => {
+          setDialogTitle('Edit Transaction');
+          setDialogDesc('Update your transaction details including amount, date, and category');
+          setEditingId(id);
+        }}
       />
 
       {!isLoading && transactions.length > 0 && (

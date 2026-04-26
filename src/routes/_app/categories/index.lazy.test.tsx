@@ -8,9 +8,9 @@ vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (opts: { component: React.ComponentType }) => ({ options: opts }),
 }));
 
-const mockCreateCategory = { mutate: vi.fn(), isPending: false };
+const mockCreateCategory = { mutate: vi.fn(), isPending: false, reset: vi.fn() };
 const mockDeleteCategory = { mutate: vi.fn(), isPending: false };
-const mockUpdateCategory = { mutate: vi.fn(), isPending: false };
+const mockUpdateCategory = { mutate: vi.fn(), isPending: false, reset: vi.fn() };
 
 vi.mock('@/hooks/useCategories', () => ({
   useCategories: vi.fn(),
@@ -305,6 +305,53 @@ describe('CategoriesPage', () => {
     await user.click(confirmBtn);
 
     expect(mockDeleteCategory.mutate).toHaveBeenCalledWith('cat-1', expect.any(Object));
+  });
+
+  it('clears input and resets mutation when Add dialog is cancelled', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [], meta: { total: 0, size: 20, page: 0 } },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useCategories>);
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getAllByRole('button', { name: /add/i })[0]);
+    await user.type(screen.getByPlaceholderText(/new category name/i), 'Unsaved');
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(mockCreateCategory.reset).toHaveBeenCalled();
+
+    // Reopen — input should be empty
+    await user.click(screen.getAllByRole('button', { name: /add/i })[0]);
+    expect(screen.getByPlaceholderText(/new category name/i)).toHaveValue('');
+  });
+
+  it('Save button stays disabled when edit name is unchanged', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useCategories>);
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
+
+    // Name unchanged — Save should be disabled
+    expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+  });
+
+  it('resets update mutation when edit dialog is cancelled', async () => {
+    vi.mocked(useCategories).mockReturnValue({
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useCategories>);
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(mockUpdateCategory.reset).toHaveBeenCalled();
   });
 
   it('handles autoFocus correctly in dialogs', async () => {

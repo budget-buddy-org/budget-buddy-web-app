@@ -45,6 +45,7 @@ export function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const [editName, setEditName] = useState('');
+  const [originalEditName, setOriginalEditName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const createFieldError = getApiError(createCategory.error)?.errors?.[0]?.message;
@@ -162,7 +163,16 @@ export function CategoriesPage() {
         }}
       />
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
+      <Dialog
+        open={showForm}
+        onOpenChange={(open) => {
+          setShowForm(open);
+          if (!open) {
+            setNewName('');
+            createCategory.reset();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Category</DialogTitle>
@@ -201,7 +211,11 @@ export function CategoriesPage() {
                 type="button"
                 variant="outline"
                 className="flex-1"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setNewName('');
+                  createCategory.reset();
+                }}
                 disabled={createCategory.isPending}
               >
                 <X className="size-4 mr-2" />
@@ -212,7 +226,15 @@ export function CategoriesPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
+      <Dialog
+        open={!!editingCategory}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingCategory(null);
+            updateCategory.reset();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Category</DialogTitle>
@@ -257,7 +279,7 @@ export function CategoriesPage() {
                   type="submit"
                   className="flex-1"
                   loading={updateCategory.isPending}
-                  disabled={!editName.trim() || editName.trim() === editingCategory?.name}
+                  disabled={!editName.trim() || editName.trim() === originalEditName}
                 >
                   <Check className="size-4 mr-2" />
                   Save
@@ -266,7 +288,10 @@ export function CategoriesPage() {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setEditingCategory(null)}
+                  onClick={() => {
+                    setEditingCategory(null);
+                    updateCategory.reset();
+                  }}
                   disabled={updateCategory.isPending}
                 >
                   <X className="size-4 mr-2" />
@@ -299,6 +324,7 @@ export function CategoriesPage() {
                   onStartEdit={() => {
                     setEditingCategory(c);
                     setEditName(c.name);
+                    setOriginalEditName(c.name);
                   }}
                 />
               ))}
