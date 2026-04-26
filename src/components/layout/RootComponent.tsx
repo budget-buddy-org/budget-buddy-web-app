@@ -7,7 +7,9 @@ import { VersionCheck } from '@/components/VersionCheck';
 import { applyTheme, useThemeStore } from '@/stores/theme.store';
 
 export function RootComponent() {
-  const { theme, primaryHue, fontSize } = useThemeStore();
+  const theme = useThemeStore((s) => s.theme);
+  const primaryHue = useThemeStore((s) => s.primaryHue);
+  const fontSize = useThemeStore((s) => s.fontSize);
 
   useEffect(() => {
     applyTheme(theme, primaryHue, fontSize);

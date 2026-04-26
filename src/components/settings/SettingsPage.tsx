@@ -25,18 +25,16 @@ export function SettingsPage() {
   const queryClient = useQueryClient();
   const { canInstall, promptInstall } = useInstallPrompt();
   const config = getConfig();
-  const {
-    theme,
-    setTheme,
-    primaryHue,
-    setPrimaryHue,
-    fontSize,
-    setFontSize,
-    showNavLabels,
-    setShowNavLabels,
-    glassEffect,
-    setGlassEffect,
-  } = useThemeStore();
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+  const primaryHue = useThemeStore((s) => s.primaryHue);
+  const setPrimaryHue = useThemeStore((s) => s.setPrimaryHue);
+  const fontSize = useThemeStore((s) => s.fontSize);
+  const setFontSize = useThemeStore((s) => s.setFontSize);
+  const showNavLabels = useThemeStore((s) => s.showNavLabels);
+  const setShowNavLabels = useThemeStore((s) => s.setShowNavLabels);
+  const glassEffect = useThemeStore((s) => s.glassEffect);
+  const setGlassEffect = useThemeStore((s) => s.setGlassEffect);
 
   const profileUrl = user?.profile?.profile || config.VITE_OIDC_USER_MANAGEMENT_URL;
 
