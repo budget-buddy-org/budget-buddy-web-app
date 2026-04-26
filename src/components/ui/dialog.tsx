@@ -43,7 +43,7 @@ function DialogContent({
 }) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const hiddenCloseRef = React.useRef<HTMLButtonElement>(null);
-  const dragState = React.useRef({ isDragging: false, startY: 0 });
+  const dragState = React.useRef({ isDragging: false, startY: 0, rafId: 0, pendingDelta: 0 });
   // Track pending transitionend listeners so we can clean them up if the
   // component unmounts mid-animation (e.g. portal destruction).
   const pendingListeners = React.useRef<Set<{ el: HTMLElement; fn: () => void }>>(new Set());
@@ -80,35 +80,54 @@ function DialogContent({
     [forwardedRef],
   );
 
+  const cancelPendingFrame = React.useCallback(() => {
+    if (dragState.current.rafId) {
+      cancelAnimationFrame(dragState.current.rafId);
+      dragState.current.rafId = 0;
+    }
+  }, []);
+
   const snapBack = React.useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
     dragState.current.isDragging = false;
+    cancelPendingFrame();
     el.style.transition = 'transform 0.3s ease';
     el.style.transform = 'translateY(0)';
     addTransitionEndListener(el, () => {
       if (contentRef.current) {
         contentRef.current.style.transform = '';
         contentRef.current.style.transition = '';
+        contentRef.current.style.willChange = '';
       }
     });
-  }, [addTransitionEndListener]);
+  }, [addTransitionEndListener, cancelPendingFrame]);
 
   const handlePointerDown = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragState.current = { isDragging: true, startY: e.clientY };
+    dragState.current = { isDragging: true, startY: e.clientY, rafId: 0, pendingDelta: 0 };
+    if (contentRef.current) {
+      contentRef.current.style.willChange = 'transform';
+      contentRef.current.style.transition = 'none';
+    }
   }, []);
 
   const handlePointerMove = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragState.current.isDragging || !contentRef.current) return;
-    const delta = Math.max(0, e.clientY - dragState.current.startY);
-    contentRef.current.style.transform = `translateY(${delta}px)`;
-    contentRef.current.style.transition = 'none';
+    if (!dragState.current.isDragging) return;
+    dragState.current.pendingDelta = Math.max(0, e.clientY - dragState.current.startY);
+    if (dragState.current.rafId) return;
+    dragState.current.rafId = requestAnimationFrame(() => {
+      dragState.current.rafId = 0;
+      if (contentRef.current) {
+        contentRef.current.style.transform = `translateY(${dragState.current.pendingDelta}px)`;
+      }
+    });
   }, []);
 
   const handlePointerUp = React.useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!dragState.current.isDragging) return;
+      cancelPendingFrame();
       const delta = e.clientY - dragState.current.startY;
       if (delta > 80) {
         dragState.current.isDragging = false;
@@ -124,7 +143,7 @@ function DialogContent({
         snapBack();
       }
     },
-    [snapBack, addTransitionEndListener],
+    [snapBack, addTransitionEndListener, cancelPendingFrame],
   );
 
   return (
