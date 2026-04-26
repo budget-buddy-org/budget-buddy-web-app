@@ -43,12 +43,17 @@ export function DashboardPage() {
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
-  const firstDayOfPeriod = toLocalIsoDate(new Date(currentYear, selectedMonth, 1));
-  // For past months use the last day of that month; for the current month use today.
-  const lastDayOfPeriod =
-    selectedMonth === currentMonth
-      ? todayIso()
-      : toLocalIsoDate(new Date(currentYear, selectedMonth + 1, 0));
+  const { firstDayOfPeriod, lastDayOfPeriod } = useMemo(
+    () => ({
+      firstDayOfPeriod: toLocalIsoDate(new Date(currentYear, selectedMonth, 1)),
+      // For past months use the last day of that month; for the current month use today.
+      lastDayOfPeriod:
+        selectedMonth === currentMonth
+          ? todayIso()
+          : toLocalIsoDate(new Date(currentYear, selectedMonth + 1, 0)),
+    }),
+    [currentYear, currentMonth, selectedMonth],
+  );
 
   const handleMonthSelect = (month: number) => {
     setSelectedMonth(month);
