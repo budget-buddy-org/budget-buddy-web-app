@@ -60,6 +60,7 @@ vi.mock('@/hooks/useTransactions', () => ({
   useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
   useTransaction: () => ({ data: null, isLoading: false }),
+  TRANSACTIONS_PAGE_SIZE: 20,
 }));
 
 describe('TransactionsPage a11y', () => {

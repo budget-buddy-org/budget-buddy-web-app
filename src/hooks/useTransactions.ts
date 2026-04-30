@@ -37,6 +37,8 @@ export interface TransactionFilters {
 const PAGE_SIZE_ALL = 200;
 const MAX_PAGES_ALL = 10;
 
+export const TRANSACTIONS_PAGE_SIZE = 20;
+
 const KEYS = {
   all: ['transactions'] as const,
   lists: ['transactions', 'list'] as const,

@@ -24,6 +24,7 @@ vi.mock('@/routes/_app/transactions/index', () => ({
 vi.mock('@/hooks/useTransactions', () => ({
   useTransactions: vi.fn(),
   useTransaction: vi.fn(),
+  TRANSACTIONS_PAGE_SIZE: 20,
 }));
 
 vi.mock('@/hooks/useCategories', () => ({

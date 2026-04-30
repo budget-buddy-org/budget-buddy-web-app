@@ -1,3 +1,4 @@
+import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate } from '@tanstack/react-router';
 import { Filter } from 'lucide-react';
 import { useState } from 'react';
@@ -17,9 +18,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCategories } from '@/hooks/useCategories';
 import { useTransactionPageState } from '@/hooks/useTransactionPageState';
-import { useTransaction, useTransactions } from '@/hooks/useTransactions';
-
-const PAGE_SIZE = 20;
+import { TRANSACTIONS_PAGE_SIZE, useTransaction, useTransactions } from '@/hooks/useTransactions';
 
 export function TransactionsPage() {
   const navigate = useNavigate();
@@ -43,20 +42,41 @@ export function TransactionsPage() {
     handlePageChange,
   } = useTransactionPageState();
 
-  const [dialogTitle, setDialogTitle] = useState('Add Transaction');
-  const [dialogDesc, setDialogDesc] = useState(
-    'Record a new expense or income to track your budget',
-  );
-  const isDialogOpen = showForm || !!editingId;
+  const isEditing = !!editingId;
+  const isDialogOpen = showForm || isEditing;
 
   const { data: editingTransaction, isLoading: isTransactionLoading } = useTransaction(
     editingId ?? '',
   );
 
+  // Latch the dialog body while the dialog is open. Without this the form
+  // unmounts the moment closeForm() runs, making the dialog visibly shrink
+  // to just the header during the bottom-sheet slide-out on mobile.
+  // React's "store info from previous renders" pattern:
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  type DialogRender = { mode: 'add' | 'edit'; transaction: Transaction | undefined };
+  const [render, setRender] = useState<DialogRender>({ mode: 'add', transaction: undefined });
+  if (isDialogOpen) {
+    const next: DialogRender = {
+      mode: isEditing ? 'edit' : 'add',
+      transaction: isEditing ? editingTransaction : undefined,
+    };
+    if (next.mode !== render.mode || next.transaction !== render.transaction) {
+      setRender(next);
+    }
+  }
+
+  const dialogTitle = render.mode === 'edit' ? 'Edit Transaction' : 'Add Transaction';
+  const dialogDesc =
+    render.mode === 'edit'
+      ? 'Update your transaction details including amount, date, and category'
+      : 'Record a new expense or income to track your budget';
+  const showSkeleton = isDialogOpen && isEditing && isTransactionLoading && !editingTransaction;
+
   const queryFilters = {
     ...filters,
     page,
-    size: PAGE_SIZE,
+    size: TRANSACTIONS_PAGE_SIZE,
     categoryId: filters.categoryId || undefined,
     start: filters.start || undefined,
     end: filters.end || undefined,
@@ -74,11 +94,7 @@ export function TransactionsPage() {
         subtitle="View and manage your income and expenses"
         primaryAction={{
           label: 'Add',
-          onClick: () => {
-            setDialogTitle('Add Transaction');
-            setDialogDesc('Record a new expense or income to track your budget');
-            setShowForm((v) => !v);
-          },
+          onClick: () => setShowForm((v) => !v),
         }}
       >
         <Button
@@ -113,7 +129,7 @@ export function TransactionsPage() {
             <DialogTitle>{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDesc}</DialogDescription>
           </DialogHeader>
-          {isTransactionLoading && editingId ? (
+          {showSkeleton ? (
             <div className="space-y-6 py-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-12" />
@@ -138,10 +154,11 @@ export function TransactionsPage() {
                 <Skeleton className="h-10 w-full" />
               </div>
             </div>
-          ) : showForm || (editingId && editingTransaction) ? (
+          ) : (
             <TransactionForm
+              key={render.mode === 'edit' ? (render.transaction?.id ?? 'edit') : 'add'}
               categories={categories}
-              transaction={editingId ? editingTransaction : undefined}
+              transaction={render.transaction}
               onSuccess={closeForm}
               onCancel={closeForm}
               onDeleteSuccess={() => {
@@ -149,7 +166,7 @@ export function TransactionsPage() {
                 navigate({ to: '/transactions' });
               }}
             />
-          ) : null}
+          )}
         </DialogContent>
       </Dialog>
 
@@ -159,15 +176,16 @@ export function TransactionsPage() {
         isLoading={isLoading}
         isFiltering={isFiltered}
         onResetFilters={resetFilters}
-        onEdit={(id) => {
-          setDialogTitle('Edit Transaction');
-          setDialogDesc('Update your transaction details including amount, date, and category');
-          setEditingId(id);
-        }}
+        onEdit={setEditingId}
       />
 
       {!isLoading && transactions.length > 0 && (
-        <Pagination page={page} total={total} size={PAGE_SIZE} onPageChange={handlePageChange} />
+        <Pagination
+          page={page}
+          total={total}
+          size={TRANSACTIONS_PAGE_SIZE}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   );

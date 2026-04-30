@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { TransactionsSkeleton } from '@/components/transactions/TransactionsSkeleton';
 import { categoriesQueryOptions } from '@/hooks/useCategories';
-import { transactionsQueryOptions } from '@/hooks/useTransactions';
+import { TRANSACTIONS_PAGE_SIZE, transactionsQueryOptions } from '@/hooks/useTransactions';
 import { queryClient } from '@/lib/query-client';
 
 export interface TransactionSearch {
@@ -34,7 +34,7 @@ export const Route = createFileRoute('/_app/transactions/')({
       queryClient.ensureQueryData(
         transactionsQueryOptions({
           page: search.page ?? 0,
-          size: 20,
+          size: TRANSACTIONS_PAGE_SIZE,
           sort: search.sort ?? 'desc',
           categoryId: search.categoryId || undefined,
           start: search.start || undefined,
