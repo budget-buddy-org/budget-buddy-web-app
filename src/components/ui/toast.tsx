@@ -18,7 +18,7 @@ function ToastViewport({
     <ToastPrimitives.Viewport
       ref={ref}
       className={cn(
-        'fixed inset-x-0 bottom-0 z-[100] flex max-h-screen flex-col-reverse gap-2 p-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:inset-x-auto md:right-0 md:max-w-[420px] md:pb-4',
+        'pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex max-h-screen flex-col-reverse gap-2 p-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:inset-x-auto md:right-0 md:max-w-[420px] md:pb-4',
         className,
       )}
       {...props}

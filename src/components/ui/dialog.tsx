@@ -23,7 +23,7 @@ function DialogOverlay({
     <DialogPrimitives.Overlay
       ref={ref}
       className={cn(
-        'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
+        'fixed inset-0 z-[200] bg-black/80 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
         className,
       )}
       {...props}
@@ -152,7 +152,7 @@ function DialogContent({
       <DialogPrimitives.Content
         ref={combinedRef}
         className={cn(
-          'fixed z-50 grid w-full gap-4 border bg-background shadow-lg',
+          'fixed z-[200] grid w-full gap-4 border bg-background shadow-lg',
           // Mobile: Bottom Sheet — extra top padding to clear the drag handle
           'bottom-0 left-0 max-w-none rounded-t-xl border-x-0 border-b-0 translate-y-0 max-h-[90dvh] overflow-y-auto',
           'px-6 pt-8 pb-6',
