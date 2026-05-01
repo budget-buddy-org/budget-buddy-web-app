@@ -112,7 +112,7 @@ jobs:
       # Scan CRITICAL+HIGH findings and upload to the Security tab for full
       # visibility. Non-blocking — HIGH findings appear as warnings only.
       - name: Scan image with Trivy (SARIF)
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.digest.outputs.sha }}
           format: sarif
@@ -137,7 +137,7 @@ jobs:
       # CVEs represent a meaningfully higher risk bar and are always blocked.
       # HIGH findings remain fully visible in the repo's Security tab.
       - name: Block on CRITICAL vulnerabilities
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.digest.outputs.sha }}
           format: table
