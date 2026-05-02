@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
+import { cn } from '@/lib/cn';
 import { getConfig } from '@/lib/config';
 import { useThemeStore } from '@/stores/theme.store';
 
@@ -100,22 +101,40 @@ export function SettingsPage() {
             <h2 className="text-lg font-semibold">Theme</h2>
           </div>
           <Card className="p-4">
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'light', icon: Sun, label: 'Light' },
-                { value: 'dark', icon: Moon, label: 'Dark' },
-                { value: 'system', icon: Monitor, label: 'System' },
-              ].map((t) => (
-                <Button
+            <div
+              role="tablist"
+              aria-label="Theme"
+              className={cn(
+                'flex h-10 p-1 bg-muted rounded-lg transition-colors',
+                glassEffect && 'bg-muted/50 backdrop-blur-md',
+              )}
+            >
+              {(
+                [
+                  { value: 'light', icon: Sun, label: 'Light' },
+                  { value: 'dark', icon: Moon, label: 'Dark' },
+                  { value: 'system', icon: Monitor, label: 'System' },
+                ] as const
+              ).map((t) => (
+                <button
                   key={t.value}
-                  variant={theme === t.value ? 'default' : 'outline'}
-                  size="sm"
-                  className="gap-2 cursor-pointer flex-col h-auto py-3 px-1 sm:flex-row sm:h-10 sm:py-0"
-                  onClick={() => setTheme(t.value as 'light' | 'dark' | 'system')}
+                  type="button"
+                  role="tab"
+                  aria-selected={theme === t.value}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                    theme === t.value
+                      ? cn(
+                          'bg-background text-foreground shadow-sm',
+                          glassEffect && 'bg-background/80 backdrop-blur-sm',
+                        )
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                  )}
+                  onClick={() => setTheme(t.value)}
                 >
                   <t.icon className="size-4" />
-                  <span className="text-xs sm:text-sm">{t.label}</span>
-                </Button>
+                  {t.label}
+                </button>
               ))}
             </div>
           </Card>

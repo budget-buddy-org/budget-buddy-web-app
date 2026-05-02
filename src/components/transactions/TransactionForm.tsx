@@ -21,9 +21,7 @@ import {
   useUpdateTransaction,
 } from '@/hooks/useTransactions';
 import { getApiError } from '@/lib/api-error';
-import { todayIso, toMinorUnits } from '@/lib/formatters';
-
-const CURRENCIES = ['EUR', 'GBP', 'USD'];
+import { ISO_CURRENCIES, localeCurrency, todayIso, toMinorUnits } from '@/lib/formatters';
 
 interface TransactionFormProps {
   categories: { id: string; name: string }[];
@@ -51,7 +49,7 @@ export function TransactionForm({
     description: transaction?.description ?? '',
     amount: transaction ? (transaction.amount / 100).toFixed(2) : '',
     type: (transaction?.type as 'EXPENSE' | 'INCOME') ?? ('EXPENSE' as const),
-    currency: transaction?.currency ?? 'EUR',
+    currency: transaction?.currency ?? localeCurrency(),
     date: transaction?.date ?? todayIso(),
     categoryId: transaction?.categoryId ?? '',
   });
@@ -66,7 +64,7 @@ export function TransactionForm({
     form.description !== (transaction?.description ?? '') ||
     form.amount !== (transaction ? (transaction.amount / 100).toFixed(2) : '') ||
     form.type !== ((transaction?.type as 'EXPENSE' | 'INCOME') ?? 'EXPENSE') ||
-    form.currency !== (transaction?.currency ?? 'EUR') ||
+    form.currency !== (transaction?.currency ?? localeCurrency()) ||
     form.date !== (transaction?.date ?? todayIso()) ||
     form.categoryId !== (transaction?.categoryId ?? '') ||
     (isAddingCategory && !!newCategoryName);
@@ -225,7 +223,7 @@ export function TransactionForm({
                 onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
                 error={!!getFieldError('currency')}
               >
-                {CURRENCIES.map((c) => (
+                {ISO_CURRENCIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>

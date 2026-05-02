@@ -2,6 +2,170 @@ function browserLocale(): string {
   return (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
 }
 
+// ISO 3166-1 alpha-2 region → ISO 4217 currency code
+const REGION_CURRENCY: Record<string, string> = {
+  AD: 'EUR',
+  AT: 'EUR',
+  BE: 'EUR',
+  CY: 'EUR',
+  DE: 'EUR',
+  EE: 'EUR',
+  ES: 'EUR',
+  FI: 'EUR',
+  FR: 'EUR',
+  GR: 'EUR',
+  HR: 'EUR',
+  IE: 'EUR',
+  IT: 'EUR',
+  LT: 'EUR',
+  LU: 'EUR',
+  LV: 'EUR',
+  MC: 'EUR',
+  ME: 'EUR',
+  MT: 'EUR',
+  NL: 'EUR',
+  PT: 'EUR',
+  SI: 'EUR',
+  SK: 'EUR',
+  SM: 'EUR',
+  VA: 'EUR',
+  XK: 'EUR',
+  GB: 'GBP',
+  CH: 'CHF',
+  NO: 'NOK',
+  SE: 'SEK',
+  DK: 'DKK',
+  IS: 'ISK',
+  PL: 'PLN',
+  CZ: 'CZK',
+  HU: 'HUF',
+  RO: 'RON',
+  BG: 'BGN',
+  RS: 'RSD',
+  UA: 'UAH',
+  BY: 'BYN',
+  RU: 'RUB',
+  GE: 'GEL',
+  AM: 'AMD',
+  AZ: 'AZN',
+  AL: 'ALL',
+  BA: 'BAM',
+  MK: 'MKD',
+  MD: 'MDL',
+  US: 'USD',
+  CA: 'CAD',
+  MX: 'MXN',
+  BR: 'BRL',
+  AR: 'ARS',
+  CL: 'CLP',
+  CO: 'COP',
+  PE: 'PEN',
+  VE: 'VES',
+  EC: 'USD',
+  BO: 'BOB',
+  PY: 'PYG',
+  UY: 'UYU',
+  CR: 'CRC',
+  GT: 'GTQ',
+  HN: 'HNL',
+  SV: 'USD',
+  NI: 'NIO',
+  DO: 'DOP',
+  CU: 'CUP',
+  JM: 'JMD',
+  TT: 'TTD',
+  BB: 'BBD',
+  BS: 'BSD',
+  JP: 'JPY',
+  CN: 'CNY',
+  KR: 'KRW',
+  IN: 'INR',
+  SG: 'SGD',
+  HK: 'HKD',
+  TW: 'TWD',
+  TH: 'THB',
+  ID: 'IDR',
+  MY: 'MYR',
+  PH: 'PHP',
+  VN: 'VND',
+  PK: 'PKR',
+  BD: 'BDT',
+  LK: 'LKR',
+  NP: 'NPR',
+  MM: 'MMK',
+  KH: 'KHR',
+  LA: 'LAK',
+  BN: 'BND',
+  MN: 'MNT',
+  KZ: 'KZT',
+  UZ: 'UZS',
+  AF: 'AFN',
+  SA: 'SAR',
+  AE: 'AED',
+  IL: 'ILS',
+  TR: 'TRY',
+  EG: 'EGP',
+  JO: 'JOD',
+  IQ: 'IQD',
+  IR: 'IRR',
+  KW: 'KWD',
+  BH: 'BHD',
+  QA: 'QAR',
+  OM: 'OMR',
+  ZA: 'ZAR',
+  NG: 'NGN',
+  KE: 'KES',
+  GH: 'GHS',
+  MA: 'MAD',
+  TN: 'TND',
+  DZ: 'DZD',
+  ET: 'ETB',
+  TZ: 'TZS',
+  UG: 'UGX',
+  ZM: 'ZMW',
+  AU: 'AUD',
+  NZ: 'NZD',
+  FJ: 'FJD',
+  PG: 'PGK',
+};
+
+/** All ISO 4217 currency codes supported by the runtime, sorted alphabetically. */
+export const ISO_CURRENCIES: readonly string[] = (() => {
+  try {
+    return Intl.supportedValuesOf('currency');
+  } catch {
+    return ['EUR', 'GBP', 'USD'];
+  }
+})();
+
+/** Returns the ISO 4217 currency code that best matches the user's browser locale. */
+export function localeCurrency(): string {
+  try {
+    const region = new Intl.Locale(browserLocale()).region?.toUpperCase();
+    return (region && REGION_CURRENCY[region]) ?? 'EUR';
+  } catch {
+    return 'EUR';
+  }
+}
+
+let _currencyDisplayNames: Intl.DisplayNames | null = null;
+function getCurrencyDisplayNames(): Intl.DisplayNames {
+  if (!_currencyDisplayNames) {
+    _currencyDisplayNames = new Intl.DisplayNames([browserLocale()], { type: 'currency' });
+  }
+  return _currencyDisplayNames;
+}
+
+/** Returns "EUR — Euro" style label for a currency code. */
+export function currencyLabel(code: string): string {
+  try {
+    const name = getCurrencyDisplayNames().of(code);
+    return name ? `${code} — ${name}` : code;
+  } catch {
+    return code;
+  }
+}
+
 const currencyFormatters = new Map<string, Intl.NumberFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 

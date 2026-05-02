@@ -1,26 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { Monitor, Moon, Settings, Sun } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
-import { type Theme, useThemeStore } from '@/stores/theme.store';
-
-const THEME_ICONS: Record<Theme, typeof Sun> = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-};
-
-const NEXT_THEME: Record<Theme, Theme> = {
-  light: 'dark',
-  dark: 'system',
-  system: 'light',
-};
+import { useThemeStore } from '@/stores/theme.store';
 
 export function Header() {
-  const theme = useThemeStore((s) => s.theme);
-  const setTheme = useThemeStore((s) => s.setTheme);
   const glassEffect = useThemeStore((s) => s.glassEffect);
-  const ThemeIcon = THEME_ICONS[theme];
 
   return (
     <header
@@ -45,16 +30,6 @@ export function Header() {
             <Settings className="size-4" />
           </Button>
         </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(NEXT_THEME[theme])}
-          title={`Switch theme (current: ${theme})`}
-          aria-label={`Switch theme (current: ${theme})`}
-          className="cursor-pointer hidden md:inline-flex"
-        >
-          <ThemeIcon className="size-4" />
-        </Button>
       </div>
     </header>
   );

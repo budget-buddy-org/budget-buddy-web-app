@@ -4,7 +4,7 @@ import { TransactionRow } from '@/components/transactions/TransactionRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate } from '@/lib/formatters';
+import { formatCurrency, formatDate } from '@/lib/formatters';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -29,15 +29,25 @@ export function TransactionList({
   );
 
   const groupedTransactions = useMemo(() => {
-    const groups: { date: string; items: Transaction[] }[] = [];
-    let currentGroup: { date: string; items: Transaction[] } | null = null;
+    const groups: { date: string; items: Transaction[]; balance: number; currency: string }[] = [];
+    let currentGroup: {
+      date: string;
+      items: Transaction[];
+      balance: number;
+      currency: string;
+    } | null = null;
 
     for (const t of transactions) {
       if (!currentGroup || currentGroup.date !== t.date) {
-        currentGroup = { date: t.date, items: [] };
+        currentGroup = { date: t.date, items: [], balance: 0, currency: t.currency };
         groups.push(currentGroup);
       }
       currentGroup.items.push(t);
+      if (t.currency !== currentGroup.currency) {
+        currentGroup.currency = '';
+      } else {
+        currentGroup.balance += t.type === 'INCOME' ? t.amount : -t.amount;
+      }
     }
     return groups;
   }, [transactions]);
@@ -91,8 +101,13 @@ export function TransactionList({
       {groupedTransactions.map((group) => (
         <Card key={group.date}>
           <CardContent className="p-0">
-            <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10">
-              {formatDate(group.date)}
+            <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
+              <span>{formatDate(group.date)}</span>
+              <span>
+                {group.currency
+                  ? `${group.balance > 0 ? '+' : ''}${formatCurrency(group.balance, group.currency)}`
+                  : 'N/A'}
+              </span>
             </h2>
             <ul className="divide-y">
               {group.items.map((t) => (
