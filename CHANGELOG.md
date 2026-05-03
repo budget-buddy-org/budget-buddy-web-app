@@ -1,3 +1,9 @@
+## [4.6.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.5.0...v4.6.0) (2026-05-03)
+
+### Features
+
+* wire search and amount-range filters into transactions UI (closes [#124](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/124)) ([#126](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/126)) ([93b4625](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/93b4625acd235f3c1f8d98e6f3d1123e99e69793)), closes [#91](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/91)
+
 ## [4.5.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.4.0...v4.5.0) (2026-05-02)
 
 ### Features
