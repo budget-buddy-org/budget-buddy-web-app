@@ -121,8 +121,9 @@ describe('TransactionFilters', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('emits amountMin in minor units when min input changes', () => {
+  it('stages filter edits and only commits on Done', () => {
     onFilterChange.mockClear();
+    onClose.mockClear();
     render(
       <TransactionFilters
         categories={categories}
@@ -135,8 +136,17 @@ describe('TransactionFilters', () => {
 
     const minInput = screen.getByLabelText(/min/i);
     fireEvent.change(minInput, { target: { value: '12.34' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: '1' } });
 
-    expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({ amountMin: 1234 }));
+    expect(onFilterChange).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /done/i }));
+
+    expect(onFilterChange).toHaveBeenCalledTimes(1);
+    expect(onFilterChange).toHaveBeenCalledWith(
+      expect.objectContaining({ amountMin: 1234, categoryId: '1' }),
+    );
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('shows an error and blocks Done when min > max', () => {

@@ -28,17 +28,15 @@ export function TransactionFilters({
   onReset,
   onClose,
 }: TransactionFiltersProps) {
+  // Edits are staged locally and committed on Done — the dialog covers the list, so live refetching is wasted work.
+  const [prevFilters, setPrevFilters] = useState(filters);
+  const [draft, setDraft] = useState<TransactionPageFilters>(filters);
   const [minStr, setMinStr] = useState(minorToDecimalString(filters.amountMin));
   const [maxStr, setMaxStr] = useState(minorToDecimalString(filters.amountMax));
-  const [prevMin, setPrevMin] = useState(filters.amountMin);
-  const [prevMax, setPrevMax] = useState(filters.amountMax);
-  // Sync local input strings when the external filters change (e.g. on Reset).
-  if (prevMin !== filters.amountMin) {
-    setPrevMin(filters.amountMin);
+  if (prevFilters !== filters) {
+    setPrevFilters(filters);
+    setDraft(filters);
     setMinStr(minorToDecimalString(filters.amountMin));
-  }
-  if (prevMax !== filters.amountMax) {
-    setPrevMax(filters.amountMax);
     setMaxStr(minorToDecimalString(filters.amountMax));
   }
 
@@ -48,19 +46,35 @@ export function TransactionFilters({
   const maxMinor = maxStr ? toMinorUnits(Number.parseFloat(maxStr)) : undefined;
   const rangeError = minMinor !== undefined && maxMinor !== undefined && minMinor > maxMinor;
 
-  const commitAmounts = (next: { amountMin?: number; amountMax?: number }) => {
-    onFilterChange({ ...filters, ...next });
+  const handleApply = () => {
+    onFilterChange(draft);
+    onClose();
   };
 
-  const hasActiveFilters =
-    filters.categoryId ||
-    filters.start ||
-    filters.end ||
+  const handleReset = () => {
+    onReset();
+    onClose();
+  };
+
+  const draftHasFilters =
+    !!draft.categoryId ||
+    !!draft.start ||
+    !!draft.end ||
+    draft.sort !== 'desc' ||
+    !!draft.type ||
+    !!draft.query ||
+    draft.amountMin !== undefined ||
+    draft.amountMax !== undefined;
+  const committedHasFilters =
+    !!filters.categoryId ||
+    !!filters.start ||
+    !!filters.end ||
     filters.sort !== 'desc' ||
-    filters.type ||
-    filters.query ||
+    !!filters.type ||
+    !!filters.query ||
     filters.amountMin !== undefined ||
     filters.amountMax !== undefined;
+  const hasActiveFilters = draftHasFilters || committedHasFilters;
 
   return (
     <div className="space-y-4 pt-2">
@@ -68,8 +82,8 @@ export function TransactionFilters({
         <legend className="text-sm font-medium">Type</legend>
         <TransactionTypeToggle
           nullable
-          value={filters.type}
-          onChange={(type) => onFilterChange({ ...filters, type })}
+          value={draft.type}
+          onChange={(type) => setDraft({ ...draft, type })}
         />
       </fieldset>
 
@@ -79,8 +93,8 @@ export function TransactionFilters({
         </label>
         <Select
           id="category-filter"
-          value={filters.categoryId}
-          onChange={(e) => onFilterChange({ ...filters, categoryId: e.target.value })}
+          value={draft.categoryId}
+          onChange={(e) => setDraft({ ...draft, categoryId: e.target.value })}
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -98,8 +112,8 @@ export function TransactionFilters({
           </label>
           <DatePicker
             id="start-date-filter"
-            value={filters.start}
-            onChange={(e) => onFilterChange({ ...filters, start: e.target.value })}
+            value={draft.start}
+            onChange={(e) => setDraft({ ...draft, start: e.target.value })}
           />
         </div>
         <div className="space-y-2">
@@ -108,8 +122,8 @@ export function TransactionFilters({
           </label>
           <DatePicker
             id="end-date-filter"
-            value={filters.end}
-            onChange={(e) => onFilterChange({ ...filters, end: e.target.value })}
+            value={draft.end}
+            onChange={(e) => setDraft({ ...draft, end: e.target.value })}
           />
         </div>
       </div>
@@ -127,10 +141,8 @@ export function TransactionFilters({
               error={rangeError}
               onChange={(v) => {
                 setMinStr(v);
-                if (rangeError) return;
                 const next = v ? toMinorUnits(Number.parseFloat(v)) : undefined;
-                if (maxMinor !== undefined && next !== undefined && next > maxMinor) return;
-                commitAmounts({ amountMin: next, amountMax: filters.amountMax });
+                setDraft({ ...draft, amountMin: next });
               }}
             />
           </div>
@@ -144,10 +156,8 @@ export function TransactionFilters({
               error={rangeError}
               onChange={(v) => {
                 setMaxStr(v);
-                if (rangeError) return;
                 const next = v ? toMinorUnits(Number.parseFloat(v)) : undefined;
-                if (minMinor !== undefined && next !== undefined && next < minMinor) return;
-                commitAmounts({ amountMin: filters.amountMin, amountMax: next });
+                setDraft({ ...draft, amountMax: next });
               }}
             />
           </div>
@@ -172,11 +182,11 @@ export function TransactionFilters({
           <button
             type="button"
             role="tab"
-            aria-selected={filters.sort === 'desc'}
-            onClick={() => onFilterChange({ ...filters, sort: 'desc' })}
+            aria-selected={draft.sort === 'desc'}
+            onClick={() => setDraft({ ...draft, sort: 'desc' })}
             className={cn(
               'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-              filters.sort === 'desc'
+              draft.sort === 'desc'
                 ? cn(
                     'bg-background text-foreground shadow-sm',
                     glassEffect && 'bg-background/80 backdrop-blur-sm',
@@ -190,11 +200,11 @@ export function TransactionFilters({
           <button
             type="button"
             role="tab"
-            aria-selected={filters.sort === 'asc'}
-            onClick={() => onFilterChange({ ...filters, sort: 'asc' })}
+            aria-selected={draft.sort === 'asc'}
+            onClick={() => setDraft({ ...draft, sort: 'asc' })}
             className={cn(
               'flex-1 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-              filters.sort === 'asc'
+              draft.sort === 'asc'
                 ? cn(
                     'bg-background text-foreground shadow-sm',
                     glassEffect && 'bg-background/80 backdrop-blur-sm',
@@ -212,14 +222,14 @@ export function TransactionFilters({
         <Button
           variant="outline"
           size="sm"
-          onClick={onReset}
+          onClick={handleReset}
           disabled={!hasActiveFilters}
           className="flex-1"
         >
           <RotateCcw className="mr-2 size-4" />
           Reset
         </Button>
-        <Button onClick={onClose} className="flex-1" disabled={rangeError}>
+        <Button onClick={handleApply} className="flex-1" disabled={rangeError}>
           Done
         </Button>
       </div>

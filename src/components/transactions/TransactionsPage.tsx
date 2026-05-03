@@ -1,5 +1,4 @@
 import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
@@ -20,7 +19,6 @@ import { useTransactionPageState } from '@/hooks/useTransactionPageState';
 import { TRANSACTIONS_PAGE_SIZE, useTransaction, useTransactions } from '@/hooks/useTransactions';
 
 export function TransactionsPage() {
-  const navigate = useNavigate();
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.items ?? [];
 
@@ -162,10 +160,7 @@ export function TransactionsPage() {
               transaction={render.transaction}
               onSuccess={closeForm}
               onCancel={closeForm}
-              onDeleteSuccess={() => {
-                closeForm();
-                navigate({ to: '/transactions' });
-              }}
+              onDeleteSuccess={closeForm}
             />
           )}
         </DialogContent>
