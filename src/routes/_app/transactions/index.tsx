@@ -11,7 +11,13 @@ export interface TransactionSearch {
   end?: string;
   sort?: 'asc' | 'desc';
   type?: 'EXPENSE' | 'INCOME' | '';
+  query?: string;
+  amountMin?: number;
+  amountMax?: number;
 }
+
+const validAmount = (v: unknown): number | undefined =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 1 ? Math.floor(v) : undefined;
 
 export const Route = createFileRoute('/_app/transactions/')({
   pendingComponent: TransactionsSkeleton,
@@ -27,6 +33,9 @@ export const Route = createFileRoute('/_app/transactions/')({
         : search.type === ''
           ? ''
           : undefined,
+    query: typeof search.query === 'string' && search.query.length > 0 ? search.query : undefined,
+    amountMin: validAmount(search.amountMin),
+    amountMax: validAmount(search.amountMax),
   }),
   loader: ({ location }) => {
     const search = location.search as TransactionSearch;
@@ -40,6 +49,9 @@ export const Route = createFileRoute('/_app/transactions/')({
           start: search.start || undefined,
           end: search.end || undefined,
           type: search.type || undefined,
+          query: search.query || undefined,
+          amountMin: search.amountMin,
+          amountMax: search.amountMax,
         }),
       ),
       queryClient.ensureQueryData(categoriesQueryOptions()),

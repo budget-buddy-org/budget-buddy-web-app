@@ -2,12 +2,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Download,
   LogOut,
-  Monitor,
   Moon,
   Navigation,
   Palette,
   RefreshCw,
   Sun,
+  SunMoon,
   Type,
   User,
 } from 'lucide-react';
@@ -113,7 +113,7 @@ export function SettingsPage() {
                 [
                   { value: 'light', icon: Sun, label: 'Light' },
                   { value: 'dark', icon: Moon, label: 'Dark' },
-                  { value: 'system', icon: Monitor, label: 'System' },
+                  { value: 'system', icon: SunMoon, label: 'System' },
                 ] as const
               ).map((t) => (
                 <button

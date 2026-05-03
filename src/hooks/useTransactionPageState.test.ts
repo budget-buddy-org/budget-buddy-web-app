@@ -22,6 +22,9 @@ const DEFAULT_FILTERS: TransactionPageFilters = {
   end: '',
   sort: 'desc',
   type: '',
+  query: '',
+  amountMin: undefined,
+  amountMax: undefined,
 };
 
 beforeEach(() => {
@@ -102,6 +105,9 @@ describe('useTransactionPageState — handleFilterChange', () => {
       end: '2024-01-31',
       sort: 'asc',
       type: 'EXPENSE',
+      query: '',
+      amountMin: undefined,
+      amountMax: undefined,
     };
 
     act(() => result.current.handleFilterChange(newFilters));

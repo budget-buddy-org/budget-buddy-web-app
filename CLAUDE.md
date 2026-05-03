@@ -65,7 +65,7 @@ The application uses standalone functional API calls (e.g. `listTransactions`, `
 
 TanStack Query v5. All query/mutation logic lives in hooks under `src/hooks/`. Each domain hook file (e.g. `useTransactions.ts`, `useCategories.ts`) exports a `KEYS` object for consistent cache key management, plus hooks for list, detail, create, update, and delete. Delete mutations use optimistic updates with rollback via `onMutate`/`onError`.
 
-- **Dashboard aggregation fetch:** The API has no aggregation endpoint, so `useAllTransactions` fetches up to 2,000 transactions in batches of 200 to calculate monthly totals and chart data client-side. This is intentional and scoped to the Dashboard. The standard paginated `useTransactions` (size=20) is used everywhere else. There is no client-side text search — if search is needed in future it should be added to the API first (`?search=` query param), then wired into the UI.
+- **Dashboard aggregation fetch:** The API has no aggregation endpoint, so `useAllTransactions` fetches up to 2,000 transactions in batches of 200 to calculate monthly totals and chart data client-side. This is intentional and scoped to the Dashboard. The standard paginated `useTransactions` (size=20) is used everywhere else. Text search is server-side via the contracts `query` param — never filter locally.
 
 Global error logging is wired into `QueryCache` and `MutationCache` in `src/lib/query-client.ts` — don't add duplicate error reporting inside individual hooks.
 
@@ -126,6 +126,12 @@ We use page-based pagination for transactions and categories.
 - UI: Reusable `Pagination` component in `src/components/ui/pagination.tsx`.
 - API: Consumes `meta.total` for correct item count and page calculation.
 - State: Managed at the page level via `useState` and passed to domain hooks.
+
+### Transaction filters
+
+URL search params are the source of truth for transactions list filters. Validation lives in [src/routes/_app/transactions/index.tsx](src/routes/_app/transactions/index.tsx) (`validateSearch`) — keep it `typeof`-based, no Zod. Supported params: `page`, `categoryId`, `start`, `end`, `sort`, `type`, `query`, `amountMin`, `amountMax`. **Amount params are stored in minor units** (integers ≥1) — convert in/out via `toMinorUnits` / `/100` from [src/lib/formatters.ts](src/lib/formatters.ts). Empty inputs must be omitted (`undefined`) — never send empty strings or `0`.
+
+The free-text search box debounces input via [src/hooks/useDebouncedValue.ts](src/hooks/useDebouncedValue.ts) (default 300 ms) so each keystroke does not refetch. The hook is generic — reuse it whenever you need debounced state.
 
 ### Accessibility Testing
 

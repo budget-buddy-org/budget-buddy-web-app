@@ -61,6 +61,9 @@ describe('TransactionFilters', () => {
     end: '',
     sort: 'desc' as const,
     type: '' as const,
+    query: '',
+    amountMin: undefined,
+    amountMax: undefined,
   };
   const onFilterChange = vi.fn();
   const onReset = vi.fn();
@@ -80,7 +83,7 @@ describe('TransactionFilters', () => {
     expect(screen.getByLabelText(/category/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/from/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/to/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/sort/i)).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: /sort/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /done/i })).toBeInTheDocument();
   });
@@ -116,5 +119,38 @@ describe('TransactionFilters', () => {
     const doneButton = screen.getByRole('button', { name: /done/i });
     fireEvent.click(doneButton);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('emits amountMin in minor units when min input changes', () => {
+    onFilterChange.mockClear();
+    render(
+      <TransactionFilters
+        categories={categories}
+        filters={filters}
+        onFilterChange={onFilterChange}
+        onReset={onReset}
+        onClose={onClose}
+      />,
+    );
+
+    const minInput = screen.getByLabelText(/min/i);
+    fireEvent.change(minInput, { target: { value: '12.34' } });
+
+    expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({ amountMin: 1234 }));
+  });
+
+  it('shows an error and blocks Done when min > max', () => {
+    render(
+      <TransactionFilters
+        categories={categories}
+        filters={{ ...filters, amountMin: 5000, amountMax: 1000 }}
+        onFilterChange={onFilterChange}
+        onReset={onReset}
+        onClose={onClose}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/min amount cannot be greater/i);
+    expect(screen.getByRole('button', { name: /done/i })).toBeDisabled();
   });
 });

@@ -75,7 +75,7 @@ describe('TransactionsPage a11y', () => {
     render(<TransactionsPage />);
 
     // Open filters dialog
-    const filterButton = screen.getByLabelText(/toggle filters/i);
+    const filterButton = screen.getByLabelText(/open filters/i);
     fireEvent.click(filterButton);
 
     // Dialog teleports to body, so we check document.body

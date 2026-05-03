@@ -8,6 +8,9 @@ export interface TransactionPageFilters {
   end: string;
   sort: 'asc' | 'desc';
   type: 'EXPENSE' | 'INCOME' | '';
+  query: string;
+  amountMin?: number;
+  amountMax?: number;
 }
 
 const DEFAULT_FILTERS: TransactionPageFilters = {
@@ -16,6 +19,9 @@ const DEFAULT_FILTERS: TransactionPageFilters = {
   end: '',
   sort: 'desc',
   type: '',
+  query: '',
+  amountMin: undefined,
+  amountMax: undefined,
 };
 
 export function useTransactionPageState() {
@@ -32,6 +38,9 @@ export function useTransactionPageState() {
     end: search.end ?? DEFAULT_FILTERS.end,
     sort: search.sort ?? DEFAULT_FILTERS.sort,
     type: search.type ?? DEFAULT_FILTERS.type,
+    query: search.query ?? DEFAULT_FILTERS.query,
+    amountMin: search.amountMin,
+    amountMax: search.amountMax,
   };
 
   const page = search.page ?? 0;
@@ -50,6 +59,9 @@ export function useTransactionPageState() {
         end: undefined,
         sort: undefined,
         type: undefined,
+        query: undefined,
+        amountMin: undefined,
+        amountMax: undefined,
       },
       replace: true,
     });
@@ -65,7 +77,24 @@ export function useTransactionPageState() {
           end: newFilters.end || undefined,
           sort: newFilters.sort !== 'desc' ? newFilters.sort : undefined,
           type: newFilters.type || undefined,
+          query: newFilters.query || undefined,
+          amountMin: newFilters.amountMin,
+          amountMax: newFilters.amountMax,
         },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const handleQueryChange = useCallback(
+    (next: string | undefined) => {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          page: undefined,
+          query: next && next.length > 0 ? next : undefined,
+        }),
         replace: true,
       });
     },
@@ -83,7 +112,15 @@ export function useTransactionPageState() {
     [navigate],
   );
 
-  const isFiltered = !!(filters.categoryId || filters.start || filters.end || filters.type);
+  const isFiltered = !!(
+    filters.categoryId ||
+    filters.start ||
+    filters.end ||
+    filters.type ||
+    filters.query ||
+    filters.amountMin !== undefined ||
+    filters.amountMax !== undefined
+  );
   const hasActiveFilters = isFiltered || filters.sort !== 'desc';
 
   return {
@@ -100,6 +137,7 @@ export function useTransactionPageState() {
     closeForm,
     resetFilters,
     handleFilterChange,
+    handleQueryChange,
     handlePageChange,
   };
 }

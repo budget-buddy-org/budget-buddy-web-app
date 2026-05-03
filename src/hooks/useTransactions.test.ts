@@ -96,6 +96,28 @@ describe('useTransactions', () => {
       }),
     );
   });
+
+  it('forwards search and amount-range filters to the API', async () => {
+    vi.mocked(listTransactions).mockResolvedValue({
+      data: mockPage,
+      error: undefined,
+    } as unknown as ListTransactionsResult);
+
+    renderHook(() => useTransactions({ query: 'coffee', amountMin: 100, amountMax: 5000 }), {
+      wrapper: makeWrapper(),
+    });
+
+    await waitFor(() => expect(listTransactions).toHaveBeenCalled());
+    expect(listTransactions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({
+          query: 'coffee',
+          amountMin: 100,
+          amountMax: 5000,
+        }),
+      }),
+    );
+  });
 });
 
 describe('useCreateTransaction', () => {

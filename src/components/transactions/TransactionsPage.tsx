@@ -1,12 +1,11 @@
 import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate } from '@tanstack/react-router';
-import { Filter } from 'lucide-react';
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
 import { TransactionList } from '@/components/transactions/TransactionList';
-import { Button } from '@/components/ui/button';
+import { TransactionSearchBar } from '@/components/transactions/TransactionSearchBar';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +38,7 @@ export function TransactionsPage() {
     closeForm,
     resetFilters,
     handleFilterChange,
+    handleQueryChange,
     handlePageChange,
   } = useTransactionPageState();
 
@@ -81,6 +81,9 @@ export function TransactionsPage() {
     start: filters.start || undefined,
     end: filters.end || undefined,
     type: filters.type || undefined,
+    query: filters.query || undefined,
+    amountMin: filters.amountMin,
+    amountMax: filters.amountMax,
   };
 
   const { data, isLoading } = useTransactions(queryFilters);
@@ -96,16 +99,14 @@ export function TransactionsPage() {
           label: 'Add',
           onClick: () => setShowForm((v) => !v),
         }}
-      >
-        <Button
-          variant={showFilters ? 'secondary' : 'outline'}
-          onClick={() => setShowFilters((v) => !v)}
-          aria-label="Toggle filters"
-        >
-          <Filter className="size-4" />
-          {hasActiveFilters && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
-        </Button>
-      </PageHeader>
+      />
+
+      <TransactionSearchBar
+        value={filters.query}
+        onQueryChange={handleQueryChange}
+        onOpenFilters={() => setShowFilters(true)}
+        isFiltered={hasActiveFilters}
+      />
 
       <Dialog open={showFilters} onOpenChange={setShowFilters}>
         <DialogContent>

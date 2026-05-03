@@ -29,11 +29,13 @@ export interface TransactionFilters {
   end?: string;
   sort?: 'asc' | 'desc';
   type?: TransactionType;
+  query?: string;
+  amountMin?: number;
+  amountMax?: number;
 }
 
-// Client-side "fetch all" limits — the API doesn't support full-text search, so we
-// pull transactions in batches and filter locally. PAGE_SIZE_ALL controls the batch
-// size; MAX_PAGES_ALL is a safety cap so a misconfigured server can't loop forever.
+// Dashboard aggregation pulls every transaction across multiple pages because the API
+// has no aggregation endpoint. MAX_PAGES_ALL caps the fan-out at 2000 rows.
 const PAGE_SIZE_ALL = 200;
 const MAX_PAGES_ALL = 10;
 
