@@ -4,7 +4,7 @@ import { TransactionRow } from '@/components/transactions/TransactionRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency, formatDate } from '@/lib/formatters';
+import { useFormatters } from '@/hooks/useFormatters';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -23,6 +23,7 @@ export function TransactionList({
   onResetFilters,
   onEdit,
 }: TransactionListProps) {
+  const { fmtCurrency, fmtDate } = useFormatters();
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
     [categories],
@@ -102,10 +103,10 @@ export function TransactionList({
         <Card key={group.date}>
           <CardContent className="p-0">
             <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
-              <span>{formatDate(group.date)}</span>
+              <span>{fmtDate(group.date)}</span>
               <span>
                 {group.currency
-                  ? `${group.balance > 0 ? '+' : ''}${formatCurrency(group.balance, group.currency)}`
+                  ? `${group.balance > 0 ? '+' : ''}${fmtCurrency(group.balance, group.currency)}`
                   : 'N/A'}
               </span>
             </h2>

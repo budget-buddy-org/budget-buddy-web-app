@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Download,
+  Globe,
   LogOut,
   Moon,
   Navigation,
@@ -15,11 +16,32 @@ import { useAuth } from 'react-oidc-context';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
 import { cn } from '@/lib/cn';
 import { getConfig } from '@/lib/config';
+import {
+  browserLocale,
+  currencyLabel,
+  formatCurrency,
+  formatDate,
+  ISO_CURRENCIES,
+  localeCurrency,
+} from '@/lib/formatters';
 import { useThemeStore } from '@/stores/theme.store';
+import type { DateFormatStyle } from '@/stores/user-preferences.store';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
+
+const NUMBER_LOCALE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'en-US', label: 'English (US) — 1,234.56' },
+  { value: 'en-GB', label: 'English (EU) — 1,234.56' },
+  { value: 'de-DE', label: 'German — 1.234,56' },
+  { value: 'fr-FR', label: 'French — 1 234,56' },
+  { value: 'de-CH', label: "Swiss — 1'234.56" },
+  { value: 'hi-IN', label: 'Indian — 1,23,456' },
+  { value: 'ja-JP', label: 'Japanese — 1,234' },
+];
 
 export function SettingsPage() {
   const { user, signoutRedirect } = useAuth();
@@ -36,6 +58,14 @@ export function SettingsPage() {
   const setShowNavLabels = useThemeStore((s) => s.setShowNavLabels);
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const setGlassEffect = useThemeStore((s) => s.setGlassEffect);
+
+  const prefCurrency = useUserPreferencesStore((s) => s.currency);
+  const prefDateFormat = useUserPreferencesStore((s) => s.dateFormat);
+  const prefNumberLocale = useUserPreferencesStore((s) => s.numberLocale);
+  const setPrefCurrency = useUserPreferencesStore((s) => s.setCurrency);
+  const setPrefDateFormat = useUserPreferencesStore((s) => s.setDateFormat);
+  const setPrefNumberLocale = useUserPreferencesStore((s) => s.setNumberLocale);
+  const resolvedNumberLocale = prefNumberLocale ?? browserLocale();
 
   const profileUrl = user?.profile?.profile || config.VITE_OIDC_USER_MANAGEMENT_URL;
 
@@ -92,6 +122,85 @@ export function SettingsPage() {
                 External profile management is not provided by your identity provider.
               </p>
             )}
+          </Card>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Globe className="size-4 text-primary" />
+            <h2 className="text-lg font-semibold">Preferences</h2>
+          </div>
+          <Card className="p-4 space-y-4">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium">Default Currency</p>
+              <p className="text-xs text-muted-foreground">
+                Pre-selected currency when creating new transactions.
+              </p>
+              <Select
+                value={prefCurrency ?? ''}
+                onChange={(e) => setPrefCurrency(e.target.value || null)}
+              >
+                <option value="">Auto — {localeCurrency()} (from browser locale)</option>
+                {ISO_CURRENCIES.map((c) => (
+                  <option key={c} value={c}>
+                    {currencyLabel(c)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div className="border-t pt-4 space-y-1.5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium">Date Format</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate('2024-01-15', resolvedNumberLocale, prefDateFormat)}
+                  </p>
+                </div>
+                <div
+                  role="tablist"
+                  aria-label="Date format"
+                  className="flex h-9 shrink-0 p-1 bg-muted rounded-pill"
+                >
+                  {(['short', 'medium', 'long'] as DateFormatStyle[]).map((style) => (
+                    <button
+                      key={style}
+                      type="button"
+                      role="tab"
+                      aria-selected={prefDateFormat === style}
+                      onClick={() => setPrefDateFormat(style)}
+                      className={cn(
+                        'px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                        prefDateFormat === style
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                      )}
+                    >
+                      {style.charAt(0).toUpperCase() + style.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-1.5">
+              <p className="text-sm font-medium">Number Format</p>
+              <p className="text-xs text-muted-foreground">
+                Preview:{' '}
+                {formatCurrency(123456, prefCurrency ?? localeCurrency(), resolvedNumberLocale)}
+              </p>
+              <Select
+                value={prefNumberLocale ?? ''}
+                onChange={(e) => setPrefNumberLocale(e.target.value || null)}
+              >
+                <option value="">Auto (from browser locale)</option>
+                {NUMBER_LOCALE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </Card>
         </section>
 

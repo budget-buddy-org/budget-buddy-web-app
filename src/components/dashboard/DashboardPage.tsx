@@ -9,10 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCategories } from '@/hooks/useCategories';
+import { useFormatters } from '@/hooks/useFormatters';
 import { useAllTransactions } from '@/hooks/useTransactions';
 import { getCategoryColor } from '@/lib/categoryColor';
 import { cn } from '@/lib/cn';
-import { formatCurrency, formatDate, todayIso, toLocalIsoDate } from '@/lib/formatters';
+import { todayIso, toLocalIsoDate } from '@/lib/formatters';
 import { haptic } from '@/lib/haptics';
 import { useThemeStore } from '@/stores/theme.store';
 
@@ -36,6 +37,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
   const glassEffect = useThemeStore((s) => s.glassEffect);
+  const { fmtCurrency, fmtDate } = useFormatters();
 
   // Recomputed every render so the dashboard rolls over correctly when the app
   // stays open past midnight (especially across a month boundary).
@@ -160,8 +162,8 @@ export function DashboardPage() {
           <CardContent>
             <AnimatedNumber
               value={balance}
-              format={(v) => formatCurrency(Math.round(v), currency)}
-              className={cn('text-2xl font-bold', balance >= 0 ? 'text-income' : 'text-expense')}
+              format={(v) => fmtCurrency(Math.round(v), currency)}
+              className={cn('text-xl font-bold', balance >= 0 ? 'text-income' : 'text-expense')}
             />
           </CardContent>
         </Card>
@@ -222,7 +224,7 @@ export function DashboardPage() {
                             <span className="truncate text-sm font-medium">{row.name}</span>
                           </div>
                           <span className="shrink-0 text-sm text-muted-foreground">
-                            {formatCurrency(row.amount, currency)}
+                            {fmtCurrency(row.amount, currency)}
                           </span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-pill bg-muted">
@@ -294,12 +296,12 @@ export function DashboardPage() {
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                      <p className="text-xs text-muted-foreground">{fmtDate(t.date)}</p>
                     </div>
                     <div className="ml-4 flex items-center gap-2">
                       <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
                         {t.type === 'INCOME' ? '+' : '-'}
-                        {formatCurrency(t.amount, t.currency)}
+                        {fmtCurrency(t.amount, t.currency)}
                       </Badge>
                     </div>
                   </button>

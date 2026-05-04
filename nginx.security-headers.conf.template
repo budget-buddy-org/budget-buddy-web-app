@@ -13,7 +13,7 @@ add_header Permissions-Policy     "camera=(), microphone=(), geolocation=()"    
 # - script-src uses SHA-256 hashes to allow only the known inline scripts:
 #   1. Theme-init script in index.html (prevents FOUC)
 #   2. postMessage relay in auth/silent-renew.html (OIDC iframe callback)
-#   If either script changes, recompute the hash — see docs/auth.md.
+#   If either script changes, recompute the hash
 # - style-src 'unsafe-inline' is kept for inline <style> and runtime CSS-in-JS.
 # - connect-src includes the API and OIDC issuer for token/userinfo endpoints.
 # - frame-src includes the OIDC issuer for the silent-renew hidden iframe.

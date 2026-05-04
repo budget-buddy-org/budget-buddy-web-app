@@ -79,6 +79,7 @@ The application uses `react-oidc-context` and `oidc-client-ts` for authenticatio
 - **ProtectedAppLayout:** Component that guards routes and handles OIDC login redirection.
 
 - `src/stores/theme.store.ts` — persists `theme` (`light`|`dark`|`system`), `primaryHue` (0-360), and `fontSize` (12-24) to `localStorage` (`budget-buddy-theme`). Applies CSS variables to `:root` on rehydration.
+- `src/stores/user-preferences.store.ts` — persists `currency` (ISO 4217 or `null` = auto), `dateFormat` (`'short'|'medium'|'long'`, default `'medium'`), and `numberLocale` (BCP 47 or `null` = auto) to `localStorage` (`budget-buddy-preferences`). `null` values fall back to `localeCurrency()` / `browserLocale()` at call sites — the store never writes derived defaults, only explicit overrides.
 
 **Zustand selectors:** Always use selectors when subscribing to stores (e.g. `useThemeStore((s) => s.glassEffect)` instead of `useThemeStore()`). Subscribing to the entire store causes unnecessary re-renders in every consuming component.
 
@@ -125,6 +126,10 @@ shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in 
 ### Data Conventions
 
 Currency amounts are stored and sent as **minor units** (integers). `1299` = €12.99. Use `src/lib/formatters.ts` for display formatting.
+
+**Display formatting respects user preferences.** In React components, always use the `useFormatters()` hook from `src/hooks/useFormatters.ts` rather than calling `formatCurrency` / `formatDate` directly. The hook returns `{ fmtCurrency, fmtDate }` bound to the user's stored `numberLocale` and `dateFormat` preferences. The underlying pure functions in `formatters.ts` accept optional locale/style params and can be used outside React (tests, non-component code).
+
+`formatDate` accepts an optional third `style` parameter (`'short' | 'medium' | 'long'`) that maps to `Intl.DateTimeFormat` `dateStyle` options. Default is `'medium'` (e.g. "Jan 15, 2024"), which matches the historical behaviour. `browserLocale()` is exported for use by stores and hooks that need the raw browser locale string.
 
 ### Pagination
 

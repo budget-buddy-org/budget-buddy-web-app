@@ -2,8 +2,8 @@ import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { AnimatedNumber } from '@/components/ui/animated-number';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useFormatters } from '@/hooks/useFormatters';
 import { cn } from '@/lib/cn';
-import { formatCurrency } from '@/lib/formatters';
 import type { TransactionSearch } from '@/routes/_app/transactions/index';
 
 export function SummaryCardDescription({
@@ -35,6 +35,7 @@ export function SummaryCard({
   className: string;
   linkSearch?: TransactionSearch;
 }) {
+  const { fmtCurrency } = useFormatters();
   const card = (
     <Card
       glass
@@ -49,7 +50,7 @@ export function SummaryCard({
       <CardContent>
         <AnimatedNumber
           value={amount}
-          format={(v) => formatCurrency(Math.round(v), currency)}
+          format={(v) => fmtCurrency(Math.round(v), currency)}
           className={cn('text-xl font-bold', className)}
         />
       </CardContent>
