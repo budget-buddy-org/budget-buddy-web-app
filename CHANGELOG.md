@@ -1,3 +1,9 @@
+## [4.7.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.6.2...v4.7.0) (2026-05-04)
+
+### Features
+
+* user preferences to change format settings ([#128](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/128)) ([4f04b6a](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/4f04b6a67e6fa877937574719b69027fa8fde2e0))
+
 ## [4.6.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.6.1...v4.6.2) (2026-05-03)
 
 ### Bug Fixes
