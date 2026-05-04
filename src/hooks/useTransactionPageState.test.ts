@@ -43,7 +43,6 @@ describe('useTransactionPageState — initial state', () => {
     expect(result.current.showForm).toBe(false);
     expect(result.current.showFilters).toBe(false);
     expect(result.current.editingId).toBeNull();
-    expect(result.current.page).toBe(0);
     expect(result.current.filters).toEqual(DEFAULT_FILTERS);
     expect(result.current.isFiltered).toBe(false);
     expect(result.current.hasActiveFilters).toBe(false);
@@ -119,16 +118,6 @@ describe('useTransactionPageState — handleFilterChange', () => {
       }),
     );
   });
-
-  it('resets page to undefined when filters change', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => result.current.handleFilterChange({ ...DEFAULT_FILTERS, categoryId: 'cat-1' }));
-
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.objectContaining({ search: expect.objectContaining({ page: undefined }) }),
-    );
-  });
 });
 
 describe('useTransactionPageState — resetFilters', () => {
@@ -140,43 +129,18 @@ describe('useTransactionPageState — resetFilters', () => {
     expect(mockNavigate).toHaveBeenCalledWith(
       expect.objectContaining({
         search: {
-          page: undefined,
           categoryId: undefined,
           start: undefined,
           end: undefined,
           sort: undefined,
           type: undefined,
+          query: undefined,
+          amountMin: undefined,
+          amountMax: undefined,
         },
         replace: true,
       }),
     );
-  });
-});
-
-describe('useTransactionPageState — handlePageChange', () => {
-  it('calls navigate with the new page', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => result.current.handlePageChange(4));
-
-    expect(mockNavigate).toHaveBeenCalled();
-  });
-
-  it('calls window.scrollTo with smooth scroll to top', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => result.current.handlePageChange(1));
-
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
-  });
-
-  it('calls window.scrollTo on every page change', () => {
-    const { result } = renderHook(() => useTransactionPageState());
-
-    act(() => result.current.handlePageChange(1));
-    act(() => result.current.handlePageChange(2));
-
-    expect(window.scrollTo).toHaveBeenCalledTimes(2);
   });
 });
 

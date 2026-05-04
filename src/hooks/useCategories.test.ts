@@ -10,6 +10,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CATEGORIES_PAGE_SIZE,
   useCategories,
   useCategory,
   useCreateCategory,
@@ -43,7 +44,7 @@ const mockPage = {
   items: [mockCategory],
   meta: {
     total: 1,
-    size: 200,
+    size: CATEGORIES_PAGE_SIZE,
     page: 0,
   },
 };

@@ -10,6 +10,7 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 vi.mock('@/hooks/useCategories', () => ({
+  CATEGORIES_PAGE_SIZE: 200,
   useCategories: () => ({
     data: {
       items: [

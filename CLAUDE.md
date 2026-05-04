@@ -65,7 +65,7 @@ The application uses standalone functional API calls (e.g. `listTransactions`, `
 
 TanStack Query v5. All query/mutation logic lives in hooks under `src/hooks/`. Each domain hook file (e.g. `useTransactions.ts`, `useCategories.ts`) exports a `KEYS` object for consistent cache key management, plus hooks for list, detail, create, update, and delete. Delete mutations use optimistic updates with rollback via `onMutate`/`onError`.
 
-- **Dashboard aggregation fetch:** The API has no aggregation endpoint, so `useAllTransactions` fetches up to 2,000 transactions in batches of 200 to calculate monthly totals and chart data client-side. This is intentional and scoped to the Dashboard. The standard paginated `useTransactions` (size=20) is used everywhere else. Text search is server-side via the contracts `query` param — never filter locally.
+- **Dashboard aggregation fetch:** The API has no aggregation endpoint, so `useAllTransactions` fetches up to 2,000 transactions in batches of 200 to calculate monthly totals and chart data client-side. This is intentional and scoped to the Dashboard. The standard `useInfiniteTransactions` (size=20) is used for the transactions list, while `useCategories` (size=200) is used for categories. Text search is server-side via the contracts `query` param — never filter locally.
 
 Global error logging is wired into `QueryCache` and `MutationCache` in `src/lib/query-client.ts` — don't add duplicate error reporting inside individual hooks.
 
@@ -131,12 +131,13 @@ Currency amounts are stored and sent as **minor units** (integers). `1299` = €
 
 `formatDate` accepts an optional third `style` parameter (`'short' | 'medium' | 'long'`) that maps to `Intl.DateTimeFormat` `dateStyle` options. Default is `'medium'` (e.g. "Jan 15, 2024"), which matches the historical behaviour. `browserLocale()` is exported for use by stores and hooks that need the raw browser locale string.
 
-### Pagination
+### Pagination & Infinite Scroll
 
-We use page-based pagination for transactions and categories.
-- UI: Reusable `Pagination` component in `src/components/ui/pagination.tsx`.
+We use infinite scroll for transactions and page-based pagination for categories.
+- **Transactions:** `InfiniteScrollSentinel` (in `src/components/ui/infinite-scroll-sentinel.tsx`) triggers `fetchNextPage` from `useInfiniteTransactions`.
+- **Categories:** Reusable `Pagination` component in `src/components/ui/pagination.tsx`. It automatically hides if there is only one page (`totalPages <= 1`).
 - API: Consumes `meta.total` for correct item count and page calculation.
-- State: Managed at the page level via `useState` and passed to domain hooks.
+- State: Managed via `useInfiniteTransactions` (transactions) or `useState` (categories).
 
 ### Transaction filters
 

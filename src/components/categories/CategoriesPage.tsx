@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import {
+  CATEGORIES_PAGE_SIZE,
   useCategories,
   useCreateCategory,
   useDeleteCategory,
@@ -25,11 +26,9 @@ import {
 } from '@/hooks/useCategories';
 import { getApiError } from '@/lib/api-error';
 
-const PAGE_SIZE = 20;
-
 export function CategoriesPage() {
   const [page, setPage] = useState(0);
-  const { data, isLoading } = useCategories(PAGE_SIZE, page);
+  const { data, isLoading } = useCategories(CATEGORIES_PAGE_SIZE, page);
   const total = data?.meta?.total ?? 0;
 
   const { toast } = useToast();
@@ -334,7 +333,12 @@ export function CategoriesPage() {
       </Card>
 
       {!isLoading && categories.length > 0 && (
-        <Pagination page={page} total={total} size={PAGE_SIZE} onPageChange={handlePageChange} />
+        <Pagination
+          page={page}
+          total={total}
+          size={CATEGORIES_PAGE_SIZE}
+          onPageChange={handlePageChange}
+        />
       )}
 
       <ConfirmationDialog

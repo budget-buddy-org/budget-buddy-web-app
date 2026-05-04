@@ -13,6 +13,11 @@ interface PaginationProps {
 
 export function Pagination({ page, total, size, onPageChange, className }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / size));
+
+  if (totalPages <= 1) {
+    return null;
+  }
+
   const canPrevious = page > 0;
   const canNext = (page + 1) * size < total;
 

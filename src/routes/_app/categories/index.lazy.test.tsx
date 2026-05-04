@@ -13,6 +13,7 @@ const mockDeleteCategory = { mutate: vi.fn(), isPending: false };
 const mockUpdateCategory = { mutate: vi.fn(), isPending: false, reset: vi.fn() };
 
 vi.mock('@/hooks/useCategories', () => ({
+  CATEGORIES_PAGE_SIZE: 200,
   useCategories: vi.fn(),
   useCreateCategory: () => mockCreateCategory,
   useDeleteCategory: () => mockDeleteCategory,
@@ -171,7 +172,7 @@ describe('CategoriesPage', () => {
 
   it('shows an empty state message when there are no categories', () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], meta: { total: 0, size: 20, page: 0 } },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -187,7 +188,7 @@ describe('CategoriesPage', () => {
         ],
         meta: {
           total: 2,
-          size: 20,
+          size: 200,
           page: 0,
         },
       },
@@ -200,7 +201,7 @@ describe('CategoriesPage', () => {
 
   it('calls createCategory.mutate when the create form is submitted', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], meta: { total: 0, size: 20, page: 0 } },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -218,7 +219,7 @@ describe('CategoriesPage', () => {
 
   it('does not submit create form when input is empty', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], meta: { total: 0, size: 20, page: 0 } },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -236,7 +237,7 @@ describe('CategoriesPage', () => {
 
   it('enters edit mode when a category name is clicked', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -252,7 +253,7 @@ describe('CategoriesPage', () => {
 
   it('calls updateCategory.mutate when the edit form is saved', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -270,7 +271,7 @@ describe('CategoriesPage', () => {
 
   it('cancels edit mode without mutating when Cancel is clicked', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -286,7 +287,7 @@ describe('CategoriesPage', () => {
 
   it('calls deleteCategory.mutate when the delete button is clicked and confirmed', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -309,7 +310,7 @@ describe('CategoriesPage', () => {
 
   it('clears input and resets mutation when Add dialog is cancelled', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [], meta: { total: 0, size: 20, page: 0 } },
+      data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -328,7 +329,7 @@ describe('CategoriesPage', () => {
 
   it('Save button stays disabled when edit name is unchanged', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -342,7 +343,7 @@ describe('CategoriesPage', () => {
 
   it('resets update mutation when edit dialog is cancelled', async () => {
     vi.mocked(useCategories).mockReturnValue({
-      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 20, page: 0 } },
+      data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);
     renderPage();
@@ -358,7 +359,7 @@ describe('CategoriesPage', () => {
     vi.mocked(useCategories).mockReturnValue({
       data: {
         items: [{ id: 'cat-1', name: 'Groceries' }],
-        meta: { total: 1, size: 20, page: 0 },
+        meta: { total: 1, size: 200, page: 0 },
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useCategories>);

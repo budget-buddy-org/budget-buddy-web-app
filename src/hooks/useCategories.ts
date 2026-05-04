@@ -12,13 +12,15 @@ import {
 } from '@budget-buddy-org/budget-buddy-contracts';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+export const CATEGORIES_PAGE_SIZE = 200;
+
 const KEYS = {
   all: ['categories'] as const,
   list: (size: number, page: number) => ['categories', 'list', size, page] as const,
   detail: (id: string) => ['categories', id] as const,
 };
 
-export const categoriesQueryOptions = (size = 200, page = 0) =>
+export const categoriesQueryOptions = (size = CATEGORIES_PAGE_SIZE, page = 0) =>
   queryOptions({
     queryKey: KEYS.list(size, page),
     queryFn: async () => {
@@ -30,7 +32,7 @@ export const categoriesQueryOptions = (size = 200, page = 0) =>
     },
   });
 
-export function useCategories(size = 200, page = 0) {
+export function useCategories(size = CATEGORIES_PAGE_SIZE, page = 0) {
   return useQuery(categoriesQueryOptions(size, page));
 }
 
