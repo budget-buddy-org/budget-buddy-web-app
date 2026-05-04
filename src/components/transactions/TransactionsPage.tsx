@@ -12,11 +12,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Pagination } from '@/components/ui/pagination';
+import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCategories } from '@/hooks/useCategories';
 import { useTransactionPageState } from '@/hooks/useTransactionPageState';
-import { TRANSACTIONS_PAGE_SIZE, useTransaction, useTransactions } from '@/hooks/useTransactions';
+import {
+  TRANSACTIONS_PAGE_SIZE,
+  useInfiniteTransactions,
+  useTransaction,
+} from '@/hooks/useTransactions';
 
 export function TransactionsPage() {
   const { data: categoriesData } = useCategories();
@@ -30,14 +34,12 @@ export function TransactionsPage() {
     editingId,
     setEditingId,
     filters,
-    page,
     isFiltered,
     hasActiveFilters,
     closeForm,
     resetFilters,
     handleFilterChange,
     handleQueryChange,
-    handlePageChange,
   } = useTransactionPageState();
 
   const isEditing = !!editingId;
@@ -73,7 +75,6 @@ export function TransactionsPage() {
 
   const queryFilters = {
     ...filters,
-    page,
     size: TRANSACTIONS_PAGE_SIZE,
     categoryId: filters.categoryId || undefined,
     start: filters.start || undefined,
@@ -84,9 +85,9 @@ export function TransactionsPage() {
     amountMax: filters.amountMax,
   };
 
-  const { data, isLoading } = useTransactions(queryFilters);
-  const transactions = data?.items ?? [];
-  const total = data?.meta?.total ?? 0;
+  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteTransactions(queryFilters);
+  const transactions = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div className="space-y-6">
@@ -171,16 +172,18 @@ export function TransactionsPage() {
         categories={categories}
         isLoading={isLoading}
         isFiltering={isFiltered}
+        isFetchingMore={isFetchingNextPage}
         onResetFilters={resetFilters}
         onEdit={setEditingId}
       />
 
       {!isLoading && transactions.length > 0 && (
-        <Pagination
-          page={page}
-          total={total}
-          size={TRANSACTIONS_PAGE_SIZE}
-          onPageChange={handlePageChange}
+        <InfiniteScrollSentinel
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={() => {
+            void fetchNextPage();
+          }}
         />
       )}
     </div>

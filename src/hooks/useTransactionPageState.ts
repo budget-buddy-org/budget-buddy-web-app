@@ -43,8 +43,6 @@ export function useTransactionPageState() {
     amountMax: search.amountMax,
   };
 
-  const page = search.page ?? 0;
-
   const closeForm = useCallback(() => {
     setShowForm(false);
     setEditingId(null);
@@ -53,7 +51,6 @@ export function useTransactionPageState() {
   const resetFilters = useCallback(() => {
     navigate({
       search: {
-        page: undefined,
         categoryId: undefined,
         start: undefined,
         end: undefined,
@@ -71,7 +68,6 @@ export function useTransactionPageState() {
     (newFilters: TransactionPageFilters) => {
       navigate({
         search: {
-          page: undefined,
           categoryId: newFilters.categoryId || undefined,
           start: newFilters.start || undefined,
           end: newFilters.end || undefined,
@@ -92,22 +88,10 @@ export function useTransactionPageState() {
       navigate({
         search: (prev) => ({
           ...prev,
-          page: undefined,
           query: next && next.length > 0 ? next : undefined,
         }),
         replace: true,
       });
-    },
-    [navigate],
-  );
-
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      navigate({
-        search: (prev) => ({ ...prev, page: newPage || undefined }),
-        replace: true,
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     [navigate],
   );
@@ -131,13 +115,11 @@ export function useTransactionPageState() {
     editingId,
     setEditingId,
     filters,
-    page,
     isFiltered,
     hasActiveFilters,
     closeForm,
     resetFilters,
     handleFilterChange,
     handleQueryChange,
-    handlePageChange,
   };
 }

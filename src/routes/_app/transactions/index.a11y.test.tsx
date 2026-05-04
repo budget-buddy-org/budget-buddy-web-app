@@ -33,35 +33,40 @@ vi.mock('@/hooks/useCategories', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useTransactions', () => ({
-  useTransactions: () => ({
-    data: {
-      items: [
-        {
-          id: '1',
-          description: 'Grocery store',
-          amount: 1250,
-          type: 'EXPENSE',
-          currency: 'EUR',
-          date: '2024-03-20',
-          categoryId: '1',
-        },
-      ],
-      meta: {
-        total: 1,
-        page: 0,
-        size: 20,
+vi.mock('@/hooks/useTransactions', () => {
+  const sampleTx = {
+    id: '1',
+    description: 'Grocery store',
+    amount: 1250,
+    type: 'EXPENSE',
+    currency: 'EUR',
+    date: '2024-03-20',
+    categoryId: '1',
+  };
+  return {
+    useTransactions: () => ({
+      data: { items: [sampleTx], meta: { total: 1, page: 0, size: 20 } },
+      isLoading: false,
+      isFetching: false,
+    }),
+    useInfiniteTransactions: () => ({
+      data: {
+        pages: [{ items: [sampleTx], meta: { total: 1, page: 0, size: 20 } }],
+        pageParams: [0],
       },
-    },
-    isLoading: false,
-    isFetching: false,
-  }),
-  useCreateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
-  useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
-  useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
-  useTransaction: () => ({ data: null, isLoading: false }),
-  TRANSACTIONS_PAGE_SIZE: 20,
-}));
+      isLoading: false,
+      isFetching: false,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    }),
+    useCreateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
+    useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
+    useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
+    useTransaction: () => ({ data: null, isLoading: false }),
+    TRANSACTIONS_PAGE_SIZE: 20,
+  };
+});
 
 describe('TransactionsPage a11y', () => {
   it('should have no accessibility violations', async () => {

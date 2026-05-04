@@ -11,6 +11,7 @@ interface TransactionListProps {
   categories: { id: string; name: string }[];
   isLoading: boolean;
   isFiltering?: boolean;
+  isFetchingMore?: boolean;
   onResetFilters?: () => void;
   onEdit?: (id: string) => void;
 }
@@ -20,6 +21,7 @@ export function TransactionList({
   categories,
   isLoading,
   isFiltering = false,
+  isFetchingMore = false,
   onResetFilters,
   onEdit,
 }: TransactionListProps) {
@@ -123,6 +125,23 @@ export function TransactionList({
           </CardContent>
         </Card>
       ))}
+      {isFetchingMore && (
+        <Card aria-hidden="true">
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {[1, 2].map((i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-6 w-24 rounded-pill" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

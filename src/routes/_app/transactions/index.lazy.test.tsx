@@ -23,6 +23,7 @@ vi.mock('@/routes/_app/transactions/index', () => ({
 
 vi.mock('@/hooks/useTransactions', () => ({
   useTransactions: vi.fn(),
+  useInfiniteTransactions: vi.fn(),
   useTransaction: vi.fn(),
   TRANSACTIONS_PAGE_SIZE: 20,
 }));
@@ -49,7 +50,7 @@ vi.mock('@/components/transactions/TransactionForm', () => ({
 }));
 
 import { useCategories } from '@/hooks/useCategories';
-import { useTransaction, useTransactions } from '@/hooks/useTransactions';
+import { useInfiniteTransactions, useTransaction, useTransactions } from '@/hooks/useTransactions';
 
 describe('TransactionsPage', () => {
   beforeEach(() => {
@@ -62,6 +63,13 @@ describe('TransactionsPage', () => {
       data: { items: [], meta: { total: 0 } },
       isLoading: false,
     } as unknown as ReturnType<typeof useTransactions>);
+    vi.mocked(useInfiniteTransactions).mockReturnValue({
+      data: { pages: [{ items: [], meta: { total: 0, size: 20, page: 0 } }], pageParams: [0] },
+      isLoading: false,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteTransactions>);
     vi.mocked(useTransaction).mockReturnValue({
       data: null,
       isLoading: false,
@@ -69,22 +77,30 @@ describe('TransactionsPage', () => {
   });
 
   it('opens edit dialog when clicking a transaction in the list', async () => {
-    vi.mocked(useTransactions).mockReturnValue({
+    vi.mocked(useInfiniteTransactions).mockReturnValue({
       data: {
-        items: [
+        pages: [
           {
-            id: '123',
-            description: 'Test Transaction',
-            amount: 1000,
-            date: '2024-01-01',
-            type: 'EXPENSE',
-            currency: 'EUR',
-          } as Transaction,
+            items: [
+              {
+                id: '123',
+                description: 'Test Transaction',
+                amount: 1000,
+                date: '2024-01-01',
+                type: 'EXPENSE',
+                currency: 'EUR',
+              } as Transaction,
+            ],
+            meta: { total: 1, size: 20, page: 0 },
+          },
         ],
-        meta: { total: 1, size: 20, page: 0 },
+        pageParams: [0],
       },
       isLoading: false,
-    } as unknown as ReturnType<typeof useTransactions>);
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    } as unknown as ReturnType<typeof useInfiniteTransactions>);
     vi.mocked(useTransaction).mockReturnValue({
       data: {
         id: '123',

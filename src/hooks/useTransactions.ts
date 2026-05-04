@@ -13,6 +13,7 @@ import {
   updateTransaction,
 } from '@budget-buddy-org/budget-buddy-contracts';
 import {
+  type InfiniteData,
   infiniteQueryOptions,
   queryOptions,
   useInfiniteQuery,
@@ -199,7 +200,7 @@ export function useDeleteTransaction() {
     },
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: KEYS.all });
-      const previous = qc.getQueriesData<PaginatedTransactions>({ queryKey: KEYS.lists });
+      const previous = qc.getQueriesData({ queryKey: KEYS.all });
 
       // Optimistically update every cached list view — removing the tx by id
       // is safe regardless of the filters each list was fetched with.
@@ -213,6 +214,29 @@ export function useDeleteTransaction() {
           meta: { ...old.meta, total: Math.max(0, old.meta.total - 1) },
         };
       });
+
+      // Same for infinite caches (different shape: { pages, pageParams }).
+      qc.setQueriesData<InfiniteData<PaginatedTransactions>>(
+        { queryKey: ['transactions', 'infinite'] },
+        (old) => {
+          if (!old) return old;
+          let removed = false;
+          const pages = old.pages.map((p) => {
+            const nextItems = p.items.filter((t) => t.id !== id);
+            if (nextItems.length === p.items.length) return p;
+            removed = true;
+            return { ...p, items: nextItems };
+          });
+          if (!removed) return old;
+          return {
+            ...old,
+            pages: pages.map((p) => ({
+              ...p,
+              meta: { ...p.meta, total: Math.max(0, p.meta.total - 1) },
+            })),
+          };
+        },
+      );
 
       return { previous };
     },

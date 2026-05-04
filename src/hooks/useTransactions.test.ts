@@ -7,7 +7,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useCreateTransaction, useDeleteTransaction, useTransactions } from './useTransactions';
+import {
+  useCreateTransaction,
+  useDeleteTransaction,
+  useInfiniteTransactions,
+  useTransactions,
+} from './useTransactions';
 
 type ListTransactionsResult = Awaited<ReturnType<typeof listTransactions>>;
 type CreateTransactionResult = Awaited<ReturnType<typeof createTransaction>>;
@@ -117,6 +122,48 @@ describe('useTransactions', () => {
         }),
       }),
     );
+  });
+});
+
+describe('useInfiniteTransactions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('flattens items across pages and reports hasNextPage when more remain', async () => {
+    vi.mocked(listTransactions).mockResolvedValueOnce({
+      data: {
+        items: [{ id: 'a' }],
+        meta: { total: 2, size: 1, page: 0 },
+      },
+      error: undefined,
+    } as unknown as ListTransactionsResult);
+
+    const { result } = renderHook(() => useInfiniteTransactions({ size: 1 }), {
+      wrapper: makeWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.pages).toHaveLength(1);
+    expect(result.current.data?.pages[0].items).toHaveLength(1);
+    expect(result.current.hasNextPage).toBe(true);
+  });
+
+  it('reports no next page when the last page is reached', async () => {
+    vi.mocked(listTransactions).mockResolvedValueOnce({
+      data: {
+        items: [{ id: 'a' }],
+        meta: { total: 1, size: 20, page: 0 },
+      },
+      error: undefined,
+    } as unknown as ListTransactionsResult);
+
+    const { result } = renderHook(() => useInfiniteTransactions(), {
+      wrapper: makeWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.hasNextPage).toBe(false);
   });
 });
 
