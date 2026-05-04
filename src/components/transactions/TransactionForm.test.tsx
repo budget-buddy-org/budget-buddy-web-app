@@ -3,6 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { localeCurrency } from '@/lib/formatters';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 import { TransactionForm } from './TransactionForm';
 
 const mockToast = vi.fn(() => ({ id: '1', dismiss: vi.fn(), update: vi.fn() }));
@@ -199,12 +201,44 @@ describe('TransactionForm', () => {
     mockCreateTx.error = null;
     mockCreateCategory.isPending = false;
     mockCreateCategory.error = null;
+    useUserPreferencesStore.setState({ currency: null, dateFormat: 'medium', numberLocale: null });
   });
 
   it('renders correctly', () => {
     renderForm();
     expect(screen.getByText(/^Category/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Add new/i })).toBeInTheDocument();
+  });
+
+  describe('default currency', () => {
+    it('pre-fills currency from locale when no preference is set', () => {
+      renderForm();
+      const [currencySelect] = screen.getAllByRole('combobox');
+      expect(currencySelect.value).toBe(localeCurrency());
+    });
+
+    it('pre-fills currency from user preference when set', () => {
+      useUserPreferencesStore.setState({ currency: 'GBP' });
+      renderForm();
+      const [currencySelect] = screen.getAllByRole('combobox');
+      expect(currencySelect.value).toBe('GBP');
+    });
+
+    it('preserves existing transaction currency in edit mode regardless of preference', () => {
+      useUserPreferencesStore.setState({ currency: 'JPY' });
+      const transaction = {
+        id: 'tx-1',
+        description: 'Lunch',
+        amount: 1200,
+        currency: 'EUR',
+        type: 'EXPENSE' as const,
+        date: '2024-03-01',
+        categoryId: 'cat-1',
+      };
+      renderForm({ transaction });
+      const [currencySelect] = screen.getAllByRole('combobox');
+      expect(currencySelect.value).toBe('EUR');
+    });
   });
 
   it('toggles between existing and new category', async () => {

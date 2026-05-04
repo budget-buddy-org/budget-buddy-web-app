@@ -22,6 +22,7 @@ import {
 } from '@/hooks/useTransactions';
 import { getApiError } from '@/lib/api-error';
 import { ISO_CURRENCIES, localeCurrency, todayIso, toMinorUnits } from '@/lib/formatters';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
 interface TransactionFormProps {
   categories: { id: string; name: string }[];
@@ -44,12 +45,15 @@ export function TransactionForm({
   const deleteTx = useDeleteTransaction();
   const createCategory = useCreateCategory();
 
+  const preferredCurrency = useUserPreferencesStore((s) => s.currency ?? localeCurrency());
+  const defaultCurrency = transaction?.currency ?? preferredCurrency;
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [form, setForm] = useState({
     description: transaction?.description ?? '',
     amount: transaction ? (transaction.amount / 100).toFixed(2) : '',
     type: (transaction?.type as 'EXPENSE' | 'INCOME') ?? ('EXPENSE' as const),
-    currency: transaction?.currency ?? localeCurrency(),
+    currency: defaultCurrency,
     date: transaction?.date ?? todayIso(),
     categoryId: transaction?.categoryId ?? '',
   });
@@ -64,7 +68,7 @@ export function TransactionForm({
     form.description !== (transaction?.description ?? '') ||
     form.amount !== (transaction ? (transaction.amount / 100).toFixed(2) : '') ||
     form.type !== ((transaction?.type as 'EXPENSE' | 'INCOME') ?? 'EXPENSE') ||
-    form.currency !== (transaction?.currency ?? localeCurrency()) ||
+    form.currency !== (transaction?.currency ?? defaultCurrency) ||
     form.date !== (transaction?.date ?? todayIso()) ||
     form.categoryId !== (transaction?.categoryId ?? '') ||
     (isAddingCategory && !!newCategoryName);

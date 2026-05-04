@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  browserLocale,
   formatCurrency,
   formatDate,
   todayIso,
@@ -46,10 +47,40 @@ describe('toMinorUnits', () => {
   });
 });
 
+describe('browserLocale', () => {
+  it('returns a non-empty string', () => {
+    expect(typeof browserLocale()).toBe('string');
+    expect(browserLocale().length).toBeGreaterThan(0);
+  });
+
+  it('returns navigator.language when available', () => {
+    expect(browserLocale()).toBe(navigator.language);
+  });
+});
+
 describe('formatDate', () => {
-  it('formats ISO date string for display', () => {
+  it('formats ISO date string with medium style by default', () => {
     expect(formatDate('2024-01-15', 'en-US')).toBe('Jan 15, 2024');
     expect(formatDate('2023-12-01', 'en-US')).toBe('Dec 1, 2023');
+  });
+
+  it('explicit medium style matches default', () => {
+    expect(formatDate('2024-01-15', 'en-US', 'medium')).toBe('Jan 15, 2024');
+  });
+
+  it('formats with short style', () => {
+    expect(formatDate('2024-01-15', 'en-US', 'short')).toBe('1/15/24');
+  });
+
+  it('formats with long style', () => {
+    expect(formatDate('2024-01-15', 'en-US', 'long')).toBe('January 15, 2024');
+  });
+
+  it('respects locale in date formatting', () => {
+    // German locale — day before month, German month name
+    const result = formatDate('2024-01-15', 'de-DE', 'long');
+    expect(result).toContain('Januar');
+    expect(result).toContain('15');
   });
 });
 

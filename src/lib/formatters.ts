@@ -1,4 +1,4 @@
-function browserLocale(): string {
+export function browserLocale(): string {
   return (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
 }
 
@@ -166,6 +166,14 @@ export function currencyLabel(code: string): string {
   }
 }
 
+export type DateFormatStyle = 'short' | 'medium' | 'long';
+
+const DATE_STYLE_OPTIONS: Record<DateFormatStyle, Intl.DateTimeFormatOptions> = {
+  short: { dateStyle: 'short' },
+  medium: { year: 'numeric', month: 'short', day: 'numeric' },
+  long: { dateStyle: 'long' },
+};
+
 const currencyFormatters = new Map<string, Intl.NumberFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
@@ -179,11 +187,12 @@ function getCurrencyFormatter(locale: string, currency: string): Intl.NumberForm
   return f;
 }
 
-function getDateFormatter(locale: string): Intl.DateTimeFormat {
-  let f = dateFormatters.get(locale);
+function getDateFormatter(locale: string, style: DateFormatStyle = 'medium'): Intl.DateTimeFormat {
+  const key = `${locale}|${style}`;
+  let f = dateFormatters.get(key);
   if (!f) {
-    f = new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric' });
-    dateFormatters.set(locale, f);
+    f = new Intl.DateTimeFormat(locale, DATE_STYLE_OPTIONS[style]);
+    dateFormatters.set(key, f);
   }
   return f;
 }
@@ -218,8 +227,14 @@ export function toLocalYearMonth(date: Date): string {
 }
 
 /** Formats an ISO date string (YYYY-MM-DD) for display. */
-export function formatDate(dateString: string, locale?: string): string {
-  return getDateFormatter(locale ?? browserLocale()).format(new Date(`${dateString}T00:00:00`));
+export function formatDate(
+  dateString: string,
+  locale?: string,
+  style: DateFormatStyle = 'medium',
+): string {
+  return getDateFormatter(locale ?? browserLocale(), style).format(
+    new Date(`${dateString}T00:00:00`),
+  );
 }
 
 /** Returns today's date as YYYY-MM-DD. */
