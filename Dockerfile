@@ -18,7 +18,7 @@ FROM node:24-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm && corepack prepare pnpm@10.33.1 --activate
+RUN corepack enable pnpm && corepack prepare pnpm@11.0.5 --activate
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — deps: resolve and install npm packages
