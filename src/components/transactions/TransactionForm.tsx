@@ -3,12 +3,14 @@ import type {
   Transaction,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts';
-import { Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
+import { Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import { FormActions } from '@/components/ui/form-actions';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { ToastAction } from '@/components/ui/toast';
@@ -202,25 +204,22 @@ export function TransactionForm({
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2 space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">
-              Type <span className="text-destructive">*</span>
-            </div>
+          <FormField label="Type" required error={getFieldError('type')} className="sm:col-span-2">
             <TransactionTypeToggle
               value={form.type}
               onChange={(val) => setForm((f) => ({ ...f, type: val }))}
               error={!!getFieldError('type')}
             />
-            {getFieldError('type') && (
-              <p className="text-xs font-medium text-destructive">{getFieldError('type')}</p>
-            )}
-          </div>
+          </FormField>
 
           <div className="flex gap-4 sm:col-span-2">
-            <div className="flex-1 space-y-1">
-              <label htmlFor="tx-currency" className="text-xs font-medium text-muted-foreground">
-                Currency <span className="text-destructive">*</span>
-              </label>
+            <FormField
+              label="Currency"
+              required
+              htmlFor="tx-currency"
+              error={getFieldError('currency')}
+              className="flex-1"
+            >
               <Select
                 id="tx-currency"
                 value={form.currency}
@@ -233,15 +232,15 @@ export function TransactionForm({
                   </option>
                 ))}
               </Select>
-              {getFieldError('currency') && (
-                <p className="text-xs font-medium text-destructive">{getFieldError('currency')}</p>
-              )}
-            </div>
+            </FormField>
 
-            <div className="flex-1 space-y-1">
-              <label htmlFor="tx-amount" className="text-xs font-medium text-muted-foreground">
-                Amount <span className="text-destructive">*</span>
-              </label>
+            <FormField
+              label="Amount"
+              required
+              htmlFor="tx-amount"
+              error={getFieldError('amount')}
+              className="flex-1"
+            >
               <AmountInput
                 id="tx-amount"
                 placeholder="0.00"
@@ -251,16 +250,15 @@ export function TransactionForm({
                 error={!!getFieldError('amount')}
                 autoFocus={!isEditing}
               />
-              {getFieldError('amount') && (
-                <p className="text-xs font-medium text-destructive">{getFieldError('amount')}</p>
-              )}
-            </div>
+            </FormField>
           </div>
 
-          <div className="sm:col-span-2 space-y-1">
-            <label htmlFor="tx-description" className="text-xs font-medium text-muted-foreground">
-              Description
-            </label>
+          <FormField
+            label="Description"
+            htmlFor="tx-description"
+            error={getFieldError('description')}
+            className="sm:col-span-2"
+          >
             <Input
               id="tx-description"
               placeholder="Coffee, salary…"
@@ -268,15 +266,15 @@ export function TransactionForm({
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               error={!!getFieldError('description')}
             />
-            {getFieldError('description') && (
-              <p className="text-xs font-medium text-destructive">{getFieldError('description')}</p>
-            )}
-          </div>
+          </FormField>
 
-          <div className="sm:col-span-2 space-y-1">
-            <label htmlFor="tx-date" className="text-xs font-medium text-muted-foreground">
-              Date <span className="text-destructive">*</span>
-            </label>
+          <FormField
+            label="Date"
+            required
+            htmlFor="tx-date"
+            error={getFieldError('date')}
+            className="sm:col-span-2"
+          >
             <DatePicker
               id="tx-date"
               value={form.date}
@@ -284,10 +282,7 @@ export function TransactionForm({
               required
               error={!!getFieldError('date')}
             />
-            {getFieldError('date') && (
-              <p className="text-xs font-medium text-destructive">{getFieldError('date')}</p>
-            )}
-          </div>
+          </FormField>
 
           <div className="sm:col-span-2 space-y-1">
             <div className="flex items-center justify-between">
@@ -342,7 +337,7 @@ export function TransactionForm({
                 )}
               </div>
             ) : (
-              <div className="space-y-1">
+              <FormField error={getFieldError('categoryId')}>
                 <Select
                   id="tx-category"
                   value={form.categoryId}
@@ -357,47 +352,19 @@ export function TransactionForm({
                     </option>
                   ))}
                 </Select>
-                {getFieldError('categoryId') && (
-                  <p className="text-xs font-medium text-destructive">
-                    {getFieldError('categoryId')}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-2">
-          {isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Delete transaction"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isPending}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          )}
-          <div className="flex flex-1 gap-2">
-            <Button type="submit" className="flex-1" loading={isPending} disabled={isFormDisabled}>
-              <Check className="size-4 mr-2" />
-              Save
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              <X className="size-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
-        </div>
+        <FormActions
+          onCancel={onCancel}
+          onDelete={() => setShowDeleteConfirm(true)}
+          isPending={isPending}
+          isDisabled={isFormDisabled}
+          isEditing={isEditing}
+          deleteAriaLabel="Delete transaction"
+        />
       </form>
 
       <ConfirmationDialog
