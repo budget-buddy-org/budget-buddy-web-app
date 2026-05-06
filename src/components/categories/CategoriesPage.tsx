@@ -13,8 +13,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { PageContainer } from '@/components/ui/page-container';
 import { Pagination } from '@/components/ui/pagination';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -152,7 +153,7 @@ export function CategoriesPage() {
   const categories = data?.items ?? [];
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader
         title="Categories"
         subtitle="Manage categories to organize your transactions"
@@ -305,13 +306,7 @@ export function CategoriesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="divide-y">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex items-center px-4 py-3">
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </div>
+            <ListSkeleton count={6} />
           ) : categories.length === 0 ? (
             <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>
           ) : (
@@ -351,6 +346,6 @@ export function CategoriesPage() {
         variant="destructive"
         isLoading={deleteCategory.isPending}
       />
-    </div>
+    </PageContainer>
   );
 }

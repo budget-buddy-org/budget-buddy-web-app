@@ -16,6 +16,7 @@ import { useAuth } from 'react-oidc-context';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PageContainer } from '@/components/ui/page-container';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
@@ -70,7 +71,7 @@ export function SettingsPage() {
   const profileUrl = user?.profile?.profile || config.VITE_OIDC_USER_MANAGEMENT_URL;
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
 
       <div className="grid gap-6">
@@ -389,6 +390,6 @@ export function SettingsPage() {
           </Card>
         </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }

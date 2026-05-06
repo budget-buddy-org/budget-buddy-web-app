@@ -1,5 +1,5 @@
 import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
@@ -13,8 +13,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
+import { PageContainer } from '@/components/ui/page-container';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCategories } from '@/hooks/useCategories';
+import { useLatchedValue } from '@/hooks/useLatchedValue';
 import { useTransactionPageState } from '@/hooks/useTransactionPageState';
 import {
   TRANSACTIONS_PAGE_SIZE,
@@ -49,22 +51,16 @@ export function TransactionsPage() {
     editingId ?? '',
   );
 
-  // Latch the dialog body while the dialog is open. Without this the form
-  // unmounts the moment closeForm() runs, making the dialog visibly shrink
-  // to just the header during the bottom-sheet slide-out on mobile.
-  // React's "store info from previous renders" pattern:
-  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  // Latch the dialog body while the dialog is open to prevent shrinking during animation.
   type DialogRender = { mode: 'add' | 'edit'; transaction: Transaction | undefined };
-  const [render, setRender] = useState<DialogRender>({ mode: 'add', transaction: undefined });
-  if (isDialogOpen) {
-    const next: DialogRender = {
+  const currentRender: DialogRender = useMemo(
+    () => ({
       mode: isEditing ? 'edit' : 'add',
       transaction: isEditing ? editingTransaction : undefined,
-    };
-    if (next.mode !== render.mode || next.transaction !== render.transaction) {
-      setRender(next);
-    }
-  }
+    }),
+    [isEditing, editingTransaction],
+  );
+  const render = useLatchedValue(currentRender, isDialogOpen);
 
   const dialogTitle = render.mode === 'edit' ? 'Edit Transaction' : 'Add Transaction';
   const dialogDesc =
@@ -90,7 +86,7 @@ export function TransactionsPage() {
   const transactions = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader
         title="Transactions"
         subtitle="View and manage your income and expenses"
@@ -186,6 +182,6 @@ export function TransactionsPage() {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

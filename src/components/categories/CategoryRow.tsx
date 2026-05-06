@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { ListItem } from '@/components/ui/list-item';
 
 export const CategoryRow = memo(function CategoryRow({
   name,
@@ -8,15 +9,8 @@ export const CategoryRow = memo(function CategoryRow({
   onStartEdit: () => void;
 }) {
   return (
-    <li className="flex items-center px-4 py-3 transition-colors hover:bg-muted/30 cursor-pointer">
-      <button
-        type="button"
-        aria-label={`Edit category: ${name}`}
-        className="flex-1 cursor-pointer text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-        onClick={onStartEdit}
-      >
-        {name}
-      </button>
-    </li>
+    <ListItem onClick={onStartEdit} ariaLabel={`Edit category: ${name}`}>
+      <span className="text-sm font-medium">{name}</span>
+    </ListItem>
   );
 });

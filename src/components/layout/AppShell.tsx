@@ -1,7 +1,7 @@
 import type * as React from 'react';
 import { ApiUnavailableBanner } from '@/components/ApiUnavailableBanner';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { FABProvider } from '@/contexts/fab-context';
+import { FABProvider } from '@/contexts/fab-provider';
 import { Header } from './Header';
 import { MobileNav, SidebarNav } from './MobileNav';
 

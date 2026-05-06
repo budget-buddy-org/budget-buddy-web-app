@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ArrowLeftRight, LayoutDashboard, Plus, Tag } from 'lucide-react';
 import { useCallback, useRef } from 'react';
-import { useFABContext } from '@/contexts/fab-context';
+import { useFABContext } from '@/hooks/use-fab';
 import { cn } from '@/lib/cn';
 import { haptic } from '@/lib/haptics';
 import { useThemeStore } from '@/stores/theme.store';
