@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { TransactionRow } from '@/components/transactions/TransactionRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
 import { useFormatters } from '@/hooks/useFormatters';
 
 interface TransactionListProps {
@@ -61,18 +61,10 @@ export function TransactionList({
         {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardContent className="p-0">
-              <Skeleton className="h-7 w-full rounded-none" />
-              <div className="divide-y">
-                {[1, 2].map((j) => (
-                  <div key={j} className="flex items-center gap-3 px-4 py-3">
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                    <Skeleton className="h-6 w-24 rounded-pill" />
-                  </div>
-                ))}
+              <div className="bg-muted px-4 py-1.5">
+                <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/20" />
               </div>
+              <ListSkeleton count={2} />
             </CardContent>
           </Card>
         ))}
@@ -128,17 +120,7 @@ export function TransactionList({
       {isFetchingMore && (
         <Card aria-hidden="true">
           <CardContent className="p-0">
-            <div className="divide-y">
-              {[1, 2].map((i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3">
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                  <Skeleton className="h-6 w-24 rounded-pill" />
-                </div>
-              ))}
-            </div>
+            <ListSkeleton count={2} />
           </CardContent>
         </Card>
       )}

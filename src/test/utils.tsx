@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render as rtlRender } from '@testing-library/react';
 import type React from 'react';
-import { FABProvider } from '@/contexts/fab-context';
+import { FABProvider } from '@/contexts/fab-provider';
 
 export function render(
   ui: React.ReactElement,

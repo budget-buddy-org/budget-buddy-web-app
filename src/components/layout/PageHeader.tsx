@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { useFABAction } from '@/contexts/fab-context';
+import { useFABAction } from '@/hooks/use-fab';
 
 interface PageHeaderProps {
   title: string;

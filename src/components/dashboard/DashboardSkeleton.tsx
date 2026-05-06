@@ -12,9 +12,8 @@ export function DashboardSkeleton() {
 
       {/* Month selector pills */}
       <div className="flex gap-2">
-        {[28, 28, 28, 28].map((w, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-          <Skeleton key={i} className="h-7 rounded-pill" style={{ width: w * 1.2 }} />
+        {[28, 29, 30, 31].map((w) => (
+          <Skeleton key={w} className="h-7 rounded-pill" style={{ width: w * 1.2 }} />
         ))}
       </div>
 
@@ -31,8 +30,8 @@ export function DashboardSkeleton() {
             <Skeleton className="h-9 w-28" />
           </CardContent>
         </Card>
-        {[1, 2].map((i) => (
-          <Card key={i}>
+        {['card-1', 'card-2'].map((key) => (
+          <Card key={key}>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-4 w-4 rounded-pill" />
@@ -52,8 +51,8 @@ export function DashboardSkeleton() {
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="space-y-1.5">
+          {['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'].map((key) => (
+            <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-2 w-2 rounded-pill" />
@@ -74,8 +73,8 @@ export function DashboardSkeleton() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between px-6 py-3">
+            {['tx-1', 'tx-2', 'tx-3', 'tx-4', 'tx-5'].map((key) => (
+              <div key={key} className="flex items-center justify-between px-6 py-3">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-3 w-20" />

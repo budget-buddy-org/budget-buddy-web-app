@@ -16,6 +16,8 @@ import { useAuth } from 'react-oidc-context';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PageContainer } from '@/components/ui/page-container';
+import { SectionHeader } from '@/components/ui/section-header';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
@@ -70,15 +72,12 @@ export function SettingsPage() {
   const profileUrl = user?.profile?.profile || config.VITE_OIDC_USER_MANAGEMENT_URL;
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
 
       <div className="grid gap-6">
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <User className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Account</h2>
-          </div>
+          <SectionHeader title="Account" icon={User} />
           <Card className="p-4 space-y-4">
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium">
@@ -126,10 +125,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Globe className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Preferences</h2>
-          </div>
+          <SectionHeader title="Preferences" icon={Globe} />
           <Card className="p-4 space-y-4">
             <div className="space-y-1.5">
               <p className="text-sm font-medium">Default Currency</p>
@@ -205,10 +201,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sun className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Theme</h2>
-          </div>
+          <SectionHeader title="Theme" icon={Sun} />
           <Card className="p-4">
             <div
               role="tablist"
@@ -250,10 +243,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Palette className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Primary Color</h2>
-          </div>
+          <SectionHeader title="Primary Color" icon={Palette} />
           <Card className="p-4 space-y-4">
             <div className="flex items-center gap-4">
               <div
@@ -281,10 +271,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Type className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Font Size</h2>
-          </div>
+          <SectionHeader title="Font Size" icon={Type} />
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -317,10 +304,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Navigation className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Navigation</h2>
-          </div>
+          <SectionHeader title="Navigation" icon={Navigation} />
           <Card className="p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -344,10 +328,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <RefreshCw className="size-4 text-primary" />
-            <h2 className="text-lg font-semibold">Version & Updates</h2>
-          </div>
+          <SectionHeader title="Version & Updates" icon={RefreshCw} />
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -389,6 +370,6 @@ export function SettingsPage() {
           </Card>
         </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }

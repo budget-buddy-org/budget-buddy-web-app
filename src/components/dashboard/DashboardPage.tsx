@@ -4,10 +4,13 @@ import { useMemo, useState } from 'react';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { SummaryCard, SummaryCardDescription } from '@/components/dashboard/SummaryCard';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { TransactionAmount } from '@/components/transactions/TransactionAmount';
 import { AnimatedNumber } from '@/components/ui/animated-number';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ListItem } from '@/components/ui/list-item';
+import { PageContainer } from '@/components/ui/page-container';
 import { useCategories } from '@/hooks/useCategories';
 import { useFormatters } from '@/hooks/useFormatters';
 import { useAllTransactions } from '@/hooks/useTransactions';
@@ -122,7 +125,7 @@ export function DashboardPage() {
   const periodLabel = `${MONTH_NAMES[selectedMonth]} ${currentYear}`;
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader title="Dashboard" subtitle={periodLabel} />
 
       {/* Month selector — Jan through current month, wraps on small screens */}
@@ -266,51 +269,38 @@ export function DashboardPage() {
         </CardHeader>
         <CardContent className="p-0">
           {recent.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
-              <div className="rounded-pill bg-muted p-3">
-                <PlusCircle className="size-4 text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">No transactions yet</p>
-                <p className="max-w-[200px] text-xs text-muted-foreground">
-                  Start tracking your budget by adding your first transaction.
-                </p>
-              </div>
-              <Button asChild size="sm">
-                <Link to="/transactions">Add transaction</Link>
-              </Button>
-            </div>
+            <EmptyState
+              icon={<PlusCircle className="size-4 text-muted-foreground" />}
+              title="No transactions yet"
+              description="Start tracking your budget by adding your first transaction."
+              action={{
+                label: 'Add transaction',
+                onClick: () => navigate({ to: '/transactions' }),
+              }}
+            />
           ) : (
             <ul className="divide-y">
               {recent.map((t) => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    className="flex w-full cursor-pointer items-center justify-between px-6 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:bg-muted/50"
-                    onClick={() =>
-                      navigate({
-                        to: '/transactions',
-                        search: { start: firstDayOfPeriod, end: lastDayOfPeriod },
-                      })
-                    }
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
-                      <p className="text-xs text-muted-foreground">{fmtDate(t.date)}</p>
-                    </div>
-                    <div className="ml-4 flex items-center gap-2">
-                      <Badge variant={t.type === 'INCOME' ? 'income' : 'expense'}>
-                        {t.type === 'INCOME' ? '+' : '-'}
-                        {fmtCurrency(t.amount, t.currency)}
-                      </Badge>
-                    </div>
-                  </button>
-                </li>
+                <ListItem
+                  key={t.id}
+                  onClick={() =>
+                    navigate({
+                      to: '/transactions',
+                      search: { start: firstDayOfPeriod, end: lastDayOfPeriod },
+                    })
+                  }
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">{fmtDate(t.date)}</p>
+                  </div>
+                  <TransactionAmount amount={t.amount} currency={t.currency} type={t.type} />
+                </ListItem>
               ))}
             </ul>
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

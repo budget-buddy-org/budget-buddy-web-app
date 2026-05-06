@@ -1,9 +1,8 @@
-import { Check, Trash2, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { CategoryForm } from '@/components/categories/CategoryForm';
 import { CategoryRow } from '@/components/categories/CategoryRow';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -12,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { PageContainer } from '@/components/ui/page-container';
 import { Pagination } from '@/components/ui/pagination';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -152,7 +151,7 @@ export function CategoriesPage() {
   const categories = data?.items ?? [];
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader
         title="Categories"
         subtitle="Manage categories to organize your transactions"
@@ -177,51 +176,19 @@ export function CategoriesPage() {
             <DialogTitle>Add Category</DialogTitle>
             <DialogDescription>Create a new category to group your transactions</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="space-y-1">
-              <label htmlFor="category-name" className="text-xs font-medium text-muted-foreground">
-                Name <span className="text-destructive">*</span>
-              </label>
-              <Input
-                id="category-name"
-                placeholder="New category name…"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                maxLength={255}
-                autoFocus
-                autoComplete="off"
-                error={!!createFieldError}
-              />
-              {createFieldError && (
-                <p className="text-xs font-medium text-destructive">{createFieldError}</p>
-              )}
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="submit"
-                className="flex-1"
-                loading={createCategory.isPending}
-                disabled={!newName.trim()}
-              >
-                <Check className="size-4 mr-2" />
-                Save
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setShowForm(false);
-                  setNewName('');
-                  createCategory.reset();
-                }}
-                disabled={createCategory.isPending}
-              >
-                <X className="size-4 mr-2" />
-                Cancel
-              </Button>
-            </div>
-          </form>
+          <CategoryForm
+            name={newName}
+            onNameChange={setNewName}
+            onSubmit={handleCreate}
+            onCancel={() => {
+              setShowForm(false);
+              setNewName('');
+              createCategory.reset();
+            }}
+            isPending={createCategory.isPending}
+            error={createFieldError}
+            isDisabled={!newName.trim()}
+          />
         </DialogContent>
       </Dialog>
 
@@ -239,79 +206,27 @@ export function CategoriesPage() {
             <DialogTitle>Edit Category</DialogTitle>
             <DialogDescription>Modify the name of your category</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-4">
-            <div className="space-y-1">
-              <label
-                htmlFor="edit-category-name"
-                className="text-xs font-medium text-muted-foreground"
-              >
-                Name <span className="text-destructive">*</span>
-              </label>
-              <Input
-                id="edit-category-name"
-                placeholder="Category name…"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                maxLength={255}
-                autoFocus
-                autoComplete="off"
-                error={!!updateFieldError}
-              />
-              {updateFieldError && (
-                <p className="text-xs font-medium text-destructive">{updateFieldError}</p>
-              )}
-            </div>
-            <div className="flex items-center gap-2 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Delete category"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={updateCategory.isPending || deleteCategory.isPending}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-              <div className="flex flex-1 gap-2">
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  loading={updateCategory.isPending}
-                  disabled={!editName.trim() || editName.trim() === originalEditName}
-                >
-                  <Check className="size-4 mr-2" />
-                  Save
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    setEditingCategory(null);
-                    updateCategory.reset();
-                  }}
-                  disabled={updateCategory.isPending}
-                >
-                  <X className="size-4 mr-2" />
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </form>
+          <CategoryForm
+            isEditing
+            name={editName}
+            onNameChange={setEditName}
+            onSubmit={handleUpdate}
+            onCancel={() => {
+              setEditingCategory(null);
+              updateCategory.reset();
+            }}
+            onDelete={() => setShowDeleteConfirm(true)}
+            isPending={updateCategory.isPending}
+            error={updateFieldError}
+            isDisabled={!editName.trim() || editName.trim() === originalEditName}
+          />
         </DialogContent>
       </Dialog>
 
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="divide-y">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex items-center px-4 py-3">
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </div>
+            <ListSkeleton count={6} />
           ) : categories.length === 0 ? (
             <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>
           ) : (
@@ -351,6 +266,6 @@ export function CategoriesPage() {
         variant="destructive"
         isLoading={deleteCategory.isPending}
       />
-    </div>
+    </PageContainer>
   );
 }

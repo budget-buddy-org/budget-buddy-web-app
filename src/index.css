@@ -37,12 +37,12 @@
 
   /* Radius scale — semantic tokens drive every rounded surface in the app.
      Tailwind v4 auto-generates rounded-{name} utilities from these keys.
-     Pill-forward: primary buttons, FAB, search, badges, chips → rounded-pill.
+     Pill-forward: primary buttons, FAB, search, chips → rounded-pill.
      Cards / dialogs / sheets → rounded-lg. Non-pill inputs → rounded-md. */
   --radius-sm: 0.5rem;    /* 8px  — dropdown items, tiny chips */
   --radius-md: 0.75rem;   /* 12px — non-pill inputs/selects, generic skeletons */
   --radius-lg: 1rem;      /* 16px — cards, dialogs, sheets, toasts */
-  --radius-pill: 9999px;  /* primary buttons, FAB, badges, search, mobile nav, segmented controls */
+  --radius-pill: 9999px;  /* primary buttons, FAB, search, mobile nav, segmented controls */
 
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 
