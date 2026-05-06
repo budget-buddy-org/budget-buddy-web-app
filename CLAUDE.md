@@ -121,7 +121,7 @@ shadcn/ui pattern: Radix UI primitives + Tailwind v4. Shared primitives live in 
   - `rounded-lg` (16px) — cards, dialogs, sheets, toasts
   - `rounded-md` (12px) — non-pill inputs, selects, dropdown surfaces, generic skeletons
   - `rounded-sm` (8px) — dropdown items, tiny chips
-  Prefer these over ad-hoc utilities. Use `rounded-full` only for true circles (avatars, drag handle, spinners).
+    Prefer these over ad-hoc utilities. Use `rounded-full` only for true circles (avatars, spinners).
 
 ### Data Conventions
 
