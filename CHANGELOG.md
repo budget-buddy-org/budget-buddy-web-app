@@ -1,3 +1,9 @@
+## [4.11.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.0...v4.11.1) (2026-05-07)
+
+### Bug Fixes
+
+* version check ([ec3edba](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/ec3edbae1668536a1c86e42a339a143d12dfdea6))
+
 ## [4.11.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.10.1...v4.11.0) (2026-05-07)
 
 ### Features
