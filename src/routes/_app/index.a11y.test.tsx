@@ -23,7 +23,20 @@ vi.mock('@/hooks/useCategories', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useTransactions', () => ({
+vi.mock('@/hooks/useCategoriesSummary', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCategoriesSummary')>()),
+  useCategoriesSummary: () => ({
+    data: { month: '2024-03', currency: 'EUR', items: [] },
+    isLoading: false,
+  }),
+}));
+
+vi.mock('@/hooks/useMonthlySummariesRange', () => ({
+  useMonthlySummariesRange: () => ({ data: [], isLoading: false, isFetching: false }),
+}));
+
+vi.mock('@/hooks/useTransactions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useTransactions')>()),
   useTransactions: () => ({
     data: {
       items: [
@@ -51,7 +64,8 @@ vi.mock('@/hooks/useTransactions', () => ({
   }),
 }));
 
-vi.mock('@/hooks/useMonthlySummary', () => ({
+vi.mock('@/hooks/useMonthlySummary', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useMonthlySummary')>()),
   useMonthlySummary: () => ({
     data: {
       month: '2024-03',

@@ -1,5 +1,5 @@
 import { getTransactionsSummary } from '@budget-buddy-org/budget-buddy-contracts';
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query';
 import { localeCurrency, toLocalYearMonth } from '@/lib/formatters';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
@@ -23,6 +23,7 @@ export const monthlySummaryQueryOptions = (month: string, currency: string) =>
       if (error) throw error;
       return data;
     },
+    placeholderData: keepPreviousData,
   });
 
 export function useMonthlySummary(filters: MonthlySummaryFilters = {}) {

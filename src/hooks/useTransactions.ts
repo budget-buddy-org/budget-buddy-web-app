@@ -14,6 +14,7 @@ import {
 import {
   type InfiniteData,
   infiniteQueryOptions,
+  keepPreviousData,
   queryOptions,
   useInfiniteQuery,
   useMutation,
@@ -57,6 +58,7 @@ export const transactionsQueryOptions = (filters: TransactionFilters = {}) =>
       if (error) throw error;
       return data;
     },
+    placeholderData: keepPreviousData,
   });
 
 export function useTransactions(filters: TransactionFilters = {}) {
