@@ -11,19 +11,27 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
 }));
 
-vi.mock('@/hooks/useTransactions', () => ({
+vi.mock('@/hooks/useTransactions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useTransactions')>()),
   useTransactions: vi.fn(),
 }));
 
-vi.mock('@/hooks/useCategoriesSummary', () => ({
+vi.mock('@/hooks/useCategoriesSummary', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCategoriesSummary')>()),
   useCategoriesSummary: vi.fn(),
 }));
 
-vi.mock('@/hooks/useMonthlySummary', () => ({
+vi.mock('@/hooks/useMonthlySummary', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useMonthlySummary')>()),
   useMonthlySummary: vi.fn(),
 }));
 
+vi.mock('@/hooks/useMonthlySummariesRange', () => ({
+  useMonthlySummariesRange: vi.fn(),
+}));
+
 import { useCategoriesSummary } from '@/hooks/useCategoriesSummary';
+import { useMonthlySummariesRange } from '@/hooks/useMonthlySummariesRange';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
 import { useTransactions } from '@/hooks/useTransactions';
 
@@ -92,6 +100,12 @@ describe('DashboardPage', () => {
       data: mockMonthlySummary,
       isLoading: false,
     } as ReturnType<typeof useMonthlySummary>);
+
+    vi.mocked(useMonthlySummariesRange).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+    });
   });
 
   afterEach(() => {
