@@ -5,12 +5,29 @@ import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 
 const CHECK_INTERVAL = 1000 * 60 * 5; // 5 minutes
+const SW_UPDATE_TIMEOUT = 4000; // ms to wait for a waiting SW before falling back to a hard reload
+
+async function hardReload() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } finally {
+    window.location.reload();
+  }
+}
 
 export function VersionCheck() {
   const { toast } = useToast();
   const lastCheckedVersion = useRef<string>(__APP_VERSION__);
   const isToastActive = useRef(false);
   const swCheckInterval = useRef<ReturnType<typeof setInterval>>(undefined);
+  const swRegistration = useRef<ServiceWorkerRegistration | undefined>(undefined);
 
   const showUpdateToast = useCallback(
     (description: string, onReload?: () => void) => {
@@ -24,8 +41,8 @@ export function VersionCheck() {
           <ToastAction
             altText="Reload app to update"
             onClick={() => {
-              onReload?.();
-              window.location.reload();
+              if (onReload) onReload();
+              else window.location.reload();
             }}
           >
             Reload
@@ -47,6 +64,7 @@ export function VersionCheck() {
   } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
+      swRegistration.current = registration;
       // Trigger SW update check periodically
       swCheckInterval.current = setInterval(() => registration.update(), CHECK_INTERVAL);
     },
@@ -80,7 +98,11 @@ export function VersionCheck() {
     gcTime: 0,
   });
 
-  // Handle updates from version.json
+  // Handle updates from version.json. The SW may still be serving the old precache,
+  // so a plain window.location.reload() can come back as the same version. Nudge the
+  // SW to update; if a waiting worker shows up, skip-waiting + reload via
+  // updateServiceWorker(true). Otherwise fall back to a hard reload that unregisters
+  // the SW and clears caches.
   useEffect(() => {
     if (
       latestVersion &&
@@ -88,9 +110,50 @@ export function VersionCheck() {
       latestVersion !== lastCheckedVersion.current
     ) {
       lastCheckedVersion.current = latestVersion;
-      showUpdateToast(`A new version (${latestVersion}) is available. Please reload to update.`);
+      showUpdateToast(
+        `A new version (${latestVersion}) is available. Please reload to update.`,
+        async () => {
+          const registration = swRegistration.current;
+          if (!registration) {
+            await hardReload();
+            return;
+          }
+
+          try {
+            await registration.update();
+          } catch {
+            // ignore — fall through to wait/fallback
+          }
+
+          if (registration.waiting) {
+            updateServiceWorker(true);
+            return;
+          }
+
+          await new Promise<void>((resolve) => {
+            const timeout = setTimeout(resolve, SW_UPDATE_TIMEOUT);
+            const onUpdateFound = () => {
+              const installing = registration.installing;
+              if (!installing) return;
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'installed' && registration.waiting) {
+                  clearTimeout(timeout);
+                  resolve();
+                }
+              });
+            };
+            registration.addEventListener('updatefound', onUpdateFound);
+          });
+
+          if (registration.waiting) {
+            updateServiceWorker(true);
+          } else {
+            await hardReload();
+          }
+        },
+      );
     }
-  }, [latestVersion, showUpdateToast]);
+  }, [latestVersion, showUpdateToast, updateServiceWorker]);
 
   // Handle updates from Service Worker
   useEffect(() => {
