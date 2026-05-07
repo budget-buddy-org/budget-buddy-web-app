@@ -1,3 +1,9 @@
+## [4.11.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.10.1...v4.11.0) (2026-05-07)
+
+### Features
+
+* **dashboard:** polish pass — independent loading, sparklines, pacing, period picker ([#139](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/139)) ([47010cf](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/47010cf5a03414aff9084cd2e8af755985924f78))
+
 ## [4.10.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.10.0...v4.10.1) (2026-05-07)
 
 ### Bug Fixes
