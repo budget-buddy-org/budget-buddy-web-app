@@ -8,14 +8,14 @@ export interface MonthlySummaryFilters {
   currency?: string;
 }
 
-const KEYS = {
+export const TRANSACTIONS_SUMMARY_KEYS = {
   all: ['transactions-summary'] as const,
   summary: (month: string, currency: string) => ['transactions-summary', month, currency] as const,
 };
 
 export const monthlySummaryQueryOptions = (month: string, currency: string) =>
   queryOptions({
-    queryKey: KEYS.summary(month, currency),
+    queryKey: TRANSACTIONS_SUMMARY_KEYS.summary(month, currency),
     queryFn: async () => {
       const { data, error } = await getTransactionsSummary({
         query: { month, currency },
