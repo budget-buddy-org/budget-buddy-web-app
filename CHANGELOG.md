@@ -1,3 +1,9 @@
+## [4.11.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.1...v4.11.2) (2026-05-08)
+
+### Bug Fixes
+
+* **dashboard:** remove naive expense projection ([#140](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/140)) ([27c37e5](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/27c37e5fbd3a50d4bc6012cb7447ccd06e0c4c06))
+
 ## [4.11.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.0...v4.11.1) (2026-05-07)
 
 ### Bug Fixes
