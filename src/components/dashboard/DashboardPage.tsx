@@ -18,7 +18,6 @@ import { useFormatters } from '@/hooks/useFormatters';
 import { useMonthlySummariesRange } from '@/hooks/useMonthlySummariesRange';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
 import { useTransactions } from '@/hooks/useTransactions';
-import { forecastSpend, formatForecast, isCurrentMonth, monthProgress } from '@/lib/budgetPacing';
 import { cn } from '@/lib/cn';
 import { localeCurrency, todayIso, toLocalIsoDate, toLocalYearMonth } from '@/lib/formatters';
 import { useThemeStore } from '@/stores/theme.store';
@@ -102,10 +101,6 @@ export function DashboardPage() {
 
   const periodLabel = `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
 
-  const showForecast = isCurrent && isCurrentMonth(selectedYear, selectedMonth);
-  const progress = showForecast ? monthProgress(now) : 1;
-  const projectedExpense = showForecast ? forecastSpend(expense, progress) : expense;
-
   return (
     <PageContainer>
       <PageHeader
@@ -184,11 +179,6 @@ export function DashboardPage() {
                 variant="expense"
                 className="mt-2"
               />
-              {showForecast && projectedExpense > expense && (
-                <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-                  {formatForecast(projectedExpense, currency, fmtCurrency)}
-                </p>
-              )}
             </SummaryCard>
           </>
         )}
@@ -209,8 +199,6 @@ export function DashboardPage() {
         firstDayOfPeriod={firstDayOfPeriod}
         lastDayOfPeriod={lastDayOfPeriod}
         currency={currency}
-        progress={progress}
-        showForecast={showForecast}
       />
 
       <RecentTransactionsCard
