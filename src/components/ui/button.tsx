@@ -48,7 +48,7 @@ function Button({
         buttonVariants({ variant, size, className }),
         glassEffect && (variant === 'default' || variant === 'secondary') && 'backdrop-blur-sm',
         glassEffect && variant === 'default' && 'bg-primary/80',
-        glassEffect && variant === 'secondary' && 'bg-secondary/80',
+        glassEffect && variant === 'secondary' && 'bg-muted/80',
       )}
       ref={ref}
       disabled={loading || disabled}

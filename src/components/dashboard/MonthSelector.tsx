@@ -1,15 +1,15 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import * as DialogPrimitives from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { DialogOverlay } from '@/components/ui/dialog';
 import { categoriesSummaryQueryOptions } from '@/hooks/useCategoriesSummary';
 import { monthlySummaryQueryOptions } from '@/hooks/useMonthlySummary';
 import { cn } from '@/lib/cn';
 import { localeCurrency, toLocalYearMonth } from '@/lib/formatters';
 import { haptic } from '@/lib/haptics';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
-
-const VISIBLE_YEARS = 3;
 
 const MONTH_NAMES = [
   'Jan',
@@ -24,6 +24,21 @@ const MONTH_NAMES = [
   'Oct',
   'Nov',
   'Dec',
+];
+
+const FULL_MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function clampToCurrent(
@@ -57,10 +72,25 @@ export function MonthSelector({
   const qc = useQueryClient();
   const preferredCurrency = useUserPreferencesStore((s) => s.currency);
   const currency = preferredCurrency ?? localeCurrency();
+  const [open, setOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(year);
 
-  const minVisibleYear = Math.min(currentYear - (VISIBLE_YEARS - 1), year);
-  const yearsCount = currentYear - minVisibleYear + 1;
-  const years = Array.from({ length: yearsCount }, (_, i) => minVisibleYear + i);
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) setViewYear(year);
+      setOpen(next);
+    },
+    [year],
+  );
+
+  const select = useCallback(
+    (y: number, m: number) => {
+      haptic('tap');
+      onChange(y, m);
+      setOpen(false);
+    },
+    [onChange],
+  );
 
   const move = useCallback(
     (yearDelta: number, monthDelta: number) => {
@@ -82,9 +112,10 @@ export function MonthSelector({
     [year, month, currentYear, currentMonth, onChange],
   );
 
-  // Keyboard navigation: arrow keys move month/year. Skip when typing in inputs.
+  // Keyboard navigation: arrow keys move month/year. Skip when typing in inputs or when picker is open.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (open) return;
       const target = e.target as HTMLElement | null;
       if (target?.matches('input, textarea, [contenteditable="true"]')) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -109,7 +140,7 @@ export function MonthSelector({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [move]);
+  }, [move, open]);
 
   const prefetchPeriod = useCallback(
     (y: number, m: number) => {
@@ -120,78 +151,92 @@ export function MonthSelector({
     [qc, currency],
   );
 
+  const canGoNextYear = viewYear < currentYear;
+  const isCurrentSelected = year === currentYear && month === currentMonth;
+
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
+    <DialogPrimitives.Root open={open} onOpenChange={handleOpenChange}>
+      <DialogPrimitives.Trigger asChild>
         <button
           type="button"
-          aria-label={`Period: ${MONTH_NAMES[month]} ${year}. Tap to change.`}
+          aria-label={`Period: ${FULL_MONTH_NAMES[month]} ${year}. Tap to change.`}
           className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition outline-none hover:bg-muted/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
         >
           {MONTH_NAMES[month]} {year}
           <ChevronDown className="size-3.5 opacity-60" />
         </button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="start"
-          sideOffset={6}
-          className="z-50 w-64 rounded-md border border-border/60 bg-popover p-2 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[side=bottom]:slide-in-from-top-1"
+      </DialogPrimitives.Trigger>
+      <DialogPrimitives.Portal>
+        <DialogOverlay />
+        <DialogPrimitives.Content
+          className={cn(
+            'fixed z-[200] flex flex-col bg-background outline-none',
+            // Mobile: bottom sheet, full width, safe-area aware
+            'bottom-0 left-0 right-0 rounded-t-lg border-t border-border/60 pb-[max(1rem,env(safe-area-inset-bottom))]',
+            'data-[state=open]:animate-in-bottom-sheet data-[state=closed]:animate-out-bottom-sheet',
+            // Desktop: anchored-feel popover, centered, compact, with shadow
+            'sm:bottom-auto sm:right-auto sm:left-1/2 sm:top-[20%] sm:w-[22rem] sm:-translate-x-1/2 sm:rounded-lg sm:border sm:pb-3 sm:shadow-2xl',
+            'sm:data-[state=open]:animate-fade-in sm:data-[state=closed]:animate-fade-out',
+          )}
         >
-          <div className="mb-2 flex gap-1">
-            {years.map((y) => {
-              const selected = y === year;
-              return (
-                <button
-                  key={y}
-                  type="button"
-                  onClick={() => {
-                    if (y === year) return;
-                    haptic('tap');
-                    const clamped = clampToCurrent(y, month, currentYear, currentMonth);
-                    onChange(clamped.year, clamped.month);
-                  }}
-                  onMouseEnter={() =>
-                    prefetchPeriod(y, Math.min(month, y === currentYear ? currentMonth : 11))
-                  }
-                  className={cn(
-                    'flex-1 rounded-pill px-2 py-1 text-xs font-medium tabular-nums transition outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] motion-reduce:transition-none cursor-pointer',
-                    selected
-                      ? 'bg-foreground text-background'
-                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                  )}
-                >
-                  {y}
-                </button>
-              );
-            })}
+          <DialogPrimitives.Title className="sr-only">Select month</DialogPrimitives.Title>
+
+          {/* Drag handle (mobile only) */}
+          <div className="flex justify-center pt-2 pb-1 sm:hidden">
+            <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
           </div>
 
-          <div className="grid grid-cols-3 gap-1">
+          {/* Year header with chevrons */}
+          <div className="flex items-center justify-between px-4 pt-2 pb-3 sm:px-3 sm:pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                haptic('tap');
+                setViewYear((y) => y - 1);
+              }}
+              aria-label="Previous year"
+              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95 motion-reduce:transition-none cursor-pointer focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <div className="text-base font-semibold tabular-nums">{viewYear}</div>
+            <button
+              type="button"
+              onClick={() => {
+                if (!canGoNextYear) return;
+                haptic('tap');
+                setViewYear((y) => y + 1);
+              }}
+              disabled={!canGoNextYear}
+              aria-label="Next year"
+              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95 motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
+
+          {/* Month grid */}
+          <div className="grid grid-cols-3 gap-2 px-4 sm:gap-1.5 sm:px-3">
             {MONTH_NAMES.map((name, m) => {
-              const isFuture = year === currentYear && m > currentMonth;
-              const selected = m === month;
-              const isToday = m === currentMonth && year === currentYear;
+              const isFuture = viewYear === currentYear && m > currentMonth;
+              const selected = m === month && viewYear === year;
+              const isToday = m === currentMonth && viewYear === currentYear;
               return (
                 <button
                   key={name}
                   type="button"
                   disabled={isFuture}
-                  onClick={() => {
-                    if (m === month) return;
-                    haptic('tap');
-                    onChange(year, m);
-                  }}
-                  onMouseEnter={() => !isFuture && prefetchPeriod(year, m)}
+                  onClick={() => select(viewYear, m)}
+                  onMouseEnter={() => !isFuture && prefetchPeriod(viewYear, m)}
                   className={cn(
-                    'rounded-pill px-2 py-1.5 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30',
+                    'h-12 rounded-pill text-sm font-medium tabular-nums transition outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 sm:h-10',
                     selected
                       ? cn(
                           'bg-primary text-primary-foreground shadow-sm',
-                          glassEffect && 'bg-primary/85 backdrop-blur-sm',
+                          glassEffect && 'bg-primary/90 backdrop-blur-sm',
                         )
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                    isToday && !selected && 'ring-1 ring-primary/40',
+                      : 'text-foreground hover:bg-muted',
+                    isToday && !selected && 'ring-1 ring-primary/50',
                   )}
                 >
                   {name}
@@ -199,8 +244,21 @@ export function MonthSelector({
               );
             })}
           </div>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+
+          {/* Footer: Today shortcut */}
+          <div className="px-4 pt-4 sm:px-3 sm:pt-3">
+            <Button
+              variant="secondary"
+              size="default"
+              onClick={() => select(currentYear, currentMonth)}
+              disabled={isCurrentSelected}
+              className="w-full"
+            >
+              Jump to current month
+            </Button>
+          </div>
+        </DialogPrimitives.Content>
+      </DialogPrimitives.Portal>
+    </DialogPrimitives.Root>
   );
 }

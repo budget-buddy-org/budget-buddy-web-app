@@ -54,25 +54,40 @@ export function Sparkline({
   const stroke = VARIANT_STROKE[variant];
   const last = points[points.length - 1];
 
+  // The SVG uses preserveAspectRatio="none" so the path stretches to fill the
+  // container width. An SVG <circle> would distort into an ellipse under that
+  // stretch (the path strokes escape via vectorEffect="non-scaling-stroke",
+  // which doesn't apply to <circle>). Render the end dot as an HTML element
+  // positioned in percentages so it stays a true circle at any width.
   return (
-    <svg
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      preserveAspectRatio="none"
-      role="img"
-      aria-label={`${variant} trend, last ${values.length} months`}
-      className={cn('h-6 w-full overflow-visible', className)}
-    >
-      <path d={area} fill={stroke} fillOpacity={0.12} />
-      <path
-        d={path}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
+    <div className={cn('relative h-6 w-full', className)}>
+      <svg
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`${variant} trend, last ${values.length} months`}
+        className="h-full w-full overflow-visible"
+      >
+        <path d={area} fill={stroke} fillOpacity={0.12} />
+        <path
+          d={path}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={1.25}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          left: `${(last[0] / WIDTH) * 100}%`,
+          top: `${(last[1] / HEIGHT) * 100}%`,
+          backgroundColor: stroke,
+        }}
       />
-      <circle cx={last[0]} cy={last[1]} r={1.5} fill={stroke} />
-    </svg>
+    </div>
   );
 }

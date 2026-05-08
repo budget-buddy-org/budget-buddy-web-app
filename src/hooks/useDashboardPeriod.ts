@@ -21,7 +21,7 @@ export interface DashboardPeriod {
  */
 export function useDashboardPeriod(): DashboardPeriod {
   const search = useSearch({ from: '/_app/' });
-  const navigate = useNavigate({ from: '/_app/' });
+  const navigate = useNavigate({ from: '/' });
 
   const now = new Date();
   const currentYear = now.getFullYear();
