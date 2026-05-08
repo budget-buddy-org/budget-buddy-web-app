@@ -1,8 +1,8 @@
 import type { MonthlySummary } from '@budget-buddy-org/budget-buddy-contracts';
-import { useQueries } from '@tanstack/react-query';
+import { getTransactionsSummaryTrend } from '@budget-buddy-org/budget-buddy-contracts';
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query';
 import { localeCurrency, toLocalYearMonth } from '@/lib/formatters';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
-import { monthlySummaryQueryOptions } from './useMonthlySummary';
 
 export interface MonthlySummariesRangeFilters {
   monthsBack: number;
@@ -11,10 +11,27 @@ export interface MonthlySummariesRangeFilters {
   currency?: string;
 }
 
+const KEYS = {
+  trend: (from: string, to: string, currency: string) =>
+    ['transactions-summary', 'trend', from, to, currency] as const,
+};
+
+const trendQueryOptions = (from: string, to: string, currency: string) =>
+  queryOptions({
+    queryKey: KEYS.trend(from, to, currency),
+    queryFn: async () => {
+      const { data, error } = await getTransactionsSummaryTrend({
+        query: { from, to, currency },
+      });
+      if (error) throw error;
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+
 /**
- * Fan out N parallel monthly-summary queries and return the results in
- * chronological order (oldest first). Reuses the same query keys as
- * `useMonthlySummary`, so the cache is shared across the dashboard.
+ * Fetch a contiguous range of monthly summaries (oldest first) ending at
+ * (`endYear`, `endMonth`). Issued as a single request via the trend endpoint.
  */
 export function useMonthlySummariesRange({
   monthsBack,
@@ -25,18 +42,14 @@ export function useMonthlySummariesRange({
   const preferredCurrency = useUserPreferencesStore((s) => s.currency);
   const resolvedCurrency = currency ?? preferredCurrency ?? localeCurrency();
 
-  const months = Array.from({ length: monthsBack }, (_, i) => {
-    const offset = monthsBack - 1 - i;
-    return toLocalYearMonth(new Date(endYear, endMonth - offset, 1));
-  });
+  const from = toLocalYearMonth(new Date(endYear, endMonth - (monthsBack - 1), 1));
+  const to = toLocalYearMonth(new Date(endYear, endMonth, 1));
 
-  const results = useQueries({
-    queries: months.map((month) => monthlySummaryQueryOptions(month, resolvedCurrency)),
-  });
+  const result = useQuery(trendQueryOptions(from, to, resolvedCurrency));
 
   return {
-    data: results.map((r) => r.data) as (MonthlySummary | undefined)[],
-    isLoading: results.some((r) => r.isLoading),
-    isFetching: results.some((r) => r.isFetching),
+    data: (result.data ?? []) as (MonthlySummary | undefined)[],
+    isLoading: result.isLoading,
+    isFetching: result.isFetching,
   };
 }
