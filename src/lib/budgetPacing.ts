@@ -12,13 +12,7 @@ export function monthProgress(date: Date = new Date()): number {
   return Math.min(1, Math.max(0, (elapsed + 1) / total));
 }
 
-export function forecastSpend(spent: number, progress: number): number {
-  if (progress <= 0) return spent;
-  if (progress >= 1) return spent;
-  return Math.round(spent / progress);
-}
-
-export type PacingStatus = 'noBudget' | 'under' | 'onTrack' | 'projectedOver' | 'over';
+export type PacingStatus = 'noBudget' | 'under' | 'onTrack' | 'over';
 
 export function pacingStatus({
   spent,
@@ -35,17 +29,5 @@ export function pacingStatus({
   // Tolerance: ±10% of expected pace.
   const tolerance = expectedSpent * 0.1;
   if (spent < expectedSpent - tolerance) return 'under';
-  if (spent > expectedSpent + tolerance) {
-    const projected = forecastSpend(spent, progress);
-    return projected > budget ? 'projectedOver' : 'onTrack';
-  }
   return 'onTrack';
-}
-
-export function formatForecast(
-  projected: number,
-  currency: string,
-  fmt: (amount: number, currency?: string) => string,
-): string {
-  return `Projected ${fmt(projected, currency)} by month end`;
 }

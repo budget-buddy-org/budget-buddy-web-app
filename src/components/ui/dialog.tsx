@@ -17,7 +17,7 @@ function DialogOverlay({
     <DialogPrimitives.Overlay
       ref={ref}
       className={cn(
-        'fixed inset-0 z-[200] bg-black/80 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
+        'fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
         className,
       )}
       {...props}

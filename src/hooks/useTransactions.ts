@@ -15,12 +15,15 @@ import {
   type InfiniteData,
   infiniteQueryOptions,
   keepPreviousData,
+  type QueryClient,
   queryOptions,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { CATEGORIES_SUMMARY_KEYS } from '@/hooks/useCategoriesSummary';
+import { TRANSACTIONS_SUMMARY_KEYS } from '@/hooks/useMonthlySummary';
 
 export interface TransactionFilters {
   page?: number;
@@ -44,6 +47,15 @@ const KEYS = {
   infinite: (filters: TransactionFilters) => ['transactions', 'infinite', filters] as const,
   detail: (id: string) => ['transactions', id] as const,
 };
+
+// Mutating a transaction also changes the per-month and per-category aggregates
+// the dashboard reads from. Invalidate them together so summary cards stay in
+// sync after create/update/delete.
+function invalidateTransactionCaches(qc: QueryClient) {
+  qc.invalidateQueries({ queryKey: KEYS.all });
+  qc.invalidateQueries({ queryKey: TRANSACTIONS_SUMMARY_KEYS.all });
+  qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
+}
 
 export const transactionsQueryOptions = (filters: TransactionFilters = {}) =>
   queryOptions({
@@ -123,7 +135,7 @@ export function useCreateTransaction() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
+    onSuccess: () => invalidateTransactionCaches(qc),
   });
 }
 
@@ -139,7 +151,7 @@ export function useUpdateTransaction(id: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      invalidateTransactionCaches(qc);
       qc.invalidateQueries({ queryKey: KEYS.detail(id) });
     },
   });
@@ -208,6 +220,6 @@ export function useDeleteTransaction() {
       // Also remove the specific detail query if it exists
       qc.removeQueries({ queryKey: KEYS.detail(id) });
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: KEYS.all }),
+    onSettled: () => invalidateTransactionCaches(qc),
   });
 }

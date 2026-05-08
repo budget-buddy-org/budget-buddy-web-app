@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFormatters } from '@/hooks/useFormatters';
-import { forecastSpend, pacingStatus } from '@/lib/budgetPacing';
+import { isCurrentMonth, monthProgress, pacingStatus } from '@/lib/budgetPacing';
 import { getCategoryColor } from '@/lib/categoryColor';
 import { cn } from '@/lib/cn';
 
@@ -19,8 +19,6 @@ export function CategoriesCard({
   firstDayOfPeriod,
   lastDayOfPeriod,
   currency,
-  progress,
-  showForecast,
 }: {
   summary: CategorySpendingSummary | undefined;
   isLoading: boolean;
@@ -28,11 +26,12 @@ export function CategoriesCard({
   firstDayOfPeriod: string;
   lastDayOfPeriod: string;
   currency: string;
-  progress: number;
-  showForecast: boolean;
 }) {
   const { fmtCurrency } = useFormatters();
   const [showAll, setShowAll] = useState(false);
+
+  const periodDate = new Date(firstDayOfPeriod);
+  const isCurrent = isCurrentMonth(periodDate.getFullYear(), periodDate.getMonth());
 
   const { categoryRows, excludedCount } = useMemo(() => {
     const items = summary?.items ?? [];
@@ -121,21 +120,9 @@ export function CategoriesCard({
                                 backgroundColor: overBudget ? 'var(--color-expense)' : color,
                               }}
                             />
-                            {showForecast && !overBudget && (
-                              <span
-                                aria-hidden
-                                className="absolute top-0 h-full w-px bg-foreground/40"
-                                style={{ left: `${Math.min(100, progress * 100)}%` }}
-                              />
-                            )}
                           </div>
-                          {showForecast && !overBudget && (
-                            <PacingNote
-                              spent={row.spent}
-                              budget={budget}
-                              progress={progress}
-                              currency={currency}
-                            />
+                          {isCurrent && !overBudget && (
+                            <PacingNote spent={row.spent} budget={budget} />
                           )}
                         </>
                       ) : (
@@ -175,30 +162,11 @@ export function CategoriesCard({
   );
 }
 
-function PacingNote({
-  spent,
-  budget,
-  progress,
-  currency,
-}: {
-  spent: number;
-  budget: number;
-  progress: number;
-  currency: string;
-}) {
-  const { fmtCurrency } = useFormatters();
-  const status = pacingStatus({ spent, budget, progress });
+function PacingNote({ spent, budget }: { spent: number; budget: number }) {
+  const status = pacingStatus({ spent, budget, progress: monthProgress() });
   if (status === 'noBudget' || status === 'over') return null;
   if (status === 'under') {
     return <p className="mt-1 text-xs text-muted-foreground">On track · under pace</p>;
-  }
-  if (status === 'projectedOver') {
-    const projected = forecastSpend(spent, progress);
-    return (
-      <p className="mt-1 text-xs text-expense tabular-nums">
-        Projected {fmtCurrency(projected, currency)} · over budget
-      </p>
-    );
   }
   return <p className="mt-1 text-xs text-muted-foreground">On track</p>;
 }

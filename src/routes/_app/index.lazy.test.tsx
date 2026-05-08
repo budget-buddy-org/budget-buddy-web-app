@@ -30,6 +30,17 @@ vi.mock('@/hooks/useMonthlySummariesRange', () => ({
   useMonthlySummariesRange: vi.fn(),
 }));
 
+vi.mock('@/hooks/useDashboardPeriod', () => ({
+  useDashboardPeriod: () => ({
+    year: 2026,
+    month: 3,
+    currentYear: 2026,
+    currentMonth: 3,
+    isCurrent: true,
+    setPeriod: vi.fn(),
+  }),
+}));
+
 import { useCategoriesSummary } from '@/hooks/useCategoriesSummary';
 import { useMonthlySummariesRange } from '@/hooks/useMonthlySummariesRange';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';

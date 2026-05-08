@@ -35,6 +35,17 @@ vi.mock('@/hooks/useMonthlySummariesRange', () => ({
   useMonthlySummariesRange: () => ({ data: [], isLoading: false, isFetching: false }),
 }));
 
+vi.mock('@/hooks/useDashboardPeriod', () => ({
+  useDashboardPeriod: () => ({
+    year: 2024,
+    month: 2,
+    currentYear: 2024,
+    currentMonth: 2,
+    isCurrent: true,
+    setPeriod: vi.fn(),
+  }),
+}));
+
 vi.mock('@/hooks/useTransactions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/hooks/useTransactions')>()),
   useTransactions: () => ({
