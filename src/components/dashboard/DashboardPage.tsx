@@ -1,5 +1,4 @@
 import { ArrowDownRight, ArrowUpRight, Wallet } from 'lucide-react';
-import { useCallback, useState } from 'react';
 import { CategoriesCard } from '@/components/dashboard/CategoriesCard';
 import { MonthSelector } from '@/components/dashboard/MonthSelector';
 import { RecentTransactionsCard } from '@/components/dashboard/RecentTransactionsCard';
@@ -14,6 +13,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PageContainer } from '@/components/ui/page-container';
 import { Sparkline } from '@/components/ui/sparkline';
 import { useCategoriesSummary } from '@/hooks/useCategoriesSummary';
+import { useDashboardPeriod } from '@/hooks/useDashboardPeriod';
 import { useFormatters } from '@/hooks/useFormatters';
 import { useMonthlySummariesRange } from '@/hooks/useMonthlySummariesRange';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
@@ -42,23 +42,16 @@ export function DashboardPage() {
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const { fmtCurrency } = useFormatters();
 
-  // Recomputed every render so the dashboard rolls over correctly when the app
-  // stays open past midnight (especially across a month boundary).
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-
-  const [selectedPeriod, setSelectedPeriod] = useState<{ year: number; month: number }>({
-    year: currentYear,
-    month: currentMonth,
-  });
-  const { year: selectedYear, month: selectedMonth } = selectedPeriod;
-  const handlePeriodChange = useCallback((year: number, month: number) => {
-    setSelectedPeriod({ year, month });
-  }, []);
+  const {
+    year: selectedYear,
+    month: selectedMonth,
+    currentYear,
+    currentMonth,
+    isCurrent,
+    setPeriod,
+  } = useDashboardPeriod();
 
   const firstOfPeriod = new Date(selectedYear, selectedMonth, 1);
-  const isCurrent = selectedYear === currentYear && selectedMonth === currentMonth;
   const firstDayOfPeriod = toLocalIsoDate(firstOfPeriod);
   const lastDayOfPeriod = isCurrent
     ? todayIso()
@@ -112,7 +105,7 @@ export function DashboardPage() {
             currentYear={currentYear}
             currentMonth={currentMonth}
             glassEffect={glassEffect}
-            onChange={handlePeriodChange}
+            onChange={setPeriod}
           />
         }
       />
