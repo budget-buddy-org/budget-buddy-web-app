@@ -33,7 +33,7 @@ export function CategoriesCard({
   const periodDate = new Date(firstDayOfPeriod);
   const isCurrent = isCurrentMonth(periodDate.getFullYear(), periodDate.getMonth());
 
-  const { categoryRows, excludedCount } = useMemo(() => {
+  const { categoryRows, excludedCount, budgetedTotal, spentOfBudgeted } = useMemo(() => {
     const items = summary?.items ?? [];
     const rows = items
       .filter((row) => row.spent > 0 || (row.monthlyBudget ?? 0) > 0)
@@ -45,7 +45,20 @@ export function CategoriesCard({
       }))
       .sort((a, b) => b.spent - a.spent);
     const excluded = items.reduce((sum, row) => sum + row.excludedTransactionCount, 0);
-    return { categoryRows: rows, excludedCount: excluded };
+    let budgetSum = 0;
+    let spentSum = 0;
+    for (const row of items) {
+      if ((row.monthlyBudget ?? 0) > 0) {
+        budgetSum += row.monthlyBudget as number;
+        spentSum += row.spent;
+      }
+    }
+    return {
+      categoryRows: rows,
+      excludedCount: excluded,
+      budgetedTotal: budgetSum,
+      spentOfBudgeted: spentSum,
+    };
   }, [summary]);
 
   if (isLoading && !summary) return <CategoriesCardSkeleton />;
@@ -133,6 +146,35 @@ export function CategoriesCard({
                 );
               })}
             </ul>
+
+            {budgetedTotal > 0 && (
+              <div className="border-t pt-3">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-sm font-medium">Total budget</span>
+                  <span
+                    className={cn(
+                      'text-sm tabular-nums',
+                      spentOfBudgeted > budgetedTotal
+                        ? 'text-expense font-medium'
+                        : 'text-muted-foreground',
+                    )}
+                  >
+                    {fmtCurrency(spentOfBudgeted, currency)} /{' '}
+                    {fmtCurrency(budgetedTotal, currency)}
+                  </span>
+                </div>
+                <div className="relative h-1.5 w-full overflow-hidden rounded-pill bg-muted">
+                  <div
+                    className="h-full rounded-pill bg-foreground/70"
+                    style={{
+                      width: `${Math.min(100, Math.round((spentOfBudgeted / budgetedTotal) * 100))}%`,
+                      backgroundColor:
+                        spentOfBudgeted > budgetedTotal ? 'var(--color-expense)' : undefined,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             {excludedCount > 0 && (
               <p className="text-xs text-muted-foreground">
