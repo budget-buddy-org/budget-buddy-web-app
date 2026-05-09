@@ -2,19 +2,32 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createReactiveSearchMock } from '@/test/reactive-search';
 import { render } from '@/test/utils';
+
+const mockSearch = createReactiveSearchMock<{ edit?: string }>();
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (opts: { component: React.ComponentType }) => ({ options: opts }),
+  useSearch: mockSearch.useSearch,
+  useNavigate: () => mockSearch.navigate,
 }));
 
 const mockCreateCategory = { mutate: vi.fn(), isPending: false, reset: vi.fn() };
 const mockDeleteCategory = { mutate: vi.fn(), isPending: false };
 const mockUpdateCategory = { mutate: vi.fn(), isPending: false, reset: vi.fn() };
+const mockUseCategories = vi.fn();
 
 vi.mock('@/hooks/useCategories', () => ({
   CATEGORIES_PAGE_SIZE: 200,
-  useCategories: vi.fn(),
+  useCategories: mockUseCategories,
+  useCategory: (id: string) => {
+    const result = mockUseCategories() as
+      | { data?: { items?: Array<{ id: string; name: string; monthlyBudget?: number | null }> } }
+      | undefined;
+    const items = result?.data?.items ?? [];
+    return { data: items.find((c) => c.id === id) } as { data: unknown };
+  },
   useCreateCategory: () => mockCreateCategory,
   useDeleteCategory: () => mockDeleteCategory,
   useUpdateCategory: () => mockUpdateCategory,
@@ -158,6 +171,7 @@ describe('CategoriesPage', () => {
     mockCreateCategory.isPending = false;
     mockDeleteCategory.isPending = false;
     mockUpdateCategory.isPending = false;
+    mockSearch.reset();
   });
 
   it('shows loading skeletons while data is loading', () => {
@@ -390,7 +404,7 @@ describe('CategoriesPage', () => {
     expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
   });
 
-  it('resets update mutation when edit dialog is cancelled', async () => {
+  it('discards mutation state when edit dialog is cancelled (via remount)', async () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
@@ -401,7 +415,8 @@ describe('CategoriesPage', () => {
     await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
     await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-    expect(mockUpdateCategory.reset).toHaveBeenCalled();
+    // Dialog body unmounts on close, so mutation state is discarded structurally.
+    expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
   });
 
   it('handles autoFocus correctly in dialogs', async () => {

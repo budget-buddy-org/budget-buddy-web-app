@@ -159,7 +159,9 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText('Transport')).toBeInTheDocument();
     // 5000 / 10000 minor units → "€50.00 / €100.00"
-    expect(screen.getByText(/50\.00.*100\.00/)).toBeInTheDocument();
+    // Appears twice: once on the category row, once in the "Total budget" footer.
+    expect(screen.getAllByText(/50\.00.*100\.00/)).toHaveLength(2);
+    expect(screen.getByText('Total budget')).toBeInTheDocument();
   });
 
   it('shows the excluded-transactions note when monthly excludedTransactionCount > 0', async () => {

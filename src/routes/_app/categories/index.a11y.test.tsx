@@ -7,6 +7,8 @@ import { render } from '@/test/utils';
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
+  useSearch: () => ({}),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@/hooks/useCategories', () => ({
@@ -20,6 +22,7 @@ vi.mock('@/hooks/useCategories', () => ({
     },
     isLoading: false,
   }),
+  useCategory: () => ({ data: undefined }),
   useCreateCategory: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteCategory: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateCategory: () => ({ mutate: vi.fn(), isPending: false }),

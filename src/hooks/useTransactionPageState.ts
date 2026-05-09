@@ -13,6 +13,8 @@ export interface TransactionPageFilters {
   amountMax?: number;
 }
 
+type SearchShape = Partial<TransactionPageFilters> & { edit?: string };
+
 const DEFAULT_FILTERS: TransactionPageFilters = {
   categoryId: '',
   start: '',
@@ -30,7 +32,34 @@ export function useTransactionPageState() {
 
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Merges a partial patch into the current search, leaving other params intact.
+  const patchSearch = useCallback(
+    (patch: SearchShape, replace = true) => {
+      navigate({
+        search: (prev: SearchShape) => ({ ...prev, ...patch }),
+        replace,
+      });
+    },
+    [navigate],
+  );
+
+  // Replaces all filter params, but keeps `edit` so an open dialog isn't dismissed.
+  const replaceFilters = useCallback(
+    (next: Partial<TransactionPageFilters>) => {
+      navigate({
+        search: (prev: SearchShape) => ({ edit: prev.edit, ...next }),
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const editingId = search.edit ?? null;
+  const setEditingId = useCallback(
+    (id: string | null) => patchSearch({ edit: id ?? undefined }, false),
+    [patchSearch],
+  );
 
   const filters: TransactionPageFilters = {
     categoryId: search.categoryId ?? DEFAULT_FILTERS.categoryId,
@@ -45,55 +74,43 @@ export function useTransactionPageState() {
 
   const closeForm = useCallback(() => {
     setShowForm(false);
-    setEditingId(null);
-  }, []);
+    if (search.edit) patchSearch({ edit: undefined });
+  }, [patchSearch, search.edit]);
 
   const resetFilters = useCallback(() => {
-    navigate({
-      search: {
-        categoryId: undefined,
-        start: undefined,
-        end: undefined,
-        sort: undefined,
-        type: undefined,
-        query: undefined,
-        amountMin: undefined,
-        amountMax: undefined,
-      },
-      replace: true,
+    replaceFilters({
+      categoryId: undefined,
+      start: undefined,
+      end: undefined,
+      sort: undefined,
+      type: undefined,
+      query: undefined,
+      amountMin: undefined,
+      amountMax: undefined,
     });
-  }, [navigate]);
+  }, [replaceFilters]);
 
   const handleFilterChange = useCallback(
     (newFilters: TransactionPageFilters) => {
-      navigate({
-        search: {
-          categoryId: newFilters.categoryId || undefined,
-          start: newFilters.start || undefined,
-          end: newFilters.end || undefined,
-          sort: newFilters.sort !== 'desc' ? newFilters.sort : undefined,
-          type: newFilters.type || undefined,
-          query: newFilters.query || undefined,
-          amountMin: newFilters.amountMin,
-          amountMax: newFilters.amountMax,
-        },
-        replace: true,
+      replaceFilters({
+        categoryId: newFilters.categoryId || undefined,
+        start: newFilters.start || undefined,
+        end: newFilters.end || undefined,
+        sort: newFilters.sort !== 'desc' ? newFilters.sort : undefined,
+        type: newFilters.type || undefined,
+        query: newFilters.query || undefined,
+        amountMin: newFilters.amountMin,
+        amountMax: newFilters.amountMax,
       });
     },
-    [navigate],
+    [replaceFilters],
   );
 
   const handleQueryChange = useCallback(
     (next: string | undefined) => {
-      navigate({
-        search: (prev: TransactionPageFilters) => ({
-          ...prev,
-          query: next && next.length > 0 ? next : undefined,
-        }),
-        replace: true,
-      });
+      patchSearch({ query: next && next.length > 0 ? next : undefined });
     },
-    [navigate],
+    [patchSearch],
   );
 
   const isFiltered = !!(

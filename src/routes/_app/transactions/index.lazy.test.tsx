@@ -3,21 +3,22 @@ import { fireEvent, screen } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionsPage } from '@/components/transactions/TransactionsPage';
+import { createReactiveSearchMock } from '@/test/reactive-search';
 import { render } from '@/test/utils';
 
-const mockNavigate = vi.fn();
+const mockSearch = createReactiveSearchMock();
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: { component: React.ComponentType }) => ({ options }),
   createFileRoute: () => (options: unknown) => ({ options }),
-  useNavigate: () => mockNavigate,
-  useSearch: () => ({}),
+  useNavigate: () => mockSearch.navigate,
+  useSearch: () => mockSearch.useSearch(),
 }));
 
 vi.mock('@/routes/_app/transactions/index', () => ({
   Route: {
     fullPath: '/_app/transactions/',
-    useSearch: () => ({}),
+    useSearch: () => mockSearch.useSearch(),
   },
 }));
 
@@ -55,6 +56,7 @@ import { useInfiniteTransactions, useTransaction, useTransactions } from '@/hook
 describe('TransactionsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearch.reset();
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [] },
       isLoading: false,
