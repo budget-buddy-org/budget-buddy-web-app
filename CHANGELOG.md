@@ -1,3 +1,9 @@
+## [4.11.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.2...v4.11.3) (2026-05-09)
+
+### Bug Fixes
+
+* keep default scopes always on ([447dcf9](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/447dcf9010187667d60385355e5188ba727e616d))
+
 ## [4.11.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.1...v4.11.2) (2026-05-08)
 
 ### Bug Fixes
