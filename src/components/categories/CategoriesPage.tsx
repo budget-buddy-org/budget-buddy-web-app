@@ -1,3 +1,5 @@
+import type { Category } from '@budget-buddy-org/budget-buddy-contracts';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import type React from 'react';
 import { useCallback, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
@@ -20,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   CATEGORIES_PAGE_SIZE,
   useCategories,
+  useCategory,
   useCreateCategory,
   useDeleteCategory,
   useUpdateCategory,
@@ -41,6 +44,11 @@ function inputToMinorUnits(value: string): number | null {
 }
 
 export function CategoriesPage() {
+  const search = useSearch({ from: '/_app/categories/' });
+  const navigate = useNavigate();
+  const editId = search.edit ?? '';
+  const { data: editTarget } = useCategory(editId);
+
   const [page, setPage] = useState(0);
   const { data, isLoading } = useCategories(CATEGORIES_PAGE_SIZE, page);
   const total = data?.meta?.total ?? 0;
@@ -57,20 +65,57 @@ export function CategoriesPage() {
   const [newName, setNewName] = useState('');
   const [newBudget, setNewBudget] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<{
-    id: string;
-    name: string;
-    monthlyBudget?: number | null;
-  } | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editBudget, setEditBudget] = useState('');
-  const [originalEditName, setOriginalEditName] = useState('');
-  const [originalEditBudget, setOriginalEditBudget] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const createFieldError = getApiError(createCategory.error)?.errors?.[0]?.message;
-  const updateCategory = useUpdateCategory(editingCategory?.id ?? '');
-  const updateFieldError = getApiError(updateCategory.error)?.errors?.[0]?.message;
+
+  const openEdit = useCallback(
+    (id: string) => {
+      navigate({ to: '/categories', search: { edit: id } });
+    },
+    [navigate],
+  );
+
+  const closeEdit = useCallback(() => {
+    navigate({ to: '/categories', search: {}, replace: true });
+  }, [navigate]);
+
+  const handleDeleteCategory = useCallback(
+    (category: Category) => {
+      const snapshot = { name: category.name, monthlyBudget: category.monthlyBudget ?? null };
+      deleteCategory.mutate(category.id, {
+        onSuccess: () => {
+          closeEdit();
+          const { dismiss } = toast({
+            title: 'Category deleted',
+            variant: 'success',
+            duration: 6000,
+            action: (
+              <ToastAction
+                altText="Undo delete"
+                onClick={() => {
+                  createCategory.mutate(snapshot, {
+                    onSuccess: () => {
+                      toast({ title: 'Category restored', variant: 'success' });
+                    },
+                    onError: () => {
+                      toast({ title: "Couldn't restore category", variant: 'destructive' });
+                    },
+                  });
+                  dismiss();
+                }}
+              >
+                Undo
+              </ToastAction>
+            ),
+          });
+        },
+        onError: () => {
+          toast({ title: "Couldn't delete category", variant: 'destructive' });
+        },
+      });
+    },
+    [closeEdit, createCategory, deleteCategory, toast],
+  );
 
   const handleCreate = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -100,83 +145,6 @@ export function CategoriesPage() {
         },
       },
     );
-  };
-
-  const handleUpdate = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    if (!editName.trim() || !editingCategory) return;
-    updateCategory.mutate(
-      {
-        name: editName.trim(),
-        monthlyBudget: inputToMinorUnits(editBudget),
-      },
-      {
-        onSuccess: () => {
-          setEditingCategory(null);
-          setEditName('');
-          setEditBudget('');
-          toast({
-            title: 'Category updated',
-            variant: 'success',
-          });
-        },
-        onError: (error) => {
-          const apiError = getApiError(error);
-          if (!apiError?.errors) {
-            toast({
-              title: "Couldn't update category",
-              description: apiError?.detail || apiError?.title,
-              variant: 'destructive',
-            });
-          }
-        },
-      },
-    );
-  };
-
-  const handleDelete = () => {
-    if (!editingCategory) return;
-    const snapshot = {
-      name: editingCategory.name,
-      monthlyBudget: editingCategory.monthlyBudget ?? null,
-    };
-    deleteCategory.mutate(editingCategory.id, {
-      onSuccess: () => {
-        setShowDeleteConfirm(false);
-        setEditingCategory(null);
-        setEditName('');
-        setEditBudget('');
-        const { dismiss } = toast({
-          title: 'Category deleted',
-          variant: 'success',
-          duration: 6000,
-          action: (
-            <ToastAction
-              altText="Undo delete"
-              onClick={() => {
-                createCategory.mutate(snapshot, {
-                  onSuccess: () => {
-                    toast({ title: 'Category restored', variant: 'success' });
-                  },
-                  onError: () => {
-                    toast({ title: "Couldn't restore category", variant: 'destructive' });
-                  },
-                });
-                dismiss();
-              }}
-            >
-              Undo
-            </ToastAction>
-          ),
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Couldn't delete category",
-          variant: 'destructive',
-        });
-      },
-    });
   };
 
   const categories = data?.items ?? [];
@@ -228,13 +196,9 @@ export function CategoriesPage() {
       </Dialog>
 
       <Dialog
-        open={!!editingCategory}
+        open={!!editTarget}
         onOpenChange={(open) => {
-          if (!open) {
-            setEditingCategory(null);
-            setEditBudget('');
-            updateCategory.reset();
-          }
+          if (!open) closeEdit();
         }}
       >
         <DialogContent>
@@ -242,26 +206,15 @@ export function CategoriesPage() {
             <DialogTitle>Edit Category</DialogTitle>
             <DialogDescription>Modify the name and budget of your category</DialogDescription>
           </DialogHeader>
-          <CategoryForm
-            isEditing
-            name={editName}
-            onNameChange={setEditName}
-            monthlyBudget={editBudget}
-            onMonthlyBudgetChange={setEditBudget}
-            onSubmit={handleUpdate}
-            onCancel={() => {
-              setEditingCategory(null);
-              setEditBudget('');
-              updateCategory.reset();
-            }}
-            onDelete={() => setShowDeleteConfirm(true)}
-            isPending={updateCategory.isPending}
-            error={updateFieldError}
-            isDisabled={
-              !editName.trim() ||
-              (editName.trim() === originalEditName && editBudget === originalEditBudget)
-            }
-          />
+          {editTarget && (
+            <EditCategoryDialogBody
+              key={editTarget.id}
+              category={editTarget}
+              onClose={closeEdit}
+              onDelete={() => handleDeleteCategory(editTarget)}
+              isDeleting={deleteCategory.isPending}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -274,18 +227,7 @@ export function CategoriesPage() {
           ) : (
             <ul className="divide-y">
               {categories.map((c) => (
-                <CategoryRow
-                  key={c.id}
-                  name={c.name}
-                  onStartEdit={() => {
-                    setEditingCategory(c);
-                    setEditName(c.name);
-                    setOriginalEditName(c.name);
-                    const budgetInput = minorUnitsToInput(c.monthlyBudget);
-                    setEditBudget(budgetInput);
-                    setOriginalEditBudget(budgetInput);
-                  }}
-                />
+                <CategoryRow key={c.id} name={c.name} onStartEdit={() => openEdit(c.id)} />
               ))}
             </ul>
           )}
@@ -300,17 +242,85 @@ export function CategoriesPage() {
           onPageChange={handlePageChange}
         />
       )}
+    </PageContainer>
+  );
+}
 
+function EditCategoryDialogBody({
+  category,
+  onClose,
+  onDelete,
+  isDeleting,
+}: {
+  category: Category;
+  onClose: () => void;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const { toast } = useToast();
+  const updateCategory = useUpdateCategory(category.id);
+
+  const originalName = category.name;
+  const originalBudget = minorUnitsToInput(category.monthlyBudget);
+
+  const [name, setName] = useState(originalName);
+  const [budget, setBudget] = useState(originalBudget);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const fieldError = getApiError(updateCategory.error)?.errors?.[0]?.message;
+
+  const handleUpdate = (e: React.SubmitEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    updateCategory.mutate(
+      { name: name.trim(), monthlyBudget: inputToMinorUnits(budget) },
+      {
+        onSuccess: () => {
+          toast({ title: 'Category updated', variant: 'success' });
+          onClose();
+        },
+        onError: (error) => {
+          const apiError = getApiError(error);
+          if (!apiError?.errors) {
+            toast({
+              title: "Couldn't update category",
+              description: apiError?.detail || apiError?.title,
+              variant: 'destructive',
+            });
+          }
+        },
+      },
+    );
+  };
+
+  return (
+    <>
+      <CategoryForm
+        isEditing
+        name={name}
+        onNameChange={setName}
+        monthlyBudget={budget}
+        onMonthlyBudgetChange={setBudget}
+        onSubmit={handleUpdate}
+        onCancel={onClose}
+        onDelete={() => setShowDeleteConfirm(true)}
+        isPending={updateCategory.isPending}
+        error={fieldError}
+        isDisabled={!name.trim() || (name.trim() === originalName && budget === originalBudget)}
+      />
       <ConfirmationDialog
         isOpen={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        onConfirm={handleDelete}
+        onConfirm={() => {
+          setShowDeleteConfirm(false);
+          onDelete();
+        }}
         title="Delete Category"
         description="Are you sure you want to delete this category? This action cannot be undone."
         confirmText="Delete"
         variant="destructive"
-        isLoading={deleteCategory.isPending}
+        isLoading={isDeleting}
       />
-    </PageContainer>
+    </>
   );
 }

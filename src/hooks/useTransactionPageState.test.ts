@@ -1,18 +1,18 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createReactiveSearchMock } from '@/test/reactive-search';
 import { type TransactionPageFilters, useTransactionPageState } from './useTransactionPageState';
 
-const mockNavigate = vi.fn();
-const mockSearch: Record<string, unknown> = {};
+const mockSearch = createReactiveSearchMock();
 
 vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => mockNavigate,
+  useNavigate: () => mockSearch.navigate,
 }));
 
 vi.mock('@/routes/_app/transactions/index', () => ({
   Route: {
     fullPath: '/_app/transactions/',
-    useSearch: () => mockSearch,
+    useSearch: () => mockSearch.useSearch(),
   },
 }));
 
@@ -29,11 +29,7 @@ const DEFAULT_FILTERS: TransactionPageFilters = {
 
 beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
-  mockNavigate.mockReset();
-  // Reset mock search to empty (all defaults)
-  for (const key of Object.keys(mockSearch)) {
-    delete mockSearch[key];
-  }
+  mockSearch.reset();
 });
 
 describe('useTransactionPageState — initial state', () => {
@@ -96,7 +92,8 @@ describe('useTransactionPageState — closeForm', () => {
 });
 
 describe('useTransactionPageState — handleFilterChange', () => {
-  it('calls navigate with the new filter params', () => {
+  it('writes new filter params to the URL search', () => {
+    mockSearch.setSearch({ edit: 'tx-keep' });
     const { result } = renderHook(() => useTransactionPageState());
     const newFilters: TransactionPageFilters = {
       categoryId: 'cat-1',
@@ -111,36 +108,25 @@ describe('useTransactionPageState — handleFilterChange', () => {
 
     act(() => result.current.handleFilterChange(newFilters));
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: expect.objectContaining({ categoryId: 'cat-1', sort: 'asc', type: 'EXPENSE' }),
-        replace: true,
-      }),
-    );
+    expect(result.current.filters.categoryId).toBe('cat-1');
+    expect(result.current.filters.sort).toBe('asc');
+    expect(result.current.filters.type).toBe('EXPENSE');
+    // edit is preserved across filter changes so an open dialog isn't dismissed
+    expect(result.current.editingId).toBe('tx-keep');
+    expect(mockSearch.navigate).toHaveBeenCalledWith(expect.objectContaining({ replace: true }));
   });
 });
 
 describe('useTransactionPageState — resetFilters', () => {
-  it('calls navigate with all undefined search params', () => {
+  it('clears all filters in the URL search but preserves edit', () => {
+    mockSearch.setSearch({ categoryId: 'cat-1', sort: 'asc', edit: 'tx-keep' });
     const { result } = renderHook(() => useTransactionPageState());
 
     act(() => result.current.resetFilters());
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: {
-          categoryId: undefined,
-          start: undefined,
-          end: undefined,
-          sort: undefined,
-          type: undefined,
-          query: undefined,
-          amountMin: undefined,
-          amountMax: undefined,
-        },
-        replace: true,
-      }),
-    );
+    expect(result.current.filters).toEqual(DEFAULT_FILTERS);
+    expect(result.current.editingId).toBe('tx-keep');
+    expect(mockSearch.navigate).toHaveBeenCalledWith(expect.objectContaining({ replace: true }));
   });
 });
 
@@ -151,19 +137,19 @@ describe('useTransactionPageState — isFiltered', () => {
   });
 
   it('is true when categoryId is in search', () => {
-    mockSearch.categoryId = 'cat-1';
+    mockSearch.setSearch({ categoryId: 'cat-1' });
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.isFiltered).toBe(true);
   });
 
   it('is true when start date is in search', () => {
-    mockSearch.start = '2024-01-01';
+    mockSearch.setSearch({ start: '2024-01-01' });
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.isFiltered).toBe(true);
   });
 
   it('is true when type is in search', () => {
-    mockSearch.type = 'INCOME';
+    mockSearch.setSearch({ type: 'INCOME' });
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.isFiltered).toBe(true);
   });
@@ -176,13 +162,13 @@ describe('useTransactionPageState — hasActiveFilters', () => {
   });
 
   it('is true when sort is asc', () => {
-    mockSearch.sort = 'asc';
+    mockSearch.setSearch({ sort: 'asc' });
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.hasActiveFilters).toBe(true);
   });
 
   it('is true when categoryId is set', () => {
-    mockSearch.categoryId = 'cat-1';
+    mockSearch.setSearch({ categoryId: 'cat-1' });
     const { result } = renderHook(() => useTransactionPageState());
     expect(result.current.hasActiveFilters).toBe(true);
   });

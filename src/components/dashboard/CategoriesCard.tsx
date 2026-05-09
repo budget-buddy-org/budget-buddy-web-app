@@ -1,9 +1,10 @@
 import type { CategorySpendingSummary } from '@budget-buddy-org/budget-buddy-contracts';
 import { Link } from '@tanstack/react-router';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, PieChart } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { SectionHeader } from '@/components/ui/section-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFormatters } from '@/hooks/useFormatters';
 import { isCurrentMonth, monthProgress, pacingStatus } from '@/lib/budgetPacing';
@@ -67,61 +68,61 @@ export function CategoriesCard({
   const hiddenCount = categoryRows.length - VISIBLE_COUNT;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold" as="h2">
-          Expenses by category
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {categoryRows.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            No expenses in {periodLabel}
-          </p>
-        ) : (
-          <>
-            <ul className="space-y-3">
-              {visibleRows.map((row) => {
-                const color = getCategoryColor(row.name);
-                const hasBudget = row.monthlyBudget != null;
-                const budget = row.monthlyBudget ?? 0;
-                const pct =
-                  budget > 0
-                    ? Math.min(100, Math.round((row.spent / budget) * 100))
-                    : row.spent > 0
-                      ? 100
-                      : 0;
-                const overBudget = hasBudget && row.spent > budget;
-                return (
-                  <li key={row.categoryId}>
-                    <Link
-                      to="/transactions"
-                      search={{
-                        type: 'EXPENSE',
-                        start: firstDayOfPeriod,
-                        end: lastDayOfPeriod,
-                        categoryId: row.categoryId,
-                      }}
-                      className="block -mx-1 rounded-md p-1 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                    >
-                      <div className="mb-1 flex items-center justify-between">
-                        <div className="mr-2 flex min-w-0 items-center gap-2">
+    <section className="space-y-3">
+      <SectionHeader title="Expenses by category" icon={PieChart} />
+      <Card>
+        <CardContent className="space-y-3 pt-6">
+          {categoryRows.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No expenses in {periodLabel}
+            </p>
+          ) : (
+            <>
+              <ul className="space-y-3">
+                {visibleRows.map((row) => {
+                  const color = getCategoryColor(row.name);
+                  const hasBudget = row.monthlyBudget != null;
+                  const budget = row.monthlyBudget ?? 0;
+                  const pct =
+                    budget > 0
+                      ? Math.min(100, Math.round((row.spent / budget) * 100))
+                      : row.spent > 0
+                        ? 100
+                        : 0;
+                  const overBudget = hasBudget && row.spent > budget;
+                  return (
+                    <li key={row.categoryId} className="-mx-1 rounded-md p-1">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <Link
+                          to="/categories"
+                          search={{ edit: row.categoryId }}
+                          aria-label={`Edit category ${row.name}`}
+                          className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-sm px-1 py-0.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
                           <span
                             className="h-2 w-2 shrink-0 rounded-pill"
                             style={{ backgroundColor: color }}
                           />
                           <span className="truncate text-sm font-medium">{row.name}</span>
-                        </div>
-                        <span
+                        </Link>
+                        <Link
+                          to="/transactions"
+                          search={{
+                            type: 'EXPENSE',
+                            start: firstDayOfPeriod,
+                            end: lastDayOfPeriod,
+                            categoryId: row.categoryId,
+                          }}
+                          aria-label={`View ${row.name} transactions`}
                           className={cn(
-                            'shrink-0 text-sm tabular-nums',
+                            '-mx-1 shrink-0 rounded-sm px-1 py-0.5 text-sm tabular-nums transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             overBudget ? 'text-expense font-medium' : 'text-muted-foreground',
                           )}
                         >
                           {hasBudget
                             ? `${fmtCurrency(row.spent, currency)} / ${fmtCurrency(row.monthlyBudget as number, currency)}`
                             : fmtCurrency(row.spent, currency)}
-                        </span>
+                        </Link>
                       </div>
                       {hasBudget ? (
                         <>
@@ -141,66 +142,67 @@ export function CategoriesCard({
                       ) : (
                         <p className="text-xs text-muted-foreground">No budget</p>
                       )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            {budgetedTotal > 0 && (
-              <div className="border-t pt-3">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-medium">Total budget</span>
-                  <span
-                    className={cn(
-                      'text-sm tabular-nums',
-                      spentOfBudgeted > budgetedTotal
-                        ? 'text-expense font-medium'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {fmtCurrency(spentOfBudgeted, currency)} /{' '}
-                    {fmtCurrency(budgetedTotal, currency)}
-                  </span>
+              {budgetedTotal > 0 && (
+                <div className="border-t pt-3">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-medium">Total budget</span>
+                    <span
+                      className={cn(
+                        'text-sm tabular-nums',
+                        spentOfBudgeted > budgetedTotal
+                          ? 'text-expense font-medium'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {fmtCurrency(spentOfBudgeted, currency)} /{' '}
+                      {fmtCurrency(budgetedTotal, currency)}
+                    </span>
+                  </div>
+                  <div className="relative h-1.5 w-full overflow-hidden rounded-pill bg-muted">
+                    <div
+                      className={cn(
+                        'h-full rounded-pill',
+                        spentOfBudgeted > budgetedTotal ? 'bg-expense' : 'bg-foreground/70',
+                      )}
+                      style={{
+                        width: `${Math.min(100, Math.round((spentOfBudgeted / budgetedTotal) * 100))}%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="relative h-1.5 w-full overflow-hidden rounded-pill bg-muted">
-                  <div
-                    className="h-full rounded-pill bg-foreground/70"
-                    style={{
-                      width: `${Math.min(100, Math.round((spentOfBudgeted / budgetedTotal) * 100))}%`,
-                      backgroundColor:
-                        spentOfBudgeted > budgetedTotal ? 'var(--color-expense)' : undefined,
-                    }}
+              )}
+
+              {excludedCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {excludedCount === 1
+                    ? '1 transaction in another currency not shown'
+                    : `${excludedCount} transactions in other currencies not shown`}
+                </p>
+              )}
+
+              {hiddenCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  onClick={() => setShowAll((v) => !v)}
+                >
+                  <ChevronDown
+                    className={cn('mr-1 size-4 transition-transform', showAll && 'rotate-180')}
                   />
-                </div>
-              </div>
-            )}
-
-            {excludedCount > 0 && (
-              <p className="text-xs text-muted-foreground">
-                {excludedCount === 1
-                  ? '1 transaction in another currency not shown'
-                  : `${excludedCount} transactions in other currencies not shown`}
-              </p>
-            )}
-
-            {hiddenCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground"
-                onClick={() => setShowAll((v) => !v)}
-              >
-                <ChevronDown
-                  className={cn('mr-1 size-4 transition-transform', showAll && 'rotate-180')}
-                />
-                {showAll ? 'Show less' : `Show ${hiddenCount} more`}
-              </Button>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+                  {showAll ? 'Show less' : `Show ${hiddenCount} more`}
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }
 
@@ -215,24 +217,24 @@ function PacingNote({ spent, budget }: { spent: number; budget: number }) {
 
 export function CategoriesCardSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-48" />
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'].map((key) => (
-          <div key={key} className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-2 w-2 rounded-pill" />
-                <Skeleton className="h-4 w-28" />
+    <section className="space-y-3">
+      <SectionHeader title="Expenses by category" icon={PieChart} />
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          {['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'].map((key) => (
+            <div key={key} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-2 w-2 rounded-pill" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+                <Skeleton className="h-4 w-16" />
               </div>
-              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-1.5 w-full rounded-pill" />
             </div>
-            <Skeleton className="h-1.5 w-full rounded-pill" />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

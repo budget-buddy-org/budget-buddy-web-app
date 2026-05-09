@@ -198,8 +198,6 @@ export function DashboardPage() {
         transactions={recent}
         isLoading={recentLoading}
         hasFetched={!!recentData}
-        firstDayOfPeriod={firstDayOfPeriod}
-        lastDayOfPeriod={lastDayOfPeriod}
       />
     </PageContainer>
   );

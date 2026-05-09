@@ -13,6 +13,7 @@ export interface TransactionSearch {
   query?: string;
   amountMin?: number;
   amountMax?: number;
+  edit?: string;
 }
 
 const validAmount = (v: unknown): number | undefined =>
@@ -34,6 +35,7 @@ export const Route = createFileRoute('/_app/transactions/')({
     query: typeof search.query === 'string' && search.query.length > 0 ? search.query : undefined,
     amountMin: validAmount(search.amountMin),
     amountMax: validAmount(search.amountMax),
+    edit: typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined,
   }),
   loader: ({ location }) => {
     const search = location.search as TransactionSearch;
