@@ -2,12 +2,30 @@ import { UserManager, type UserManagerSettings, WebStorageStateStore } from 'oid
 
 let _userManager: UserManager | null = null;
 
+// Protocol-required scopes. `openid` is mandatory for OIDC; `offline_access`
+// is required for the IdP to issue a refresh token (without one, silent renew
+// falls back to an iframe with prompt=none and dies with the IdP session
+// cookie). These are not configurable — extras are appended on top.
+export const DEFAULT_OIDC_SCOPES = ['openid', 'profile', 'email', 'offline_access'] as const;
+
+function mergeScopes(extraScopes?: string): string {
+  const extras = (extraScopes ?? '').split(/\s+/).filter(Boolean);
+  const overlap = extras.filter((s) => (DEFAULT_OIDC_SCOPES as readonly string[]).includes(s));
+  if (overlap.length > 0) {
+    console.warn(
+      `[oidc] VITE_OIDC_SCOPES contains protocol defaults that are always requested: ${overlap.join(', ')}. Remove them from runtime config.`,
+    );
+  }
+  const seen = new Set<string>();
+  return [...DEFAULT_OIDC_SCOPES, ...extras].filter((s) => !seen.has(s) && seen.add(s)).join(' ');
+}
+
 export function buildOidcSettings(
   issuer: string,
   clientId: string,
-  scopes?: string,
+  extraScopes?: string,
 ): UserManagerSettings {
-  const scopeValue = scopes ?? 'openid profile email offline_access';
+  const scopeValue = mergeScopes(extraScopes);
 
   return {
     authority: issuer,
@@ -35,8 +53,12 @@ export function buildOidcSettings(
  * Initializes the shared UserManager with runtime-loaded OIDC config.
  * Must be called once in main.tsx after loadConfig() resolves, before rendering.
  */
-export function initUserManager(issuer: string, clientId: string, scopes?: string): UserManager {
-  _userManager = new UserManager(buildOidcSettings(issuer, clientId, scopes));
+export function initUserManager(
+  issuer: string,
+  clientId: string,
+  extraScopes?: string,
+): UserManager {
+  _userManager = new UserManager(buildOidcSettings(issuer, clientId, extraScopes));
   return _userManager;
 }
 

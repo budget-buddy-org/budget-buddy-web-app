@@ -24,7 +24,7 @@ Required OIDC environment variables:
 
 - `VITE_OIDC_ISSUER` — OIDC issuer URL (e.g. your Keycloak or Zitadel issuer)
 - `VITE_OIDC_CLIENT_ID` — frontend SPA client ID
-- `VITE_OIDC_SCOPES` — (optional) space-separated list of scopes to request from the IdP (overrides default `openid profile email offline_access`). Use this when your API requires additional scopes or a different scope shape.
+- `VITE_OIDC_SCOPES` — (optional) space-separated **extra** scopes appended to the OIDC protocol defaults (`openid profile email offline_access`). The defaults are always requested and cannot be disabled — use this only for IdP-specific audience or API resource scopes (e.g. `urn:zitadel:iam:org:project:id:my-api:aud`).
 - `VITE_OIDC_USER_MANAGEMENT_URL` — (optional) URL for the identity provider's user management page (e.g. Account Center or Console).
 
 ## Commands

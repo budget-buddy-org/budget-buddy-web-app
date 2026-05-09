@@ -14,14 +14,43 @@ describe('buildOidcSettings', () => {
     expect(settings.scope).toBe('openid profile email offline_access');
   });
 
-  it('uses custom scopes when provided', () => {
+  it('appends extra scopes to the protocol defaults', () => {
     const settings = buildOidcSettings(
       'https://issuer.example.com',
       'web-client',
-      'openid profile email api:read',
+      'api:read aud:foo',
     );
 
-    expect(settings.scope).toBe('openid profile email api:read');
+    expect(settings.scope).toBe('openid profile email offline_access api:read aud:foo');
+  });
+
+  it('dedupes when extras overlap defaults', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const settings = buildOidcSettings(
+      'https://issuer.example.com',
+      'web-client',
+      'openid offline_access api:read',
+    );
+
+    expect(settings.scope).toBe('openid profile email offline_access api:read');
+    warnSpy.mockRestore();
+  });
+
+  it('warns when extras include a default scope', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    buildOidcSettings('https://issuer.example.com', 'web-client', 'openid api:read');
+
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('openid'));
+    warnSpy.mockRestore();
+  });
+
+  it('falls back to defaults for empty / whitespace-only extras', () => {
+    expect(buildOidcSettings('https://issuer.example.com', 'web-client', '').scope).toBe(
+      'openid profile email offline_access',
+    );
+    expect(buildOidcSettings('https://issuer.example.com', 'web-client', '   ').scope).toBe(
+      'openid profile email offline_access',
+    );
   });
 
   it('uses sessionStorage for PKCE state store', () => {

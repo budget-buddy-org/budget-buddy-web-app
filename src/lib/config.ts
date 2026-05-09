@@ -2,7 +2,10 @@ export interface AppConfig {
   VITE_API_URL: string;
   VITE_OIDC_ISSUER: string;
   VITE_OIDC_CLIENT_ID: string;
-  // Optional space-separated scopes string to request from the IdP (overrides default scopes)
+  // Optional space-separated *extra* scopes appended to the OIDC protocol
+  // defaults (`openid profile email offline_access`). Use for IdP-specific
+  // audience or API resource scopes. Defaults are always requested and cannot
+  // be disabled via this field.
   VITE_OIDC_SCOPES?: string;
   // Optional fallback URL for the identity provider's user management page
   VITE_OIDC_USER_MANAGEMENT_URL?: string;
