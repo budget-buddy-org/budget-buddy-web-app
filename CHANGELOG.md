@@ -1,3 +1,9 @@
+## [4.13.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.2...v4.13.0) (2026-05-10)
+
+### Features
+
+* hide balance setting ([#143](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/143)) ([3b45f95](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/3b45f95633df0ddd7b8db805ba8ff85eb9ed070b))
+
 ## [4.12.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.1...v4.12.2) (2026-05-10)
 
 ### Bug Fixes
