@@ -10,6 +10,7 @@ import { useFormatters } from '@/hooks/useFormatters';
 import { isCurrentMonth, monthProgress, pacingStatus } from '@/lib/budgetPacing';
 import { getCategoryColor } from '@/lib/categoryColor';
 import { cn } from '@/lib/cn';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
 const VISIBLE_COUNT = 5;
 
@@ -30,6 +31,7 @@ export function CategoriesCard({
 }) {
   const { fmtCurrency } = useFormatters();
   const [showAll, setShowAll] = useState(false);
+  const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
 
   const periodDate = new Date(firstDayOfPeriod);
   const isCurrent = isCurrentMonth(periodDate.getFullYear(), periodDate.getMonth());
@@ -71,7 +73,7 @@ export function CategoriesCard({
     <section className="space-y-3">
       <SectionHeader title="Expenses by category" icon={PieChart} />
       <Card>
-        <CardContent className="space-y-3 pt-6">
+        <CardContent className="space-y-3 pt-4">
           {categoryRows.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
               No expenses in {periodLabel}
@@ -117,6 +119,7 @@ export function CategoriesCard({
                           className={cn(
                             '-mx-1 shrink-0 rounded-sm px-1 py-0.5 text-sm tabular-nums transition-colors hover:bg-muted/30 active:bg-muted/60 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             overBudget ? 'text-expense font-medium' : 'text-muted-foreground',
+                            isBalanceHidden && 'privacy-blur',
                           )}
                         >
                           {hasBudget
@@ -157,6 +160,7 @@ export function CategoriesCard({
                         spentOfBudgeted > budgetedTotal
                           ? 'text-expense font-medium'
                           : 'text-muted-foreground',
+                        isBalanceHidden && 'privacy-blur',
                       )}
                     >
                       {fmtCurrency(spentOfBudgeted, currency)} /{' '}
@@ -220,7 +224,7 @@ export function CategoriesCardSkeleton() {
     <section className="space-y-3">
       <SectionHeader title="Expenses by category" icon={PieChart} />
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-4 pt-4">
           {['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'].map((key) => (
             <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between">

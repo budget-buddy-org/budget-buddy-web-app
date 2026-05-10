@@ -184,6 +184,10 @@ textarea {
   transition-duration: 350ms;
 }
 
+@utility privacy-blur {
+  filter: blur(8px);
+}
+
 @utility skeleton-shimmer {
   background-image: linear-gradient(
     90deg,

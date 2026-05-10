@@ -109,4 +109,12 @@ describe('useThemeStore', () => {
     useThemeStore.getState().setGlassEffect(false);
     expect(useThemeStore.getState().glassEffect).toBe(false);
   });
+
+  it('toggles showDescriptions', async () => {
+    const { useThemeStore } = await import('./theme.store');
+
+    expect(useThemeStore.getState().showDescriptions).toBe(true);
+    useThemeStore.getState().setShowDescriptions(false);
+    expect(useThemeStore.getState().showDescriptions).toBe(false);
+  });
 });

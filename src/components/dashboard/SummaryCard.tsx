@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFormatters } from '@/hooks/useFormatters';
 import { cn } from '@/lib/cn';
 import type { TransactionSearch } from '@/routes/_app/transactions/index';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
 export function SummaryCardDescription({
   className,
@@ -39,6 +40,8 @@ export function SummaryCard({
   children?: ReactNode;
 }) {
   const { fmtCurrency } = useFormatters();
+  const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
+
   const card = (
     <Card
       glass
@@ -58,7 +61,7 @@ export function SummaryCard({
         <AnimatedNumber
           value={amount}
           format={(v) => fmtCurrency(Math.round(v), currency)}
-          className={cn('text-xl font-bold', className)}
+          className={cn('text-xl font-bold', className, isBalanceHidden && 'privacy-blur')}
         />
         {children}
       </CardContent>

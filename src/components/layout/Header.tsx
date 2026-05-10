@@ -4,6 +4,7 @@ import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
+import { haptic } from '@/lib/haptics';
 import { useThemeStore } from '@/stores/theme.store';
 
 export function Header() {
@@ -27,15 +28,21 @@ export function Header() {
       </Link>
       <div className="flex items-center gap-1 sm:gap-2">
         <Link to="/settings" className="inline-flex md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            title="Settings"
-            aria-label="Settings"
-            className="cursor-pointer"
-          >
-            <Settings className="size-4" />
-          </Button>
+          {({ isActive }) => (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Settings"
+              aria-label="Settings"
+              className={cn(
+                'cursor-pointer active:scale-[0.98]',
+                isActive && 'bg-primary/10 text-primary',
+              )}
+              onClick={() => haptic('tap')}
+            >
+              <Settings className="size-4" />
+            </Button>
+          )}
         </Link>
         <Button
           variant="ghost"

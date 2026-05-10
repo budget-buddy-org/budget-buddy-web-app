@@ -2,10 +2,12 @@ import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useFABAction } from '@/hooks/use-fab';
+import { useThemeStore } from '@/stores/theme.store';
 
 interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
+  isSubtitleEssential?: boolean;
   primaryAction?: {
     label: string;
     onClick: () => void;
@@ -14,7 +16,15 @@ interface PageHeaderProps {
   children?: ReactNode;
 }
 
-export function PageHeader({ title, subtitle, primaryAction, children }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  isSubtitleEssential,
+  primaryAction,
+  children,
+}: PageHeaderProps) {
+  const showDescriptions = useThemeStore((s) => s.showDescriptions);
+
   // Register the primary action as the mobile FAB (clears on unmount)
   useFABAction(primaryAction ?? null);
 
@@ -23,7 +33,9 @@ export function PageHeader({ title, subtitle, primaryAction, children }: PageHea
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          {subtitle && <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div>}
+          {subtitle && (showDescriptions || isSubtitleEssential) && (
+            <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {children}

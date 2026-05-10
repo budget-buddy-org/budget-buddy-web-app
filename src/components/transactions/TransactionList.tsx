@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ListSkeleton } from '@/components/ui/list-skeleton';
 import { useFormatters } from '@/hooks/useFormatters';
+import { cn } from '@/lib/cn';
+import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -26,6 +28,7 @@ export function TransactionList({
   onEdit,
 }: TransactionListProps) {
   const { fmtCurrency, fmtRelativeDate } = useFormatters();
+  const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
     [categories],
@@ -98,7 +101,7 @@ export function TransactionList({
           <CardContent className="p-0">
             <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
               <span>{fmtRelativeDate(group.date)}</span>
-              <span>
+              <span className={cn(isBalanceHidden && 'privacy-blur')}>
                 {group.currency
                   ? `${group.balance > 0 ? '+' : ''}${fmtCurrency(group.balance, group.currency)}`
                   : 'N/A'}

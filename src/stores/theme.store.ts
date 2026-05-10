@@ -11,11 +11,13 @@ interface ThemeState {
   fontSize: number;
   showNavLabels: boolean;
   glassEffect: boolean;
+  showDescriptions: boolean;
   setTheme: (theme: Theme) => void;
   setPrimaryHue: (hue: number) => void;
   setFontSize: (size: number) => void;
   setShowNavLabels: (show: boolean) => void;
   setGlassEffect: (show: boolean) => void;
+  setShowDescriptions: (show: boolean) => void;
   resolvedTheme: () => 'light' | 'dark';
 }
 
@@ -58,6 +60,7 @@ export const useThemeStore = create<ThemeState>()(
       fontSize: 16, // Default 16px
       showNavLabels: true,
       glassEffect: true,
+      showDescriptions: true,
       setTheme: (theme) => {
         set({ theme });
         applyTheme(theme, get().primaryHue, get().fontSize);
@@ -72,6 +75,7 @@ export const useThemeStore = create<ThemeState>()(
       },
       setShowNavLabels: (showNavLabels) => set({ showNavLabels }),
       setGlassEffect: (glassEffect) => set({ glassEffect }),
+      setShowDescriptions: (showDescriptions) => set({ showDescriptions }),
       resolvedTheme: () => {
         const { theme } = get();
         return theme === 'system' ? getSystemTheme() : theme;

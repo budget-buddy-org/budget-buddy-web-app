@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardPage } from '@/components/dashboard/DashboardPage';
@@ -173,5 +173,33 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     expect(screen.getByText(/3 transactions in other currencies not shown/i)).toBeInTheDocument();
+  });
+
+  it('toggles privacy blur when tapping the balance card', async () => {
+    render(<DashboardPage />);
+
+    const balanceCard = screen.getByText('Balance').closest('.rounded-lg') as HTMLElement;
+    const incomeCard = screen.getByText('Income').closest('.rounded-lg') as HTMLElement;
+    const expenseCard = screen.getByText('Expenses').closest('.rounded-lg') as HTMLElement;
+
+    expect(balanceCard).toBeInTheDocument();
+    expect(incomeCard).toBeInTheDocument();
+    expect(expenseCard).toBeInTheDocument();
+
+    // Initially not blurred
+    expect(within(balanceCard).getByText(/50/)).not.toHaveClass('privacy-blur');
+    expect(within(incomeCard).getByText(/100/)).not.toHaveClass('privacy-blur');
+
+    // Tap balance card
+    fireEvent.click(balanceCard);
+
+    // Now blurred
+    expect(within(balanceCard).getByText(/50/)).toHaveClass('privacy-blur');
+    expect(within(incomeCard).getByText(/100/)).toHaveClass('privacy-blur');
+    expect(within(expenseCard).getByText(/50/)).toHaveClass('privacy-blur');
+
+    // Tap again to unblur
+    fireEvent.click(balanceCard);
+    expect(within(balanceCard).getByText(/50/)).not.toHaveClass('privacy-blur');
   });
 });

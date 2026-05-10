@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, EyeOff, Wallet } from 'lucide-react';
 import { CategoriesCard } from '@/components/dashboard/CategoriesCard';
 import { MonthSelector } from '@/components/dashboard/MonthSelector';
 import { RecentTransactionsCard } from '@/components/dashboard/RecentTransactionsCard';
@@ -20,6 +20,7 @@ import { useMonthlySummary } from '@/hooks/useMonthlySummary';
 import { useTransactions } from '@/hooks/useTransactions';
 import { cn } from '@/lib/cn';
 import { localeCurrency, todayIso, toLocalIsoDate, toLocalYearMonth } from '@/lib/formatters';
+import { haptic } from '@/lib/haptics';
 import { useThemeStore } from '@/stores/theme.store';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
@@ -40,7 +41,13 @@ const MONTH_NAMES = [
 
 export function DashboardPage() {
   const glassEffect = useThemeStore((s) => s.glassEffect);
+  const { isBalanceHidden, toggleBalanceHidden } = useUserPreferencesStore();
   const { fmtCurrency } = useFormatters();
+
+  const handleTogglePrivacy = () => {
+    haptic('tap');
+    toggleBalanceHidden();
+  };
 
   const {
     year: selectedYear,
@@ -98,6 +105,7 @@ export function DashboardPage() {
     <PageContainer>
       <PageHeader
         title="Dashboard"
+        isSubtitleEssential
         subtitle={
           <MonthSelector
             year={selectedYear}
@@ -120,18 +128,29 @@ export function DashboardPage() {
           </>
         ) : (
           <>
-            <Card glass className="col-span-2 md:col-span-1">
+            <Card
+              glass
+              onClick={handleTogglePrivacy}
+              className={cn(
+                'col-span-2 md:col-span-1 cursor-pointer transition-colors hover:bg-muted/30 active:bg-muted/60 active:scale-[0.99] motion-reduce:transition-none',
+              )}
+            >
               <CardHeader className="pb-2">
                 <SummaryCardDescription>
                   <Wallet className="size-4" />
                   Balance
+                  {isBalanceHidden && <EyeOff className="ml-auto size-4 opacity-50" />}
                 </SummaryCardDescription>
               </CardHeader>
               <CardContent>
                 <AnimatedNumber
                   value={balance}
                   format={(v) => fmtCurrency(Math.round(v), currency)}
-                  className={cn('text-xl font-bold', balance >= 0 ? 'text-income' : 'text-expense')}
+                  className={cn(
+                    'text-xl font-bold',
+                    balance >= 0 ? 'text-income' : 'text-expense',
+                    isBalanceHidden && 'privacy-blur',
+                  )}
                 />
                 <Sparkline
                   values={trend.data.map((m) => m?.balance ?? 0)}
