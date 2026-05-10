@@ -25,7 +25,7 @@ export function TransactionList({
   onResetFilters,
   onEdit,
 }: TransactionListProps) {
-  const { fmtCurrency, fmtDate } = useFormatters();
+  const { fmtCurrency, fmtRelativeDate } = useFormatters();
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
     [categories],
@@ -97,7 +97,7 @@ export function TransactionList({
         <Card key={group.date}>
           <CardContent className="p-0">
             <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
-              <span>{fmtDate(group.date)}</span>
+              <span>{fmtRelativeDate(group.date)}</span>
               <span>
                 {group.currency
                   ? `${group.balance > 0 ? '+' : ''}${fmtCurrency(group.balance, group.currency)}`

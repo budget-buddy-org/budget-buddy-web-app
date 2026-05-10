@@ -42,7 +42,11 @@ export function SummaryCard({
   const card = (
     <Card
       glass
-      className={cn('h-full', linkSearch && 'cursor-pointer transition-colors hover:bg-muted/30')}
+      className={cn(
+        'h-full',
+        linkSearch &&
+          'cursor-pointer transition-colors hover:bg-muted/30 active:bg-muted/60 active:scale-[0.99] motion-reduce:transition-none',
+      )}
     >
       <CardHeader className="pb-2">
         <SummaryCardDescription>

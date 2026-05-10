@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { ArrowLeftRight, LayoutDashboard, Plus, Tag } from 'lucide-react';
+import { ArrowLeftRight, LayoutDashboard, Plus, Settings, Tag } from 'lucide-react';
 import { useCallback } from 'react';
 import { useFABContext } from '@/hooks/use-fab';
 import { cn } from '@/lib/cn';
@@ -77,14 +77,19 @@ export function MobileNav() {
   );
 }
 
+const SIDEBAR_ITEMS = [
+  ...NAV_ITEMS,
+  { to: '/settings', label: 'Settings', icon: Settings },
+] as const;
+
 export function SidebarNav({ className }: Readonly<{ className?: string }>) {
   return (
     <nav className={cn('flex flex-col gap-1', className)}>
-      {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+      {SIDEBAR_ITEMS.map(({ to, label, icon: Icon }) => (
         <Link
           key={to}
           to={to}
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:bg-accent/80 motion-reduce:transition-none"
           activeProps={{ className: 'bg-accent text-foreground font-medium' }}
           activeOptions={{ exact: to === '/', includeSearch: false }}
         >

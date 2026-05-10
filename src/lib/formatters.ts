@@ -241,3 +241,38 @@ export function formatDate(
 export function todayIso(): string {
   return toLocalIsoDate(new Date());
 }
+
+const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
+
+function getRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
+  let f = relativeTimeFormatters.get(locale);
+  if (!f) {
+    f = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    relativeTimeFormatters.set(locale, f);
+  }
+  return f;
+}
+
+function capitalize(value: string): string {
+  return value.charAt(0).toLocaleUpperCase() + value.slice(1);
+}
+
+/**
+ * Formats an ISO date as "Today", "Yesterday", or "Tomorrow" when applicable
+ * (localized via Intl.RelativeTimeFormat). Otherwise falls back to formatDate.
+ */
+export function formatRelativeOrDate(
+  dateString: string,
+  locale?: string,
+  style: DateFormatStyle = 'medium',
+): string {
+  const resolvedLocale = locale ?? browserLocale();
+  const target = new Date(`${dateString}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+  if (diffDays === -1 || diffDays === 0 || diffDays === 1) {
+    return capitalize(getRelativeTimeFormatter(resolvedLocale).format(diffDays, 'day'));
+  }
+  return formatDate(dateString, resolvedLocale, style);
+}

@@ -171,7 +171,7 @@ export function SettingsPage() {
                         'px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                         prefDateFormat === style
                           ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
                       )}
                     >
                       {style.charAt(0).toUpperCase() + style.slice(1)}
@@ -232,7 +232,7 @@ export function SettingsPage() {
                           'bg-background text-foreground shadow-sm',
                           glassEffect && 'bg-background/80 backdrop-blur-sm',
                         )
-                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
                   )}
                   onClick={() => setTheme(t.value)}
                 >

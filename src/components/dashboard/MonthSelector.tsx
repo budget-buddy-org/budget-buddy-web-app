@@ -160,7 +160,7 @@ export function MonthSelector({
         <button
           type="button"
           aria-label={`Period: ${FULL_MONTH_NAMES[month]} ${year}. Tap to change.`}
-          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition outline-none hover:bg-muted/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
+          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition outline-none hover:bg-muted/40 hover:text-foreground active:bg-muted/70 active:scale-[0.98] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
         >
           {MONTH_NAMES[month]} {year}
           <ChevronDown className="size-3.5 opacity-60" />
@@ -235,7 +235,7 @@ export function MonthSelector({
                           'bg-primary text-primary-foreground shadow-sm',
                           glassEffect && 'bg-primary/90 backdrop-blur-sm',
                         )
-                      : 'text-foreground hover:bg-muted',
+                      : 'text-foreground hover:bg-muted active:bg-muted/80',
                     isToday && !selected && 'ring-1 ring-primary/50',
                   )}
                 >
@@ -246,17 +246,18 @@ export function MonthSelector({
           </div>
 
           {/* Footer: Today shortcut */}
-          <div className="px-4 pt-4 sm:px-3 sm:pt-3">
-            <Button
-              variant="secondary"
-              size="default"
-              onClick={() => select(currentYear, currentMonth)}
-              disabled={isCurrentSelected}
-              className="w-full"
-            >
-              Jump to current month
-            </Button>
-          </div>
+          {!isCurrentSelected && (
+            <div className="px-4 pt-4 sm:px-3 sm:pt-3">
+              <Button
+                variant="secondary"
+                size="default"
+                onClick={() => select(currentYear, currentMonth)}
+                className="w-full"
+              >
+                Jump to current month
+              </Button>
+            </div>
+          )}
         </DialogPrimitives.Content>
       </DialogPrimitives.Portal>
     </DialogPrimitives.Root>

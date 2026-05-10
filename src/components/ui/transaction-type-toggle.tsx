@@ -56,7 +56,7 @@ export function TransactionTypeToggle({
                   'bg-background text-foreground shadow-sm',
                   glassEffect && 'bg-background/80 backdrop-blur-sm',
                 )
-              : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
           )}
         >
           All
@@ -77,7 +77,7 @@ export function TransactionTypeToggle({
                 'bg-background text-foreground shadow-sm',
                 glassEffect && 'bg-background/80 backdrop-blur-sm',
               )
-            : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+            : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
         )}
       >
         <ArrowDownRight className="size-4" />
@@ -98,7 +98,7 @@ export function TransactionTypeToggle({
                 'bg-background text-income shadow-sm',
                 glassEffect && 'bg-background/80 backdrop-blur-sm',
               )
-            : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+            : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
         )}
       >
         <ArrowUpRight className="size-4" />

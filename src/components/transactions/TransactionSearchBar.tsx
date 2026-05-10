@@ -55,16 +55,16 @@ export function TransactionSearchBar({
       <Button
         type="button"
         variant="outline"
-        size="icon"
         onClick={onOpenFilters}
         aria-label="Open filters"
-        className="relative size-10 shrink-0"
+        className="relative size-10 shrink-0 px-0 md:size-auto md:px-4"
       >
         <ListFilter className="size-4" />
+        <span className="hidden md:inline">Filter</span>
         {isFiltered && (
           <span
             aria-hidden="true"
-            className="absolute right-1 top-1 size-2 rounded-pill bg-primary"
+            className="absolute right-1 top-1 size-2 rounded-pill bg-primary md:right-2 md:top-2"
           />
         )}
       </Button>

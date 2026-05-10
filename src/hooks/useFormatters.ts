@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { browserLocale, formatCurrency, formatDate } from '@/lib/formatters';
+import { browserLocale, formatCurrency, formatDate, formatRelativeOrDate } from '@/lib/formatters';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
 export function useFormatters() {
@@ -16,5 +16,10 @@ export function useFormatters() {
     [numberLocale, dateFormat],
   );
 
-  return { fmtCurrency, fmtDate };
+  const fmtRelativeDate = useCallback(
+    (dateString: string) => formatRelativeOrDate(dateString, numberLocale, dateFormat),
+    [numberLocale, dateFormat],
+  );
+
+  return { fmtCurrency, fmtDate, fmtRelativeDate };
 }

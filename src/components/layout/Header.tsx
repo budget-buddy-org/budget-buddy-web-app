@@ -1,11 +1,15 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
+import { useAuth } from 'react-oidc-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { useThemeStore } from '@/stores/theme.store';
 
 export function Header() {
   const glassEffect = useThemeStore((s) => s.glassEffect);
+  const { signoutRedirect } = useAuth();
+  const queryClient = useQueryClient();
 
   return (
     <header
@@ -14,12 +18,15 @@ export function Header() {
         glassEffect ? 'bg-background/80 backdrop-blur' : 'bg-background',
       )}
     >
-      <Link to="/" className="font-semibold tracking-tight hover:opacity-80 transition-opacity">
+      <Link
+        to="/"
+        className="font-semibold tracking-tight hover:opacity-80 active:opacity-60 transition-opacity motion-reduce:transition-none"
+      >
         Budget Buddy
         <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>
       </Link>
       <div className="flex items-center gap-1 sm:gap-2">
-        <Link to="/settings" className="inline-flex">
+        <Link to="/settings" className="inline-flex md:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -30,6 +37,19 @@ export function Header() {
             <Settings className="size-4" />
           </Button>
         </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Sign out"
+          aria-label="Sign out"
+          className="hidden cursor-pointer md:inline-flex"
+          onClick={() => {
+            queryClient.clear();
+            void signoutRedirect();
+          }}
+        >
+          <LogOut className="size-4" />
+        </Button>
       </div>
     </header>
   );

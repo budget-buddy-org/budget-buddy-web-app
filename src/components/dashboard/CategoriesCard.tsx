@@ -97,7 +97,7 @@ export function CategoriesCard({
                           to="/categories"
                           search={{ edit: row.categoryId }}
                           aria-label={`Edit category ${row.name}`}
-                          className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-sm px-1 py-0.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-sm px-1 py-0.5 transition-colors hover:bg-muted/30 active:bg-muted/60 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span
                             className="h-2 w-2 shrink-0 rounded-pill"
@@ -115,7 +115,7 @@ export function CategoriesCard({
                           }}
                           aria-label={`View ${row.name} transactions`}
                           className={cn(
-                            '-mx-1 shrink-0 rounded-sm px-1 py-0.5 text-sm tabular-nums transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            '-mx-1 shrink-0 rounded-sm px-1 py-0.5 text-sm tabular-nums transition-colors hover:bg-muted/30 active:bg-muted/60 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             overBudget ? 'text-expense font-medium' : 'text-muted-foreground',
                           )}
                         >

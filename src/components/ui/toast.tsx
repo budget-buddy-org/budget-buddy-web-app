@@ -71,7 +71,7 @@ function ToastAction({
     <ToastPrimitives.Action
       ref={ref}
       className={cn(
-        'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-transparent px-2 text-sm font-medium text-primary transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-transparent px-2 text-sm font-medium text-primary transition-colors hover:bg-muted active:bg-muted/80 active:scale-[0.97] motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
       {...props}
@@ -90,7 +90,7 @@ function ToastClose({
     <ToastPrimitives.Close
       ref={ref}
       className={cn(
-        'absolute right-2 top-2 rounded-pill p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring',
+        'absolute right-2 top-2 rounded-pill p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:bg-muted/80 active:scale-90 motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-ring',
         className,
       )}
       toast-close=""

@@ -191,7 +191,7 @@ export function TransactionFilters({
                     'bg-background text-foreground shadow-sm',
                     glassEffect && 'bg-background/80 backdrop-blur-sm',
                   )
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
             )}
           >
             <CalendarArrowDown className="size-4" />
@@ -209,7 +209,7 @@ export function TransactionFilters({
                     'bg-background text-foreground shadow-sm',
                     glassEffect && 'bg-background/80 backdrop-blur-sm',
                   )
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
             )}
           >
             <CalendarArrowUp className="size-4" />
