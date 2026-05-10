@@ -1,3 +1,9 @@
+## [4.12.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.0...v4.12.1) (2026-05-10)
+
+### Bug Fixes
+
+* improve items interactive on mobile ([cf7fe01](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/cf7fe0109522963ec52859178418cb8cda800191))
+
 ## [4.12.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.11.3...v4.12.0) (2026-05-09)
 
 ### Features
