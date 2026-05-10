@@ -90,7 +90,7 @@ Static `dist/` is served from Cloudflare's edge. Runtime configuration is served
 
 - Required CF Pages env vars (set per Production / Preview environment in the dashboard): `VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, `VITE_OIDC_SCOPES`, `VITE_OIDC_USER_MANAGEMENT_URL`.
 - HTTP headers and SPA fallback come from [public/_headers](./public/_headers) and [public/_redirects](./public/_redirects).
-- Test the Functions setup locally with `pnpm dlx wrangler pages dev ./dist` after `pnpm build`.
+- The Pages Function is exercised on CF preview deployments; locally, `loadConfig()` falls back to `import.meta.env`, so the Function isn't run during `vite dev` / `vite preview`.
 
 ### Self-hosted (Docker on Raspberry Pi)
 
