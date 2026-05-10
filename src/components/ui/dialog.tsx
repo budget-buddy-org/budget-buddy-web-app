@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type * as React from 'react';
 
 import { cn } from '@/lib/cn';
+import { useThemeStore } from '@/stores/theme.store';
 
 const Dialog = DialogPrimitives.Root;
 const DialogPortal = DialogPrimitives.Portal;
@@ -35,6 +36,8 @@ function DialogContent({
   hideClose?: boolean;
   ref?: React.Ref<React.ComponentRef<typeof DialogPrimitives.Content>>;
 }) {
+  const showDescriptions = useThemeStore((s) => s.showDescriptions);
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -51,6 +54,7 @@ function DialogContent({
           className,
         )}
         {...props}
+        {...(!showDescriptions && { 'aria-describedby': undefined })}
       >
         {children}
 
@@ -106,6 +110,10 @@ function DialogDescription({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Description> & {
   ref?: React.Ref<React.ComponentRef<typeof DialogPrimitives.Description>>;
 }) {
+  const showDescriptions = useThemeStore((s) => s.showDescriptions);
+
+  if (!showDescriptions) return null;
+
   return (
     <DialogPrimitives.Description
       ref={ref}

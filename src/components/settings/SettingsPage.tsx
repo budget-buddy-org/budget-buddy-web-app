@@ -2,10 +2,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Download,
   Globe,
+  Layout,
   LogOut,
   Minus,
   Moon,
-  Navigation,
   Palette,
   Plus,
   RefreshCw,
@@ -62,6 +62,8 @@ export function SettingsPage() {
   const setShowNavLabels = useThemeStore((s) => s.setShowNavLabels);
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const setGlassEffect = useThemeStore((s) => s.setGlassEffect);
+  const showDescriptions = useThemeStore((s) => s.showDescriptions);
+  const setShowDescriptions = useThemeStore((s) => s.setShowDescriptions);
 
   const prefCurrency = useUserPreferencesStore((s) => s.currency);
   const prefDateFormat = useUserPreferencesStore((s) => s.dateFormat);
@@ -306,7 +308,7 @@ export function SettingsPage() {
         </section>
 
         <section className="space-y-3">
-          <SectionHeader title="Navigation" icon={Navigation} />
+          <SectionHeader title="Interface" icon={Layout} />
           <Card className="p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -316,6 +318,15 @@ export function SettingsPage() {
                 </p>
               </div>
               <Switch checked={showNavLabels} onCheckedChange={setShowNavLabels} />
+            </div>
+            <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t">
+              <div>
+                <p className="text-sm font-medium">Show descriptions</p>
+                <p className="text-xs text-muted-foreground">
+                  Display subtitles in page headers and dialogs.
+                </p>
+              </div>
+              <Switch checked={showDescriptions} onCheckedChange={setShowDescriptions} />
             </div>
             <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t">
               <div>

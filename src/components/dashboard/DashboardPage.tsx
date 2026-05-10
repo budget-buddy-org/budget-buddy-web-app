@@ -105,6 +105,7 @@ export function DashboardPage() {
     <PageContainer>
       <PageHeader
         title="Dashboard"
+        isSubtitleEssential
         subtitle={
           <MonthSelector
             year={selectedYear}

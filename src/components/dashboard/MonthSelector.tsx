@@ -180,6 +180,9 @@ export function MonthSelector({
           )}
         >
           <DialogPrimitives.Title className="sr-only">Select month</DialogPrimitives.Title>
+          <DialogPrimitives.Description className="sr-only">
+            Choose a month and year to view your budget data.
+          </DialogPrimitives.Description>
 
           {/* Drag handle (mobile only) */}
           <div className="flex justify-center pt-2 pb-1 sm:hidden">
