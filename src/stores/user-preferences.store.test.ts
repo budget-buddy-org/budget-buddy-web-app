@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useUserPreferencesStore } from './user-preferences.store';
 
-const DEFAULTS = { currency: null, dateFormat: 'medium' as const, numberLocale: null };
+const DEFAULTS = {
+  currency: null,
+  dateFormat: 'medium' as const,
+  numberLocale: null,
+  isBalanceHidden: false,
+};
 
 describe('useUserPreferencesStore', () => {
   beforeEach(() => {
@@ -19,6 +24,10 @@ describe('useUserPreferencesStore', () => {
 
     it('numberLocale is null (auto — derive from browser locale)', () => {
       expect(useUserPreferencesStore.getState().numberLocale).toBeNull();
+    });
+
+    it('isBalanceHidden is false', () => {
+      expect(useUserPreferencesStore.getState().isBalanceHidden).toBe(false);
     });
   });
 
@@ -66,14 +75,27 @@ describe('useUserPreferencesStore', () => {
     });
   });
 
+  describe('toggleBalanceHidden', () => {
+    it('toggles the balance hidden state', () => {
+      expect(useUserPreferencesStore.getState().isBalanceHidden).toBe(false);
+      useUserPreferencesStore.getState().toggleBalanceHidden();
+      expect(useUserPreferencesStore.getState().isBalanceHidden).toBe(true);
+      useUserPreferencesStore.getState().toggleBalanceHidden();
+      expect(useUserPreferencesStore.getState().isBalanceHidden).toBe(false);
+    });
+  });
+
   it('stores each preference independently', () => {
     useUserPreferencesStore.getState().setCurrency('JPY');
     useUserPreferencesStore.getState().setDateFormat('short');
     useUserPreferencesStore.getState().setNumberLocale('ja-JP');
+    useUserPreferencesStore.getState().toggleBalanceHidden();
 
-    const { currency, dateFormat, numberLocale } = useUserPreferencesStore.getState();
+    const { currency, dateFormat, numberLocale, isBalanceHidden } =
+      useUserPreferencesStore.getState();
     expect(currency).toBe('JPY');
     expect(dateFormat).toBe('short');
     expect(numberLocale).toBe('ja-JP');
+    expect(isBalanceHidden).toBe(true);
   });
 });
