@@ -71,7 +71,7 @@ export function CategoriesCard({
     <section className="space-y-3">
       <SectionHeader title="Expenses by category" icon={PieChart} />
       <Card>
-        <CardContent className="space-y-3 pt-6">
+        <CardContent className="space-y-3 pt-4">
           {categoryRows.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
               No expenses in {periodLabel}
@@ -220,7 +220,7 @@ export function CategoriesCardSkeleton() {
     <section className="space-y-3">
       <SectionHeader title="Expenses by category" icon={PieChart} />
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-4 pt-4">
           {['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'].map((key) => (
             <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between">
