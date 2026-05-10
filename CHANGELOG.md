@@ -1,3 +1,9 @@
+## [4.12.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.1...v4.12.2) (2026-05-10)
+
+### Bug Fixes
+
+* **pnpm:** remove wrangler ([#142](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/142)) ([7321c37](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7321c37c18f906b7d12f4e2ec616787d39c3a24c))
+
 ## [4.12.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.0...v4.12.1) (2026-05-10)
 
 ### Bug Fixes
