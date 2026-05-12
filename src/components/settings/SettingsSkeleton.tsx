@@ -1,44 +1,36 @@
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { PageContainer } from '@/components/ui/page-container';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function SettingsSkeleton() {
   return (
-    <div className="space-y-6">
-      <PageHeader title="Settings" subtitle="Manage your account and app preferences." />
+    <PageContainer>
+      <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
 
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-
-          <div className="pt-4 border-t space-y-4">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <Skeleton className="h-6 w-24" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-full" />
-        </CardContent>
-      </Card>
-    </div>
+      <div className="grid gap-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <section key={i} className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-4 rounded-pill" />
+              <Skeleton className="h-5 w-32" />
+            </div>
+            <Card className="p-4 space-y-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-64" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+              {i % 2 === 0 && (
+                <div className="pt-4 border-t space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+              )}
+            </Card>
+          </section>
+        ))}
+      </div>
+    </PageContainer>
   );
 }

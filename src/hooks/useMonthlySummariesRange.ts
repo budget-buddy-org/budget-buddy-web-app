@@ -11,14 +11,14 @@ export interface MonthlySummariesRangeFilters {
   currency?: string;
 }
 
-const KEYS = {
+export const MONTHLY_TREND_KEYS = {
   trend: (from: string, to: string, currency: string) =>
     ['transactions-summary', 'trend', from, to, currency] as const,
 };
 
-const trendQueryOptions = (from: string, to: string, currency: string) =>
+export const trendQueryOptions = (from: string, to: string, currency: string) =>
   queryOptions({
-    queryKey: KEYS.trend(from, to, currency),
+    queryKey: MONTHLY_TREND_KEYS.trend(from, to, currency),
     queryFn: async () => {
       const { data, error } = await getTransactionsSummaryTrend({
         query: { from, to, currency },

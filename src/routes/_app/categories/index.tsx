@@ -12,6 +12,7 @@ export const Route = createFileRoute('/_app/categories/')({
   validateSearch: (search: Record<string, unknown>): CategoriesSearch => ({
     edit: typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined,
   }),
+  loaderDeps: () => ({}),
   loader: () => {
     return queryClient.ensureQueryData(categoriesQueryOptions(CATEGORIES_PAGE_SIZE, 0));
   },

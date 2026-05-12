@@ -17,6 +17,7 @@ import {
 import { ListSkeleton } from '@/components/ui/list-skeleton';
 import { PageContainer } from '@/components/ui/page-container';
 import { Pagination } from '@/components/ui/pagination';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -47,7 +48,7 @@ export function CategoriesPage() {
   const search = useSearch({ from: '/_app/categories/' });
   const navigate = useNavigate();
   const editId = search.edit ?? '';
-  const { data: editTarget } = useCategory(editId);
+  const { data: editTarget, isLoading: isEditLoading } = useCategory(editId);
 
   const [page, setPage] = useState(0);
   const { data, isLoading } = useCategories(CATEGORIES_PAGE_SIZE, page);
@@ -196,7 +197,7 @@ export function CategoriesPage() {
       </Dialog>
 
       <Dialog
-        open={!!editTarget}
+        open={!!editId}
         onOpenChange={(open) => {
           if (!open) closeEdit();
         }}
@@ -206,14 +207,34 @@ export function CategoriesPage() {
             <DialogTitle>Edit Category</DialogTitle>
             <DialogDescription>Modify the name and budget of your category</DialogDescription>
           </DialogHeader>
-          {editTarget && (
-            <EditCategoryDialogBody
-              key={editTarget.id}
-              category={editTarget}
-              onClose={closeEdit}
-              onDelete={() => handleDeleteCategory(editTarget)}
-              isDeleting={deleteCategory.isPending}
-            />
+          {isEditLoading ? (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="size-10 rounded-md shrink-0" />
+                <div className="flex-1 flex gap-2">
+                  <Skeleton className="h-10 flex-1 rounded-pill" />
+                  <Skeleton className="h-10 flex-1 rounded-pill" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            editTarget && (
+              <EditCategoryDialogBody
+                key={editTarget.id}
+                category={editTarget}
+                onClose={closeEdit}
+                onDelete={() => handleDeleteCategory(editTarget)}
+                isDeleting={deleteCategory.isPending}
+              />
+            )
           )}
         </DialogContent>
       </Dialog>
