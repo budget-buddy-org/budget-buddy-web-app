@@ -1,3 +1,9 @@
+## [4.13.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.13.0...v4.13.1) (2026-05-12)
+
+### Bug Fixes
+
+* align skeleton behaviour ([#144](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/144)) ([abf12fe](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/abf12fed5a055d8dd06c0946f327d9fdc57f9b60))
+
 ## [4.13.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.12.2...v4.13.0) (2026-05-10)
 
 ### Features
