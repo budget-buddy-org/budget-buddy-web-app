@@ -1,10 +1,11 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { PageContainer } from '@/components/ui/page-container';
 
 export function CategoriesSkeleton() {
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader
         title="Categories"
         subtitle="Manage categories to organize your transactions"
@@ -14,22 +15,11 @@ export function CategoriesSkeleton() {
         }}
       />
 
-      <div className="relative">
-        <Skeleton className="h-10 w-full rounded-md" />
-      </div>
-
       <Card>
         <CardContent className="p-0">
-          <div className="divide-y">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-9 w-9 rounded-md" />
-              </div>
-            ))}
-          </div>
+          <ListSkeleton count={6} />
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

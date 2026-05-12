@@ -37,20 +37,29 @@ export const Route = createFileRoute('/_app/transactions/')({
     amountMax: validAmount(search.amountMax),
     edit: typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined,
   }),
-  loader: ({ location }) => {
-    const search = location.search as TransactionSearch;
+  loaderDeps: ({ search }) => ({
+    categoryId: search.categoryId,
+    start: search.start,
+    end: search.end,
+    sort: search.sort,
+    type: search.type,
+    query: search.query,
+    amountMin: search.amountMin,
+    amountMax: search.amountMax,
+  }),
+  loader: ({ deps }) => {
     return Promise.all([
       queryClient.ensureInfiniteQueryData(
         infiniteTransactionsQueryOptions({
           size: TRANSACTIONS_PAGE_SIZE,
-          sort: search.sort ?? 'desc',
-          categoryId: search.categoryId || undefined,
-          start: search.start || undefined,
-          end: search.end || undefined,
-          type: search.type || undefined,
-          query: search.query || undefined,
-          amountMin: search.amountMin,
-          amountMax: search.amountMax,
+          sort: deps.sort ?? 'desc',
+          categoryId: deps.categoryId || undefined,
+          start: deps.start || undefined,
+          end: deps.end || undefined,
+          type: deps.type || undefined,
+          query: deps.query || undefined,
+          amountMin: deps.amountMin,
+          amountMax: deps.amountMax,
         }),
       ),
       queryClient.ensureQueryData(categoriesQueryOptions()),
