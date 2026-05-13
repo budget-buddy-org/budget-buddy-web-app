@@ -34,7 +34,7 @@ export function TransactionTypeToggle({
     <div
       role="tablist"
       className={cn(
-        'flex h-10 p-1 bg-muted rounded-pill transition-colors',
+        'flex p-1 bg-muted rounded-pill transition-colors',
         glassEffect && 'bg-muted/50 backdrop-blur-md',
         error && 'border border-destructive',
         className,
@@ -50,7 +50,7 @@ export function TransactionTypeToggle({
             (onChange as NullableProps['onChange'])('');
           }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+            'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
             value === ''
               ? cn(
                   'bg-background text-foreground shadow-sm',
@@ -71,7 +71,7 @@ export function TransactionTypeToggle({
           onChange('EXPENSE');
         }}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+          'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'EXPENSE'
             ? cn(
                 'bg-background text-foreground shadow-sm',
@@ -92,7 +92,7 @@ export function TransactionTypeToggle({
           onChange('INCOME');
         }}
         className={cn(
-          'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+          'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           value === 'INCOME'
             ? cn(
                 'bg-background text-income shadow-sm',

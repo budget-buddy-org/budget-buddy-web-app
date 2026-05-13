@@ -1,4 +1,4 @@
-import { CalendarArrowDown, CalendarArrowUp, RotateCcw } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
@@ -78,6 +78,55 @@ export function TransactionFilters({
 
   return (
     <div className="space-y-4 pt-2">
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium">Sort</legend>
+        <div
+          role="tablist"
+          aria-label="Sort"
+          className={cn(
+            'flex p-1 bg-muted rounded-pill transition-colors',
+            glassEffect && 'bg-muted/50 backdrop-blur-md',
+          )}
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={draft.sort === 'desc'}
+            onClick={() => setDraft({ ...draft, sort: 'desc' })}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+              draft.sort === 'desc'
+                ? cn(
+                    'bg-background text-foreground shadow-sm',
+                    glassEffect && 'bg-background/80 backdrop-blur-sm',
+                  )
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
+            )}
+          >
+            <CalendarArrowDown className="size-4" />
+            Newest
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={draft.sort === 'asc'}
+            onClick={() => setDraft({ ...draft, sort: 'asc' })}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+              draft.sort === 'asc'
+                ? cn(
+                    'bg-background text-foreground shadow-sm',
+                    glassEffect && 'bg-background/80 backdrop-blur-sm',
+                  )
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
+            )}
+          >
+            <CalendarArrowUp className="size-4" />
+            Oldest
+          </button>
+        </div>
+      </fieldset>
+
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Type</legend>
         <TransactionTypeToggle
@@ -169,68 +218,12 @@ export function TransactionFilters({
         )}
       </fieldset>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Sort</legend>
-        <div
-          role="tablist"
-          aria-label="Sort"
-          className={cn(
-            'flex h-10 p-1 bg-muted rounded-pill transition-colors',
-            glassEffect && 'bg-muted/50 backdrop-blur-md',
-          )}
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={draft.sort === 'desc'}
-            onClick={() => setDraft({ ...draft, sort: 'desc' })}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-              draft.sort === 'desc'
-                ? cn(
-                    'bg-background text-foreground shadow-sm',
-                    glassEffect && 'bg-background/80 backdrop-blur-sm',
-                  )
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
-            )}
-          >
-            <CalendarArrowDown className="size-4" />
-            Newest
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={draft.sort === 'asc'}
-            onClick={() => setDraft({ ...draft, sort: 'asc' })}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-              draft.sort === 'asc'
-                ? cn(
-                    'bg-background text-foreground shadow-sm',
-                    glassEffect && 'bg-background/80 backdrop-blur-sm',
-                  )
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
-            )}
-          >
-            <CalendarArrowUp className="size-4" />
-            Oldest
-          </button>
-        </div>
-      </fieldset>
-
-      <div className="pt-4 flex items-center justify-between gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          disabled={!hasActiveFilters}
-          className="flex-1"
-        >
-          <RotateCcw className="mr-2 size-4" />
-          Reset
-        </Button>
-        <Button onClick={handleApply} className="flex-1" disabled={rangeError}>
+      <div className="pt-4 flex flex-col gap-2">
+        <Button onClick={handleApply} disabled={rangeError}>
           Done
+        </Button>
+        <Button variant="secondary" onClick={handleReset} disabled={!hasActiveFilters}>
+          Reset
         </Button>
       </div>
     </div>

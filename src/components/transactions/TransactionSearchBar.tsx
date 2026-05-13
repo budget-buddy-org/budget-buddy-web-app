@@ -57,7 +57,7 @@ export function TransactionSearchBar({
         variant="outline"
         onClick={onOpenFilters}
         aria-label="Open filters"
-        className="relative size-10 shrink-0 px-0 md:size-auto md:px-4"
+        className="relative size-field shrink-0 px-0 md:h-field md:w-auto md:px-4"
       >
         <ListFilter className="size-4" />
         <span className="hidden md:inline">Filter</span>

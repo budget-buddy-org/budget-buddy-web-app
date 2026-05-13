@@ -1,5 +1,4 @@
 import * as DialogPrimitives from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
 import type * as React from 'react';
 
 import { cn } from '@/lib/cn';
@@ -29,11 +28,9 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
-  hideClose,
   ref,
   ...props
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitives.Content> & {
-  hideClose?: boolean;
   ref?: React.Ref<React.ComponentRef<typeof DialogPrimitives.Content>>;
 }) {
   const showDescriptions = useThemeStore((s) => s.showDescriptions);
@@ -57,13 +54,6 @@ function DialogContent({
         {...(!showDescriptions && { 'aria-describedby': undefined })}
       >
         {children}
-
-        {!hideClose && (
-          <DialogPrimitives.Close className="absolute right-4 top-4 sm:top-4 rounded-pill opacity-70 ring-offset-background transition hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground cursor-pointer active:scale-90 motion-reduce:transition-none">
-            <X className="size-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitives.Close>
-        )}
       </DialogPrimitives.Content>
     </DialogPortal>
   );
