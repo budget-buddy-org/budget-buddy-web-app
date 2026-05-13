@@ -1,3 +1,9 @@
+## [4.14.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.13.1...v4.14.0) (2026-05-13)
+
+### Features
+
+* show clock icon on future-dated transactions ([#149](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/149)) ([7dc032d](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7dc032d2fa4b45b9376b028eadbda9ff130bc774))
+
 ## [4.13.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.13.0...v4.13.1) (2026-05-12)
 
 ### Bug Fixes
