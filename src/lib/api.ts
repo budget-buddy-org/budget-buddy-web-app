@@ -10,6 +10,10 @@ import { getUserManager } from '@/lib/oidc';
 // killed in a backgrounded tab.
 const REFRESH_THRESHOLD_SECONDS = 10;
 
+// Match the SDK's automaticSilentRenew window so both paths share pendingSilentRenew
+// and only one refresh-token redemption occurs per expiry cycle.
+const VISIBILITY_REFRESH_THRESHOLD_SECONDS = 60;
+
 // Dedupe concurrent refreshes. Multiple in-flight API requests must share a
 // single signinSilent() call; otherwise we redeem the same refresh token N
 // times in parallel and get rotated out.
@@ -54,8 +58,10 @@ client.interceptors.request.use(async (request) => {
 
 // Hard 401: the SDK's automaticSilentRenew timer may have been killed in a
 // background tab, so try a silent refresh first before redirecting the user.
-// If the silent refresh succeeds, TanStack Query's single automatic retry will
-// use the fresh token. Only redirect to the IdP when the refresh also fails.
+// If the silent refresh succeeds, the current request still fails (the API
+// client returns a 401 response tuple rather than throwing, so TanStack Query
+// does not auto-retry it), but all subsequent requests will use the fresh token.
+// Only redirect to the IdP when the refresh also fails.
 client.interceptors.response.use(async (response, request) => {
   if (response.status === 401) {
     const url = request.url ?? '';
@@ -86,15 +92,16 @@ client.interceptors.response.use(async (response, request) => {
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-    void getUserManager()
-      .getUser()
+    void Promise.resolve()
+      .then(() => getUserManager().getUser())
       .then((user) => {
         if (!user) return;
         const now = Date.now() / 1000;
-        if (user.expires_at === undefined || user.expires_at - now < 60) {
+        if (user.expires_at === undefined || user.expires_at - now < VISIBILITY_REFRESH_THRESHOLD_SECONDS) {
           void refreshSilently();
         }
-      });
+      })
+      .catch(() => {}); // getUserManager() throws before initUserManager() — skip
   });
 }
 
