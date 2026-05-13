@@ -12,8 +12,7 @@ function DatePicker({ className, ref, error, ...props }: DatePickerProps) {
     <Input
       type="date"
       className={cn(
-        'block h-10 w-full appearance-none',
-        'bg-background text-[max(var(--font-size-base),16px)] px-3 py-2',
+        'block appearance-none',
         '[&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer',
         '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-clear-button]:appearance-none',
         className,

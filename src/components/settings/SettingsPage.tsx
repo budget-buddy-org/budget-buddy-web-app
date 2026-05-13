@@ -89,14 +89,9 @@ export function SettingsPage() {
               </p>
               <p className="text-xs text-muted-foreground">{user?.profile.email}</p>
             </div>
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:flex-wrap">
               {profileUrl && (
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 cursor-pointer w-full sm:w-auto"
-                >
+                <Button asChild variant="outline" className="w-full cursor-pointer sm:w-auto">
                   <a href={profileUrl} target="_blank" rel="noopener noreferrer">
                     <User className="size-4" />
                     Manage Profile
@@ -105,8 +100,7 @@ export function SettingsPage() {
               )}
               <Button
                 variant="outline"
-                size="sm"
-                className="gap-2 cursor-pointer w-full sm:w-auto text-destructive hover:text-destructive"
+                className="w-full cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
                 onClick={() => {
                   queryClient.clear();
                   void signoutRedirect();
@@ -160,7 +154,7 @@ export function SettingsPage() {
                 <div
                   role="tablist"
                   aria-label="Date format"
-                  className="flex h-9 shrink-0 p-1 bg-muted rounded-pill"
+                  className="flex shrink-0 p-1 bg-muted rounded-pill"
                 >
                   {(['short', 'medium', 'long'] as DateFormatStyle[]).map((style) => (
                     <button
@@ -170,7 +164,7 @@ export function SettingsPage() {
                       aria-selected={prefDateFormat === style}
                       onClick={() => setPrefDateFormat(style)}
                       className={cn(
-                        'px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                        'px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                         prefDateFormat === style
                           ? 'bg-background text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
@@ -211,7 +205,7 @@ export function SettingsPage() {
               role="tablist"
               aria-label="Theme"
               className={cn(
-                'flex h-10 p-1 bg-muted rounded-pill transition-colors',
+                'flex p-1 bg-muted rounded-pill transition-colors',
                 glassEffect && 'bg-muted/50 backdrop-blur-md',
               )}
             >
@@ -228,7 +222,7 @@ export function SettingsPage() {
                   role="tab"
                   aria-selected={theme === t.value}
                   className={cn(
-                    'flex-1 flex items-center justify-center gap-2 px-3 rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                    'flex-1 flex items-center justify-center gap-2 px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                     theme === t.value
                       ? cn(
                           'bg-background text-foreground shadow-sm',
@@ -350,8 +344,7 @@ export function SettingsPage() {
               </div>
               <Button
                 variant="outline"
-                size="sm"
-                className="gap-2 cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => window.location.reload()}
               >
                 <RefreshCw className="size-4" />

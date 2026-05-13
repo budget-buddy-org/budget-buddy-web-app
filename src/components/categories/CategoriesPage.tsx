@@ -211,18 +211,16 @@ export function CategoriesPage() {
             <div className="space-y-6 py-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-field w-full" />
               </div>
               <div className="space-y-2">
                 <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-field w-full" />
               </div>
-              <div className="flex gap-2 pt-2">
-                <Skeleton className="size-10 rounded-md shrink-0" />
-                <div className="flex-1 flex gap-2">
-                  <Skeleton className="h-10 flex-1 rounded-pill" />
-                  <Skeleton className="h-10 flex-1 rounded-pill" />
-                </div>
+              <div className="flex flex-col gap-2 pt-2">
+                <Skeleton className="h-field w-full rounded-pill" />
+                <Skeleton className="h-field w-full rounded-pill" />
+                <Skeleton className="h-field w-full rounded-pill" />
               </div>
             </div>
           ) : (

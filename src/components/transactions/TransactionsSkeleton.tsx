@@ -17,8 +17,8 @@ export function TransactionsSkeleton() {
 
       {/* Search bar placeholder */}
       <div className="mb-6 flex gap-2">
-        <Skeleton className="h-10 flex-1 rounded-pill" />
-        <Skeleton className="h-10 w-10 rounded-pill" />
+        <Skeleton className="h-field flex-1 rounded-pill" />
+        <Skeleton className="size-field rounded-pill" />
       </div>
 
       <div className="space-y-4">

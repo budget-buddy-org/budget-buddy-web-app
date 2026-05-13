@@ -44,6 +44,13 @@
   --radius-lg: 1rem;      /* 16px — cards, dialogs, sheets, toasts */
   --radius-pill: 9999px;  /* primary buttons, FAB, search, mobile nav, segmented controls */
 
+  /* Control sizing — single source of truth for interactive element padding.
+     py-control        → inputs, selects, buttons (full-height controls)
+     py-control-inner  → tab buttons inside segmented controls (slightly less, inside p-1 container) */
+  --spacing-control: 0.75rem;
+  --spacing-control-inner: 0.625rem;
+  --leading-control: 1.5;
+
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 
   /* Typography scale — bumped from Tailwind defaults for readability.
@@ -182,6 +189,18 @@ textarea {
     from { opacity: 1; }
     to { opacity: 0; }
   }
+}
+
+/* Fixed height for all interactive form fields (input, select, date-picker).
+   Using `height` (not min-height) guarantees identical rendering across
+   <input>, <input type="date">, and <select> regardless of browser UA styles. */
+@utility h-field {
+  height: calc(var(--spacing-control) * 2 + var(--font-size-base) * var(--leading-control));
+}
+
+@utility size-field {
+  height: calc(var(--spacing-control) * 2 + var(--font-size-base) * var(--leading-control));
+  width: calc(var(--spacing-control) * 2 + var(--font-size-base) * var(--leading-control));
 }
 
 @utility transition-spring {

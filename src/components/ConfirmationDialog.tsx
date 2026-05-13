@@ -1,4 +1,3 @@
-import { Check, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -46,30 +45,23 @@ export function ConfirmationDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-row gap-2 pt-2 sm:justify-end">
+        <DialogFooter className="gap-2 pt-2">
           <Button
             type="button"
-            variant="outline"
-            className="flex-1 sm:flex-none sm:min-w-[100px]"
+            variant="secondary"
+            className="w-full sm:w-auto sm:min-w-[100px]"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            <X className="size-4 mr-2" />
             {cancelText}
           </Button>
           <Button
             type="button"
             variant={variant}
-            className="flex-1 sm:flex-none sm:min-w-[100px]"
+            className="w-full sm:w-auto sm:min-w-[100px]"
             onClick={handleConfirm}
             loading={isLoading}
           >
-            {!isLoading &&
-              (variant === 'destructive' ? (
-                <Trash2 className="size-4 mr-2" />
-              ) : (
-                <Check className="size-4 mr-2" />
-              ))}
             {confirmText}
           </Button>
         </DialogFooter>

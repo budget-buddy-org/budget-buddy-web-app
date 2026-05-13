@@ -19,12 +19,12 @@ export function SettingsSkeleton() {
               <div className="space-y-2">
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-3 w-64" />
-                <Skeleton className="h-10 w-full rounded-md" />
+                <Skeleton className="h-field w-full rounded-md" />
               </div>
               {i % 2 === 0 && (
                 <div className="pt-4 border-t space-y-2">
                   <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-10 w-full rounded-md" />
+                  <Skeleton className="h-field w-full rounded-md" />
                 </div>
               )}
             </Card>
