@@ -1,3 +1,9 @@
+## [4.15.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.14.0...v4.15.0) (2026-05-13)
+
+### Features
+
+* add pulse animation to sparkline end dot ([#150](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/150)) ([872fa44](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/872fa44e128e4e5ff0ba1fa7e851383c7cf3e4f7))
+
 ## [4.14.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.13.1...v4.14.0) (2026-05-13)
 
 ### Features
