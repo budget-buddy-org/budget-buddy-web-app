@@ -97,7 +97,10 @@ if (typeof document !== 'undefined') {
       .then((user) => {
         if (!user) return;
         const now = Date.now() / 1000;
-        if (user.expires_at === undefined || user.expires_at - now < VISIBILITY_REFRESH_THRESHOLD_SECONDS) {
+        if (
+          user.expires_at === undefined ||
+          user.expires_at - now < VISIBILITY_REFRESH_THRESHOLD_SECONDS
+        ) {
           void refreshSilently();
         }
       })
