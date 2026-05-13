@@ -48,7 +48,12 @@ export function RecentTransactionsCard({
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{t.description ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground">{fmtDate(t.date)}</p>
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {t.date > new Date().toISOString().slice(0, 10) && (
+                        <Clock className="size-3 shrink-0" aria-label="Future-dated transaction" />
+                      )}
+                      {fmtDate(t.date)}
+                    </p>
                   </div>
                   <TransactionAmount amount={t.amount} currency={t.currency} type={t.type} />
                 </ListItem>
