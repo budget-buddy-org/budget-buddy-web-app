@@ -10,6 +10,10 @@ import { getUserManager } from '@/lib/oidc';
 // killed in a backgrounded tab.
 const REFRESH_THRESHOLD_SECONDS = 10;
 
+// Match the SDK's automaticSilentRenew window so both paths share pendingSilentRenew
+// and only one refresh-token redemption occurs per expiry cycle.
+const VISIBILITY_REFRESH_THRESHOLD_SECONDS = 60;
+
 // Dedupe concurrent refreshes. Multiple in-flight API requests must share a
 // single signinSilent() call; otherwise we redeem the same refresh token N
 // times in parallel and get rotated out.
@@ -52,19 +56,56 @@ client.interceptors.request.use(async (request) => {
   return request;
 });
 
-// Hard 401: the OIDC SDK has already attempted a silent refresh internally.
-// Redirect to the IdP so the user can re-authenticate.
+// Hard 401: the SDK's automaticSilentRenew timer may have been killed in a
+// background tab, so try a silent refresh first before redirecting the user.
+// If the silent refresh succeeds, the current request still fails (the API
+// client returns a 401 response tuple rather than throwing, so TanStack Query
+// does not auto-retry it), but all subsequent requests will use the fresh token.
+// Only redirect to the IdP when the refresh also fails.
 client.interceptors.response.use(async (response, request) => {
   if (response.status === 401) {
     const url = request.url ?? '';
     // Exclude all /auth/* paths to avoid redirect loops on the callback route.
     if (!url.includes('/auth/')) {
-      await getUserManager().signinRedirect({
-        url_state: window.location.pathname + window.location.search,
-      });
+      const refreshed = await refreshSilently();
+      if (!refreshed) {
+        await getUserManager().signinRedirect({
+          url_state: window.location.pathname + window.location.search,
+        });
+      }
     }
   }
   return response;
 });
+
+// When a background tab is re-focused, the SDK's automaticSilentRenew timer may
+// have been throttled by the browser, leaving an expired token in storage. Both
+// the SDK's delayed timer and the first API request's getAuthToken() safety net
+// then call signinSilent() concurrently — redeeming the same refresh token twice.
+// IdPs with refresh-token rotation treat duplicate redemptions as token theft and
+// invalidate the entire session.
+//
+// A visibilitychange listener proactively refreshes within the same 60-second
+// window the SDK targets, before any API calls fire. Because it goes through
+// refreshSilently(), it shares pendingSilentRenew with both getAuthToken() and the
+// SDK's delayed timer, ensuring only one token redemption ever occurs.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    void Promise.resolve()
+      .then(() => getUserManager().getUser())
+      .then((user) => {
+        if (!user) return;
+        const now = Date.now() / 1000;
+        if (
+          user.expires_at === undefined ||
+          user.expires_at - now < VISIBILITY_REFRESH_THRESHOLD_SECONDS
+        ) {
+          void refreshSilently();
+        }
+      })
+      .catch(() => {}); // getUserManager() throws before initUserManager() — skip
+  });
+}
 
 export { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen';
