@@ -156,12 +156,25 @@ describe('response interceptor', () => {
     vi.clearAllMocks();
   });
 
-  it('triggers signinRedirect on 401', async () => {
+  it('tries silent refresh before redirecting on 401', async () => {
+    mockUserManager.signinSilent.mockRejectedValue(new Error('session expired'));
     const res = makeResponse(401);
 
     await responseInterceptor?.(res, makeRequest());
 
+    expect(mockUserManager.signinSilent).toHaveBeenCalled();
     expect(mockUserManager.signinRedirect).toHaveBeenCalled();
+  });
+
+  it('does not redirect on 401 when silent refresh succeeds', async () => {
+    mockUserManager.signinSilent.mockResolvedValue({ access_token: 'new-token' });
+    const res = makeResponse(401);
+
+    const result = await responseInterceptor?.(res, makeRequest());
+
+    expect(mockUserManager.signinSilent).toHaveBeenCalled();
+    expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();
+    expect(result?.status).toBe(401);
   });
 
   it('passes through non-401 responses unchanged', async () => {
@@ -178,6 +191,50 @@ describe('response interceptor', () => {
 
     await responseInterceptor?.(res, makeRequest('http://localhost/auth/callback'));
 
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
     expect(mockUserManager.signinRedirect).not.toHaveBeenCalled();
+  });
+});
+
+describe('visibilitychange handler', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('calls signinSilent when tab becomes visible with an expiring token', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'old-token',
+      expires_at: Date.now() / 1000 + 30, // within the 60s threshold
+    });
+    mockUserManager.signinSilent.mockResolvedValue({ access_token: 'new-token' });
+
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    await vi.waitFor(() => expect(mockUserManager.signinSilent).toHaveBeenCalled());
+  });
+
+  it('does not call signinSilent when token has plenty of time remaining', async () => {
+    mockUserManager.getUser.mockResolvedValue({
+      access_token: 'fresh-token',
+      expires_at: Date.now() / 1000 + 3600,
+    });
+
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
+  });
+
+  it('does not act when the tab is hidden', async () => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(mockUserManager.getUser).not.toHaveBeenCalled();
+    expect(mockUserManager.signinSilent).not.toHaveBeenCalled();
   });
 });

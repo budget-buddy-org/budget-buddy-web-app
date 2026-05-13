@@ -42,6 +42,10 @@ loadConfig()
       config.VITE_OIDC_SCOPES,
     );
 
+    userManager.events.addSilentRenewError((error) => {
+      logError(error, { source: 'SilentRenewError' });
+    });
+
     createRoot(rootEl).render(
       <StrictMode>
         <AuthProvider userManager={userManager} onSigninCallback={onOidcSigninCallback}>
