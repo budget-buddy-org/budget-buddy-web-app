@@ -53,12 +53,19 @@ export function Sparkline({
   const area = `${path} L${points[points.length - 1][0].toFixed(2)} ${HEIGHT - PADDING} L${points[0][0].toFixed(2)} ${HEIGHT - PADDING} Z`;
   const stroke = VARIANT_STROKE[variant];
   const last = points[points.length - 1];
+  const dotLeft = `${(last[0] / WIDTH) * 100}%`;
+  const dotTop = `${(last[1] / HEIGHT) * 100}%`;
 
   // The SVG uses preserveAspectRatio="none" so the path stretches to fill the
   // container width. An SVG <circle> would distort into an ellipse under that
   // stretch (the path strokes escape via vectorEffect="non-scaling-stroke",
   // which doesn't apply to <circle>). Render the end dot as an HTML element
   // positioned in percentages so it stays a true circle at any width.
+  //
+  // The dot anchor is a zero-size element placed at the chart's last point.
+  // Both the pulse ring and the static dot center themselves on that anchor
+  // independently, so the pulse animation (which uses the standalone CSS
+  // `scale` property) cannot clobber the -translate-x/y positioning.
   return (
     <div className={cn('relative h-6 w-full', className)}>
       <svg
@@ -81,13 +88,18 @@ export function Sparkline({
       </svg>
       <span
         aria-hidden
-        className="pointer-events-none absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          left: `${(last[0] / WIDTH) * 100}%`,
-          top: `${(last[1] / HEIGHT) * 100}%`,
-          backgroundColor: stroke,
-        }}
-      />
+        className="pointer-events-none absolute"
+        style={{ left: dotLeft, top: dotTop }}
+      >
+        <span
+          className="absolute -translate-x-1/2 -translate-y-1/2 size-3 rounded-full motion-safe:animate-dot-pulse"
+          style={{ backgroundColor: stroke }}
+        />
+        <span
+          className="absolute -translate-x-1/2 -translate-y-1/2 size-1.5 rounded-full"
+          style={{ backgroundColor: stroke }}
+        />
+      </span>
     </div>
   );
 }
