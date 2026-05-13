@@ -1,3 +1,9 @@
+## [4.15.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.15.0...v4.15.1) (2026-05-13)
+
+### Bug Fixes
+
+* **auth:** prevent concurrent silent-renew race on tab re-focus ([#151](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/151)) ([aa23661](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/aa236616c9e0daadcde5dc478b14289ce8116466))
+
 ## [4.15.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.14.0...v4.15.0) (2026-05-13)
 
 ### Features
