@@ -1,3 +1,9 @@
+## [4.16.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.15.1...v4.16.0) (2026-05-13)
+
+### Features
+
+* enhance UI for buttons and inputs ([#152](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/152)) ([6715f25](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/6715f250f3b84b4971ef4822f29946783ecd557c))
+
 ## [4.15.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.15.0...v4.15.1) (2026-05-13)
 
 ### Bug Fixes
