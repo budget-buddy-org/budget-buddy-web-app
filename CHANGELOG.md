@@ -1,3 +1,9 @@
+## [4.16.4](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.3...v4.16.4) (2026-05-19)
+
+### Bug Fixes
+
+* Smooth out transaction search and fix iOS dialog flicker ([#157](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/157)) ([7a8cb15](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/7a8cb15c490d8d1520c2294629769b2ebd30fc2a))
+
 ## [4.16.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.2...v4.16.3) (2026-05-19)
 
 ### Bug Fixes
