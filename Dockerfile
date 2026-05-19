@@ -29,7 +29,7 @@ WORKDIR /app
 
 # Copy registry config and lockfile first so the cache layer below is only
 # invalidated when these two files change.
-COPY .npmrc package.json pnpm-lock.yaml ./
+COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # 1. Mount the GitHub token as a BuildKit secret (never stored in any layer).
 # 2. Mount the pnpm content-addressable store as a persistent cache so that
