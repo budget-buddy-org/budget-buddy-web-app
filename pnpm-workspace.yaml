@@ -1,2 +1,10 @@
 allowBuilds:
   esbuild: true
+
+# Force a patched serialize-javascript for the whole tree.
+# Pulled transitively via vite-plugin-pwa → workbox-build → @rollup/plugin-terser.
+# Fixes GHSA-5c6j-r48x-rmvq (RCE) and GHSA-qj8w-gfj5-8c6v (CPU DoS).
+# Build-time only; not shipped to users. Drop this once vite-plugin-pwa
+# / workbox-build update their transitive ranges.
+overrides:
+  'serialize-javascript@<7.0.5': '^7.0.5'

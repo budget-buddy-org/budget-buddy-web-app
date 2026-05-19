@@ -10,6 +10,10 @@ vi.stubEnv('VITE_OIDC_ISSUER', 'https://auth.example.com');
 vi.stubEnv('VITE_OIDC_CLIENT_ID', 'test-client-id');
 vi.stubEnv('VITE_OIDC_SCOPES', 'openid profile email offline_access');
 
+// __APP_VERSION__ is injected by Vite's `define` at build time. Provide a
+// default for jsdom tests; individual suites can vi.stubGlobal to override.
+vi.stubGlobal('__APP_VERSION__', '0.0.0-test');
+
 declare module 'vitest' {
   export interface Assertion<T> extends axeMatchers.AxeMatchers {
     _branded?: T;

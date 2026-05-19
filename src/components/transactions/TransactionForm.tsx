@@ -266,6 +266,9 @@ export function TransactionForm({
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               error={!!getFieldError('description')}
+              autoComplete="off"
+              autoCapitalize="sentences"
+              enterKeyHint="next"
             />
           </FormField>
 

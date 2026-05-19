@@ -7,39 +7,10 @@ import { DialogOverlay } from '@/components/ui/dialog';
 import { categoriesSummaryQueryOptions } from '@/hooks/useCategoriesSummary';
 import { monthlySummaryQueryOptions } from '@/hooks/useMonthlySummary';
 import { cn } from '@/lib/cn';
+import { MONTH_NAMES_LONG, MONTH_NAMES_SHORT } from '@/lib/constants';
 import { localeCurrency, toLocalYearMonth } from '@/lib/formatters';
 import { haptic } from '@/lib/haptics';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
-
-const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-const FULL_MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
 
 function clampToCurrent(
   year: number,
@@ -159,10 +130,10 @@ export function MonthSelector({
       <DialogPrimitives.Trigger asChild>
         <button
           type="button"
-          aria-label={`Period: ${FULL_MONTH_NAMES[month]} ${year}. Tap to change.`}
+          aria-label={`Period: ${MONTH_NAMES_LONG[month]} ${year}. Tap to change.`}
           className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition outline-none hover:bg-muted/40 hover:text-foreground active:bg-muted/70 active:scale-[0.98] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
         >
-          {MONTH_NAMES[month]} {year}
+          {MONTH_NAMES_SHORT[month]} {year}
           <ChevronDown className="size-3.5 opacity-60" />
         </button>
       </DialogPrimitives.Trigger>
@@ -220,7 +191,7 @@ export function MonthSelector({
 
           {/* Month grid */}
           <div className="grid grid-cols-3 gap-2 px-4 sm:gap-1.5 sm:px-3">
-            {MONTH_NAMES.map((name, m) => {
+            {MONTH_NAMES_SHORT.map((name, m) => {
               const isFuture = viewYear === currentYear && m > currentMonth;
               const selected = m === month && viewYear === year;
               const isToday = m === currentMonth && viewYear === currentYear;
