@@ -15,7 +15,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        'flex h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 z-50 transition-colors',
+        'flex h-14 items-center justify-between border-b px-4 md:px-6 pt-[env(safe-area-inset-top)] box-content sticky top-0 z-header transition-colors',
         glassEffect ? 'bg-background/80 backdrop-blur' : 'bg-background',
       )}
     >
@@ -34,10 +34,7 @@ export function Header() {
               size="icon"
               title="Settings"
               aria-label="Settings"
-              className={cn(
-                'cursor-pointer active:scale-[0.98]',
-                isActive && 'bg-primary/10 text-primary',
-              )}
+              className={cn('cursor-pointer', isActive && 'bg-primary/10 text-primary')}
               onClick={() => haptic('tap')}
             >
               <Settings className="size-4" />

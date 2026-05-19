@@ -131,7 +131,7 @@ export function MonthSelector({
         <button
           type="button"
           aria-label={`Period: ${MONTH_NAMES_LONG[month]} ${year}. Tap to change.`}
-          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition outline-none hover:bg-muted/40 hover:text-foreground active:bg-muted/70 active:scale-[0.98] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
+          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition hover:bg-muted/40 hover:text-foreground active:bg-muted/70 active:scale-[0.97] motion-reduce:transition-none focus-visible:focus-ring data-[state=open]:bg-muted data-[state=open]:text-foreground cursor-pointer"
         >
           {MONTH_NAMES_SHORT[month]} {year}
           <ChevronDown className="size-3.5 opacity-60" />
@@ -141,7 +141,7 @@ export function MonthSelector({
         <DialogOverlay />
         <DialogPrimitives.Content
           className={cn(
-            'fixed z-[200] flex flex-col bg-background outline-none',
+            'fixed z-overlay flex flex-col bg-background outline-none',
             // Mobile: bottom sheet, full width, safe-area aware
             'bottom-0 left-0 right-0 rounded-t-lg border-t border-border/60 pb-[max(1rem,env(safe-area-inset-bottom))]',
             'data-[state=open]:animate-in-bottom-sheet data-[state=closed]:animate-out-bottom-sheet',
@@ -169,7 +169,7 @@ export function MonthSelector({
                 setViewYear((y) => y - 1);
               }}
               aria-label="Previous year"
-              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95 motion-reduce:transition-none cursor-pointer focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-[0.97] motion-reduce:transition-none cursor-pointer focus-visible:focus-ring focus-visible:focus-ring-offset"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -183,7 +183,7 @@ export function MonthSelector({
               }}
               disabled={!canGoNextYear}
               aria-label="Next year"
-              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95 motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex size-9 items-center justify-center rounded-pill text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-[0.97] motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground focus-visible:focus-ring focus-visible:focus-ring-offset"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -206,7 +206,7 @@ export function MonthSelector({
                     'h-12 rounded-pill text-sm font-medium tabular-nums transition outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-reduce:transition-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 sm:h-10',
                     selected
                       ? cn(
-                          'bg-primary text-primary-foreground shadow-sm',
+                          'bg-primary text-primary-foreground shadow-card',
                           glassEffect && 'bg-primary/90 backdrop-blur-sm',
                         )
                       : 'text-foreground hover:bg-muted active:bg-muted/80',

@@ -84,7 +84,7 @@ export function PreferencesSection() {
                   className={cn(
                     'px-3 py-control-inner rounded-pill text-sm font-medium transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                     prefDateFormat === style
-                      ? 'bg-background text-foreground shadow-sm'
+                      ? 'bg-background text-foreground shadow-card'
                       : 'text-muted-foreground hover:text-foreground hover:bg-background/50 active:bg-background/70',
                   )}
                 >

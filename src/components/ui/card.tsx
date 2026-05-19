@@ -17,7 +17,7 @@ function Card({
     <div
       ref={ref}
       className={cn(
-        'rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden',
+        'rounded-lg border bg-card text-card-foreground shadow-card overflow-hidden',
         glass && glassEffect && 'border-border/40 bg-card/60 backdrop-blur-xl',
         className,
       )}

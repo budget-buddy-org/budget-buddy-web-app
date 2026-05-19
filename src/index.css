@@ -255,6 +255,19 @@ textarea {
   @apply px-4 py-3;
 }
 
+/* Z-index utilities — Tailwind v4 doesn't auto-generate z-{name} from --z-*
+   tokens, so each is declared explicitly. Values come from the tokens above
+   so adjustments live in one place. */
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+
 @utility skeleton-shimmer {
   background-image: linear-gradient(
     90deg,

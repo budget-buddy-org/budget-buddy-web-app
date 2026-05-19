@@ -13,7 +13,7 @@ export function PrimaryColorSection() {
       <Card className="p-4 space-y-4">
         <div className="flex items-center gap-4">
           <div
-            className="h-10 w-10 rounded-pill border shadow-sm"
+            className="size-10 rounded-pill border shadow-card"
             style={{ backgroundColor: `hsl(${primaryHue} 70% 50%)` }}
           />
           <div className="flex-1 space-y-1">
