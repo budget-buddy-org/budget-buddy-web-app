@@ -1,3 +1,9 @@
+## [4.16.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.2...v4.16.3) (2026-05-19)
+
+### Bug Fixes
+
+* align font size in mobile nav ([8731634](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/8731634975ba43b43b472eea148facc7e17a491e))
+
 ## [4.16.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.1...v4.16.2) (2026-05-19)
 
 ### Bug Fixes
