@@ -15,7 +15,7 @@ function Switch({ className, checked, onCheckedChange, ref, ...props }: SwitchPr
   return (
     <label
       className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-pill transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-pill transition-colors has-[:focus-visible]:focus-ring has-[:focus-visible]:focus-ring-offset disabled:cursor-not-allowed disabled:opacity-50',
         checked ? 'bg-primary' : 'bg-muted',
         className,
       )}

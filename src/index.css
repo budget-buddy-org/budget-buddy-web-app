@@ -55,11 +55,36 @@
 
   /* Typography scale — bumped from Tailwind defaults for readability.
      Body text aims for 15–16px, labels/meta for 13px (above the
-     12px "too small" threshold). */
+     12px "too small" threshold). Larger sizes match Tailwind defaults
+     and are declared here so global adjustments live in one file. */
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.9375rem;
   --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+
+  /* Shadow scale — three intents:
+     card     → resting surface (default Card)
+     overlay  → modal-level elevation (Dialog, Toast)
+     floating → app-chrome elevation (FAB, MobileNav) */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-floating: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Z-index scale — single source of truth so layering intent is explicit.
+     header   → sticky page chrome
+     overlay  → modals, sheets, floating mobile nav
+     toast    → above everything (transient notifications) */
+  --z-header: 40;
+  --z-overlay: 50;
+  --z-toast: 60;
 
   --easing-spring: linear(
     0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25%, 0.849,
@@ -191,6 +216,22 @@ textarea {
   }
 }
 
+/* View Transitions for route changes — tuned to the app's fade tempo.
+   The browser default is a 250ms linear cross-fade; matching --animate-fade-in
+   (200ms ease-out) keeps it consistent with dialog/popover fade ins. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 /* Fixed height for all interactive form fields (input, select, date-picker).
    Using `height` (not min-height) guarantees identical rendering across
    <input>, <input type="date">, and <select> regardless of browser UA styles. */
@@ -211,6 +252,36 @@ textarea {
 
 @utility privacy-blur {
   filter: blur(8px);
+}
+
+/* Focus ring composite — apply on its own (defaults to immediate ring) or
+   pair with `focus-visible:focus-ring focus-visible:focus-ring-offset` for
+   ring-offset variants. Standardises what was hand-typed across 7+ primitives. */
+@utility focus-ring {
+  @apply outline-none ring-2 ring-ring;
+}
+
+@utility focus-ring-offset {
+  @apply ring-offset-2 ring-offset-background;
+}
+
+/* List-row padding — the repeated px-4 py-3 across ListItem / ListSkeleton /
+   ListSkeletonItem. Promote to a single utility so the rhythm is editable in one place. */
+@utility list-row {
+  @apply px-4 py-3;
+}
+
+/* Z-index utilities — Tailwind v4 doesn't auto-generate z-{name} from --z-*
+   tokens, so each is declared explicitly. Values come from the tokens above
+   so adjustments live in one place. */
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
 }
 
 @utility skeleton-shimmer {

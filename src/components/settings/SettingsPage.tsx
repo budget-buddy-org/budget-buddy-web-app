@@ -12,7 +12,7 @@ export function SettingsPage() {
   return (
     <PageContainer>
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
-      <div className="grid gap-6">
+      <div className="grid gap-6 md:max-w-2xl">
         <AccountSection />
         <PreferencesSection />
         <ThemeSection />

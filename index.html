@@ -26,8 +26,13 @@
               (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if (isDark) document.documentElement.classList.add('dark');
             document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-            if (s.primaryHue !== undefined)
+            if (s.primaryHue !== undefined) {
               document.documentElement.style.setProperty('--primary-hue', s.primaryHue);
+              // Keep the live <meta name="theme-color"> in sync at first paint so the
+              // Android Chrome address bar doesn't flash the manifest-static blue.
+              var meta = document.querySelector('meta[name="theme-color"]');
+              if (meta) meta.setAttribute('content', 'hsl(' + s.primaryHue + ' 70% ' + (isDark ? 70 : 45) + '%)');
+            }
             if (s.fontSize !== undefined)
               document.documentElement.style.setProperty('--font-size-base', s.fontSize + 'px');
           }

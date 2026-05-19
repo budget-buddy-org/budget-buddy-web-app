@@ -17,7 +17,7 @@ function DialogOverlay({
     <DialogPrimitives.Overlay
       ref={ref}
       className={cn(
-        'fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
+        'fixed inset-0 z-overlay bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
         className,
       )}
       {...props}
@@ -41,7 +41,7 @@ function DialogContent({
       <DialogPrimitives.Content
         ref={ref}
         className={cn(
-          'fixed z-[200] grid w-full gap-4 border bg-background shadow-lg',
+          'fixed z-overlay grid w-full gap-4 border bg-background shadow-overlay',
           // Mobile: Bottom Sheet
           'bottom-0 left-0 max-w-none rounded-t-lg border-x-0 border-b-0 translate-y-0 max-h-[90dvh] overflow-y-auto',
           'p-6',
