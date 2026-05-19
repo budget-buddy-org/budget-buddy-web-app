@@ -9,4 +9,8 @@ export const router = createRouter({
   defaultPendingMinMs: 300,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
+  // Cross-fade route content via the View Transitions API where supported
+  // (Chrome, Safari). Unsupported browsers (Firefox) fall through to an
+  // instant swap. Reduced-motion is handled in src/index.css.
+  defaultViewTransition: true,
 });

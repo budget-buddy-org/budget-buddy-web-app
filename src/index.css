@@ -216,6 +216,22 @@ textarea {
   }
 }
 
+/* View Transitions for route changes — tuned to the app's fade tempo.
+   The browser default is a 250ms linear cross-fade; matching --animate-fade-in
+   (200ms ease-out) keeps it consistent with dialog/popover fade ins. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 /* Fixed height for all interactive form fields (input, select, date-picker).
    Using `height` (not min-height) guarantees identical rendering across
    <input>, <input type="date">, and <select> regardless of browser UA styles. */
