@@ -26,6 +26,21 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia(SYSTEM_THEME_MEDIA).matches ? 'dark' : 'light';
 }
 
+function syncMetaThemeColor(resolved: 'light' | 'dark', primaryHue: number) {
+  if (typeof document === 'undefined') return;
+  // The PWA manifest theme_color is a static install-time hint and can't track
+  // the runtime primary hue. Sync the live <meta name="theme-color"> so the
+  // browser/OS chrome colour matches the actual app primary on Android.
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  const lightness = resolved === 'dark' ? 70 : 45;
+  meta.setAttribute('content', `hsl(${primaryHue} 70% ${lightness}%)`);
+}
+
 export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
   const resolved = theme === 'system' ? getSystemTheme() : theme;
   document.documentElement.classList.toggle('dark', resolved === 'dark');
@@ -34,6 +49,7 @@ export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
   document.documentElement.style.colorScheme = resolved;
   document.documentElement.style.setProperty('--primary-hue', primaryHue.toString());
   document.documentElement.style.setProperty('--font-size-base', `${fontSize}px`);
+  syncMetaThemeColor(resolved, primaryHue);
 }
 
 let systemThemeCleanup: (() => void) | null = null;

@@ -232,7 +232,12 @@ export function CategoriesPage() {
           ) : (
             <ul className="divide-y">
               {categories.map((c) => (
-                <CategoryRow key={c.id} name={c.name} onStartEdit={() => openEdit(c.id)} />
+                <CategoryRow
+                  key={c.id}
+                  name={c.name}
+                  monthlyBudget={c.monthlyBudget ?? null}
+                  onStartEdit={() => openEdit(c.id)}
+                />
               ))}
             </ul>
           )}
