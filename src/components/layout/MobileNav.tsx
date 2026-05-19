@@ -52,7 +52,7 @@ export function MobileNav() {
             onClick={() => handleTap(to)}
           >
             <Icon className="size-5 shrink-0" />
-            {showNavLabels && <span className="text-xs leading-none font-medium">{label}</span>}
+            {showNavLabels && <span className="text-2xs leading-none font-medium">{label}</span>}
           </Link>
         ))}
       </nav>

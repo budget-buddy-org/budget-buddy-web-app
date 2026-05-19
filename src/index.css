@@ -57,6 +57,7 @@
      Body text aims for 15–16px, labels/meta for 13px (above the
      12px "too small" threshold). Larger sizes match Tailwind defaults
      and are declared here so global adjustments live in one file. */
+  --text-2xs: 0.625rem;
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.9375rem;
