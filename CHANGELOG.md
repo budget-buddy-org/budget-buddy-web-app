@@ -1,3 +1,9 @@
+## [4.16.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.0...v4.16.1) (2026-05-19)
+
+### Bug Fixes
+
+* latch Edit Category dialog body during close animation ([#155](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/155)) ([f698b98](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/f698b98049d0a7bd396b1af4cc3b588a194c658e))
+
 ## [4.16.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.15.1...v4.16.0) (2026-05-13)
 
 ### Features
