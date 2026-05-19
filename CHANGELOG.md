@@ -1,3 +1,9 @@
+## [4.16.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.1...v4.16.2) (2026-05-19)
+
+### Bug Fixes
+
+* **docker:** copy pnpm-workspace.yaml into deps stage ([#156](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/156)) ([bb09328](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/bb093284100019fe2daab938f29ea3882f3af837))
+
 ## [4.16.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.0...v4.16.1) (2026-05-19)
 
 ### Bug Fixes
