@@ -31,6 +31,7 @@ export function MobileNav() {
   return (
     <div className="fixed left-1/2 z-overlay flex -translate-x-1/2 items-center gap-3 md:hidden bottom-[env(safe-area-inset-bottom)]">
       <nav
+        aria-label="Primary mobile"
         className={cn(
           'flex items-center gap-0.5 rounded-pill border border-border/40 px-1.5 py-1.5 shadow-floating',
           glassEffect
@@ -84,7 +85,7 @@ const SIDEBAR_ITEMS = [
 
 export function SidebarNav({ className }: Readonly<{ className?: string }>) {
   return (
-    <nav className={cn('flex flex-col gap-1', className)}>
+    <nav aria-label="Primary" className={cn('flex flex-col gap-1', className)}>
       {SIDEBAR_ITEMS.map(({ to, label, icon: Icon }) => (
         <Link
           key={to}
