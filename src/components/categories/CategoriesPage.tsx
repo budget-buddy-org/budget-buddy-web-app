@@ -2,9 +2,9 @@ import type { Category } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type React from 'react';
 import { useCallback, useState } from 'react';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { CategoryForm } from '@/components/categories/CategoryForm';
 import { CategoryRow } from '@/components/categories/CategoryRow';
+import { EditCategoryDialogBody } from '@/components/categories/EditCategoryDialogBody';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -26,23 +26,9 @@ import {
   useCategory,
   useCreateCategory,
   useDeleteCategory,
-  useUpdateCategory,
 } from '@/hooks/useCategories';
 import { getApiError } from '@/lib/api-error';
-import { toMinorUnits } from '@/lib/formatters';
-
-function minorUnitsToInput(value: number | null | undefined): string {
-  if (value == null) return '';
-  return (value / 100).toFixed(2);
-}
-
-function inputToMinorUnits(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return toMinorUnits(parsed);
-}
+import { inputToMinorUnits } from '@/lib/category-budget';
 
 export function CategoriesPage() {
   const search = useSearch({ from: '/_app/categories/' });
@@ -262,84 +248,5 @@ export function CategoriesPage() {
         />
       )}
     </PageContainer>
-  );
-}
-
-function EditCategoryDialogBody({
-  category,
-  onClose,
-  onDelete,
-  isDeleting,
-}: {
-  category: Category;
-  onClose: () => void;
-  onDelete: () => void;
-  isDeleting: boolean;
-}) {
-  const { toast } = useToast();
-  const updateCategory = useUpdateCategory(category.id);
-
-  const originalName = category.name;
-  const originalBudget = minorUnitsToInput(category.monthlyBudget);
-
-  const [name, setName] = useState(originalName);
-  const [budget, setBudget] = useState(originalBudget);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const fieldError = getApiError(updateCategory.error)?.errors?.[0]?.message;
-
-  const handleUpdate = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    updateCategory.mutate(
-      { name: name.trim(), monthlyBudget: inputToMinorUnits(budget) },
-      {
-        onSuccess: () => {
-          toast({ title: 'Category updated', variant: 'success' });
-          onClose();
-        },
-        onError: (error) => {
-          const apiError = getApiError(error);
-          if (!apiError?.errors) {
-            toast({
-              title: "Couldn't update category",
-              description: apiError?.detail || apiError?.title,
-              variant: 'destructive',
-            });
-          }
-        },
-      },
-    );
-  };
-
-  return (
-    <>
-      <CategoryForm
-        isEditing
-        name={name}
-        onNameChange={setName}
-        monthlyBudget={budget}
-        onMonthlyBudgetChange={setBudget}
-        onSubmit={handleUpdate}
-        onCancel={onClose}
-        onDelete={() => setShowDeleteConfirm(true)}
-        isPending={updateCategory.isPending}
-        error={fieldError}
-        isDisabled={!name.trim() || (name.trim() === originalName && budget === originalBudget)}
-      />
-      <ConfirmationDialog
-        isOpen={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-        onConfirm={() => {
-          setShowDeleteConfirm(false);
-          onDelete();
-        }}
-        title="Delete Category"
-        description="Are you sure you want to delete this category? This action cannot be undone."
-        confirmText="Delete"
-        variant="destructive"
-        isLoading={isDeleting}
-      />
-    </>
   );
 }

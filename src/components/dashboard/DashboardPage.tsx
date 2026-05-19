@@ -19,29 +19,16 @@ import { useMonthlySummariesRange } from '@/hooks/useMonthlySummariesRange';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
 import { useTransactions } from '@/hooks/useTransactions';
 import { cn } from '@/lib/cn';
+import { MONTH_NAMES_SHORT } from '@/lib/constants';
 import { localeCurrency, todayIso, toLocalIsoDate, toLocalYearMonth } from '@/lib/formatters';
 import { haptic } from '@/lib/haptics';
 import { useThemeStore } from '@/stores/theme.store';
 import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 
-const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
 export function DashboardPage() {
   const glassEffect = useThemeStore((s) => s.glassEffect);
-  const { isBalanceHidden, toggleBalanceHidden } = useUserPreferencesStore();
+  const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
+  const toggleBalanceHidden = useUserPreferencesStore((s) => s.toggleBalanceHidden);
   const { fmtCurrency } = useFormatters();
 
   const handleTogglePrivacy = () => {
@@ -99,7 +86,7 @@ export function DashboardPage() {
   const currency = monthlySummary?.currency ?? summaryData?.currency ?? preferredCurrency;
   const recent = recentData?.items ?? [];
 
-  const periodLabel = `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+  const periodLabel = `${MONTH_NAMES_SHORT[selectedMonth]} ${selectedYear}`;
 
   return (
     <PageContainer>
