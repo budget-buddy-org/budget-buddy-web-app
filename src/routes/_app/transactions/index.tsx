@@ -37,13 +37,15 @@ export const Route = createFileRoute('/_app/transactions/')({
     amountMax: validAmount(search.amountMax),
     edit: typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined,
   }),
+  // `query` is intentionally excluded — including it would re-run the loader
+  // on every debounced keystroke, swapping in `pendingComponent` and blurring
+  // the search input. The in-component query handles the filtered fetch.
   loaderDeps: ({ search }) => ({
     categoryId: search.categoryId,
     start: search.start,
     end: search.end,
     sort: search.sort,
     type: search.type,
-    query: search.query,
     amountMin: search.amountMin,
     amountMax: search.amountMax,
   }),
@@ -57,7 +59,6 @@ export const Route = createFileRoute('/_app/transactions/')({
           start: deps.start || undefined,
           end: deps.end || undefined,
           type: deps.type || undefined,
-          query: deps.query || undefined,
           amountMin: deps.amountMin,
           amountMax: deps.amountMax,
         }),

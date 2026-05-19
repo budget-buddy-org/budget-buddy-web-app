@@ -98,6 +98,10 @@ export const infiniteTransactionsQueryOptions = (filters: TransactionFilters = {
       if ((page + 1) * size >= total) return undefined;
       return page + 1;
     },
+    // Keep the previous result rendered while a new filter combination
+    // fetches, so changing filters (notably the debounced search query)
+    // doesn't flash the list skeleton.
+    placeholderData: keepPreviousData,
   });
 };
 
