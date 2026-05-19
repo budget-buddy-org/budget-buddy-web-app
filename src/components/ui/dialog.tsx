@@ -17,7 +17,10 @@ function DialogOverlay({
     <DialogPrimitives.Overlay
       ref={ref}
       className={cn(
-        'fixed inset-0 z-overlay bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
+        // transform-gpu + will-change isolate backdrop-blur into its own
+        // composite layer — iOS Safari otherwise flashes the layer on the
+        // last frame of fade-out.
+        'fixed inset-0 z-overlay bg-black/60 backdrop-blur-sm transform-gpu [will-change:opacity] data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out',
         className,
       )}
       {...props}
@@ -42,8 +45,12 @@ function DialogContent({
         ref={ref}
         className={cn(
           'fixed z-overlay grid w-full gap-4 border bg-background shadow-overlay',
-          // Mobile: Bottom Sheet
-          'bottom-0 left-0 max-w-none rounded-t-lg border-x-0 border-b-0 translate-y-0 max-h-[90dvh] overflow-y-auto',
+          // Mobile: Bottom Sheet. will-change:transform promotes the sheet
+          // to its own composite layer so iOS Safari doesn't flash the
+          // baseline transform for a frame before unmount. No baseline
+          // translate utility — sheet-enter/exit keyframes own `transform`
+          // with animation-fill-mode: both.
+          'bottom-0 left-0 max-w-none rounded-t-lg border-x-0 border-b-0 max-h-[90dvh] overflow-y-auto [will-change:transform]',
           'p-6',
           'data-[state=open]:animate-in-bottom-sheet data-[state=closed]:animate-out-bottom-sheet',
           // Desktop: Centered Dialog
