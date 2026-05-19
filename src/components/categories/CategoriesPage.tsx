@@ -1,7 +1,7 @@
 import type { Category } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CategoryForm } from '@/components/categories/CategoryForm';
 import { CategoryRow } from '@/components/categories/CategoryRow';
 import { EditCategoryDialogBody } from '@/components/categories/EditCategoryDialogBody';
@@ -27,6 +27,7 @@ import {
   useCreateCategory,
   useDeleteCategory,
 } from '@/hooks/useCategories';
+import { useLatchedValue } from '@/hooks/useLatchedValue';
 import { getApiError } from '@/lib/api-error';
 import { inputToMinorUnits } from '@/lib/category-budget';
 
@@ -35,6 +36,14 @@ export function CategoriesPage() {
   const navigate = useNavigate();
   const editId = search.edit ?? '';
   const { data: editTarget, isLoading: isEditLoading } = useCategory(editId);
+  const isEditDialogOpen = !!editId;
+  const editRender = useLatchedValue(
+    useMemo(
+      () => ({ category: editTarget, isLoading: isEditLoading }),
+      [editTarget, isEditLoading],
+    ),
+    isEditDialogOpen,
+  );
 
   const [page, setPage] = useState(0);
   const { data, isLoading } = useCategories(CATEGORIES_PAGE_SIZE, page);
@@ -183,7 +192,7 @@ export function CategoriesPage() {
       </Dialog>
 
       <Dialog
-        open={!!editId}
+        open={isEditDialogOpen}
         onOpenChange={(open) => {
           if (!open) closeEdit();
         }}
@@ -193,7 +202,7 @@ export function CategoriesPage() {
             <DialogTitle>Edit Category</DialogTitle>
             <DialogDescription>Modify the name and budget of your category</DialogDescription>
           </DialogHeader>
-          {isEditLoading ? (
+          {editRender.isLoading ? (
             <div className="space-y-6 py-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-12" />
@@ -210,12 +219,12 @@ export function CategoriesPage() {
               </div>
             </div>
           ) : (
-            editTarget && (
+            editRender.category && (
               <EditCategoryDialogBody
-                key={editTarget.id}
-                category={editTarget}
+                key={editRender.category.id}
+                category={editRender.category}
                 onClose={closeEdit}
-                onDelete={() => handleDeleteCategory(editTarget)}
+                onDelete={() => editRender.category && handleDeleteCategory(editRender.category)}
                 isDeleting={deleteCategory.isPending}
               />
             )
