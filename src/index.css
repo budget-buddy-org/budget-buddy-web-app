@@ -70,6 +70,20 @@
   --text-xl--line-height: 1.75rem;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 6rem;
+  --text-8xl--line-height: 1;
+  --text-9xl: 8rem;
+  --text-9xl--line-height: 1;
 
   /* Shadow scale — three intents:
      card     → resting surface (default Card)
@@ -158,11 +172,14 @@ input {
   touch-action: manipulation;
 }
 
-/* Ensure consistent base font size for inputs on iOS to prevent auto-zoom */
-input,
-select,
-textarea {
-  font-size: max(16px, 1rem);
+/* Ensure consistent base font size for inputs on iOS to prevent auto-zoom.
+   Wrapped in @layer base so Tailwind utility classes can override it. */
+@layer base {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera globally */

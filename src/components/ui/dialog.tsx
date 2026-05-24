@@ -6,6 +6,7 @@ import { useThemeStore } from '@/stores/theme.store';
 
 const Dialog = DialogPrimitives.Root;
 const DialogPortal = DialogPrimitives.Portal;
+const DialogClose = DialogPrimitives.Close;
 function DialogOverlay({
   className,
   ref,
@@ -50,7 +51,7 @@ function DialogContent({
           // baseline transform for a frame before unmount. No baseline
           // translate utility — sheet-enter/exit keyframes own `transform`
           // with animation-fill-mode: both.
-          'bottom-0 left-0 max-w-none rounded-t-lg border-x-0 border-b-0 max-h-[90dvh] overflow-y-auto [will-change:transform]',
+          'bottom-0 left-0 max-w-none rounded-t-[28px] border-x-0 border-b-0 max-h-[90dvh] overflow-y-auto [will-change:transform]',
           'p-6',
           'data-[state=open]:animate-in-bottom-sheet data-[state=closed]:animate-out-bottom-sheet',
           // Desktop: Centered Dialog
@@ -122,6 +123,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,

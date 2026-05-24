@@ -218,12 +218,17 @@ export function TransactionFilters({
         )}
       </fieldset>
 
-      <div className="pt-4 flex flex-col gap-2">
-        <Button onClick={handleApply} disabled={rangeError}>
-          Done
-        </Button>
-        <Button variant="secondary" onClick={handleReset} disabled={!hasActiveFilters}>
+      <div className="pt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button
+          variant="secondary"
+          className="sm:w-auto"
+          onClick={handleReset}
+          disabled={!hasActiveFilters}
+        >
           Reset
+        </Button>
+        <Button className="sm:w-auto" onClick={handleApply} disabled={rangeError}>
+          Done
         </Button>
       </div>
     </div>

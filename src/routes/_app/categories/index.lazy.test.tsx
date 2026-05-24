@@ -135,13 +135,30 @@ vi.mock('@/components/ui/skeleton', () => ({
   Skeleton: ({ className }: { className?: string }) =>
     React.createElement('div', { 'data-testid': 'skeleton', className }),
 }));
+
+// Dialog mock: DialogClose reads the current open dialog's onOpenChange via a shared ref
+// so that clicking the X button actually closes the dialog in tests.
+const activeDialogClose = { fn: null as ((open: boolean) => void) | null };
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null,
+  Dialog: ({
+    children,
+    open,
+    onOpenChange,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }) => {
+    if (open && onOpenChange) activeDialogClose.fn = onOpenChange;
+    return open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null;
+  },
   DialogContent: ({ children }: { children: React.ReactNode }) =>
     React.createElement('div', { 'data-testid': 'dialog-content' }, children),
-  DialogHeader: ({ children }: { children: React.ReactNode }) =>
-    React.createElement('div', { 'data-testid': 'dialog-header' }, children),
+  DialogClose: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+    if (!asChild) return React.createElement('span', null, children);
+    const child = React.Children.only(children) as React.ReactElement<{ onClick?: () => void }>;
+    return React.cloneElement(child, { onClick: () => activeDialogClose.fn?.(false) });
+  },
   DialogTitle: ({ children }: { children: React.ReactNode }) =>
     React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
   DialogDescription: ({ children }: { children: React.ReactNode }) =>
@@ -171,6 +188,7 @@ describe('CategoriesPage', () => {
     mockCreateCategory.isPending = false;
     mockDeleteCategory.isPending = false;
     mockUpdateCategory.isPending = false;
+    activeDialogClose.fn = null;
     mockSearch.reset();
   });
 
@@ -262,10 +280,10 @@ describe('CategoriesPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
 
-    // Should now show an input with the category name and Save/Cancel buttons
+    // Should show an input with the category name and a Save button; header has Close/Delete
     expect(screen.getByDisplayValue('Groceries')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
   });
 
   it('calls updateCategory.mutate when the edit form is saved', async () => {
@@ -332,7 +350,7 @@ describe('CategoriesPage', () => {
     );
   });
 
-  it('cancels edit mode without mutating when Cancel is clicked', async () => {
+  it('closes edit dialog without mutating when Close is clicked', async () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
@@ -341,7 +359,7 @@ describe('CategoriesPage', () => {
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
-    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    await user.click(screen.getByRole('button', { name: /close/i }));
 
     expect(mockUpdateCategory.mutate).not.toHaveBeenCalled();
     // The category name button should be visible again
@@ -356,7 +374,7 @@ describe('CategoriesPage', () => {
     renderPage();
     const user = userEvent.setup();
 
-    // Open the edit dialog — delete now lives there, not on the row
+    // Open the edit dialog — delete lives in the header
     await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
 
     await user.click(screen.getByRole('button', { name: /delete category/i }));
@@ -371,7 +389,7 @@ describe('CategoriesPage', () => {
     expect(mockDeleteCategory.mutate).toHaveBeenCalledWith('cat-1', expect.any(Object));
   });
 
-  it('clears input and resets mutation when Add dialog is cancelled', async () => {
+  it('resets input and mutation when Add dialog is closed via X', async () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [], meta: { total: 0, size: 200, page: 0 } },
       isLoading: false,
@@ -381,7 +399,7 @@ describe('CategoriesPage', () => {
 
     await user.click(screen.getAllByRole('button', { name: /add/i })[0]);
     await user.type(screen.getByPlaceholderText(/new category name/i), 'Unsaved');
-    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    await user.click(screen.getByRole('button', { name: /close/i }));
 
     expect(mockCreateCategory.reset).toHaveBeenCalled();
 
@@ -404,7 +422,7 @@ describe('CategoriesPage', () => {
     expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
   });
 
-  it('discards mutation state when edit dialog is cancelled (via remount)', async () => {
+  it('discards mutation state when edit dialog is closed via X (via remount)', async () => {
     vi.mocked(useCategories).mockReturnValue({
       data: { items: [{ id: 'cat-1', name: 'Groceries' }], meta: { total: 1, size: 200, page: 0 } },
       isLoading: false,
@@ -413,7 +431,7 @@ describe('CategoriesPage', () => {
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Edit category: Groceries' }));
-    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    await user.click(screen.getByRole('button', { name: /close/i }));
 
     // Dialog body unmounts on close, so mutation state is discarded structurally.
     expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
@@ -436,7 +454,7 @@ describe('CategoriesPage', () => {
       'data-autofocus',
       'true',
     );
-    await user.click(screen.getByRole('button', { name: /Cancel/i }));
+    await user.click(screen.getByRole('button', { name: /Close/i }));
 
     // Edit dialog
     await user.click(screen.getByText('Groceries'));

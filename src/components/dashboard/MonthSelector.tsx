@@ -143,7 +143,7 @@ export function MonthSelector({
           className={cn(
             'fixed z-overlay flex flex-col bg-background outline-none',
             // Mobile: bottom sheet, full width, safe-area aware
-            'bottom-0 left-0 right-0 rounded-t-lg border-t border-border/60 pb-[max(1rem,env(safe-area-inset-bottom))]',
+            'bottom-0 left-0 right-0 rounded-t-[28px] border-t border-border/60 pb-[max(1rem,env(safe-area-inset-bottom))]',
             'data-[state=open]:animate-in-bottom-sheet data-[state=closed]:animate-out-bottom-sheet',
             // Desktop: anchored-feel popover, centered, compact, with shadow
             'sm:bottom-auto sm:right-auto sm:left-1/2 sm:top-[20%] sm:w-[22rem] sm:-translate-x-1/2 sm:rounded-lg sm:border sm:pb-3 sm:shadow-2xl',
@@ -155,13 +155,8 @@ export function MonthSelector({
             Choose a month and year to view your budget data.
           </DialogPrimitives.Description>
 
-          {/* Drag handle (mobile only) */}
-          <div className="flex justify-center pt-2 pb-1 sm:hidden">
-            <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
-          </div>
-
           {/* Year header with chevrons */}
-          <div className="flex items-center justify-between px-4 pt-2 pb-3 sm:px-3 sm:pt-3">
+          <div className="flex items-center justify-between px-4 pt-3 pb-3 sm:px-3">
             <button
               type="button"
               onClick={() => {

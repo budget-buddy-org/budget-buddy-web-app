@@ -1,12 +1,16 @@
-import type { Transaction } from '@budget-buddy-org/budget-buddy-contracts';
-import { useMemo } from 'react';
+import type { Transaction, TransactionWrite } from '@budget-buddy-org/budget-buddy-contracts';
+import { Trash2, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { TransactionSearchBar } from '@/components/transactions/TransactionSearchBar';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -15,16 +19,21 @@ import {
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { PageContainer } from '@/components/ui/page-container';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToastAction } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import { useCategories } from '@/hooks/useCategories';
 import { useLatchedValue } from '@/hooks/useLatchedValue';
 import { useTransactionPageState } from '@/hooks/useTransactionPageState';
 import {
   TRANSACTIONS_PAGE_SIZE,
+  useCreateTransaction,
+  useDeleteTransaction,
   useInfiniteTransactions,
   useTransaction,
 } from '@/hooks/useTransactions';
 
 export function TransactionsPage() {
+  const { toast } = useToast();
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.items ?? [];
 
@@ -63,11 +72,56 @@ export function TransactionsPage() {
   const render = useLatchedValue(currentRender, isDialogOpen);
 
   const dialogTitle = render.mode === 'edit' ? 'Edit Transaction' : 'Add Transaction';
-  const dialogDesc =
-    render.mode === 'edit'
-      ? 'Update your transaction details including amount, date, and category'
-      : 'Record a new expense or income to track your budget';
   const showSkeleton = isDialogOpen && isEditing && isTransactionLoading && !editingTransaction;
+
+  const createTx = useCreateTransaction();
+  const deleteTx = useDeleteTransaction();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleDelete = () => {
+    const tx = render.transaction;
+    if (!tx?.id) return;
+    const snapshot: TransactionWrite = {
+      description: tx.description ?? null,
+      amount: tx.amount,
+      type: tx.type,
+      currency: tx.currency,
+      date: tx.date,
+      categoryId: tx.categoryId,
+    } as unknown as TransactionWrite;
+    deleteTx.mutate(tx.id, {
+      onSuccess: () => {
+        const { dismiss } = toast({
+          title: 'Transaction deleted',
+          variant: 'success',
+          duration: 6000,
+          action: (
+            <ToastAction
+              altText="Undo delete"
+              onClick={() => {
+                createTx.mutate(snapshot, {
+                  onSuccess: () => {
+                    toast({ title: 'Transaction restored', variant: 'success' });
+                  },
+                  onError: () => {
+                    toast({ title: "Couldn't restore transaction", variant: 'destructive' });
+                  },
+                });
+                dismiss();
+              }}
+            >
+              Undo
+            </ToastAction>
+          ),
+        });
+        setShowDeleteConfirm(false);
+        closeForm();
+      },
+      onError: () => {
+        toast({ title: "Couldn't delete transaction", variant: 'destructive' });
+      },
+    });
+  };
 
   const queryFilters = {
     ...filters,
@@ -120,51 +174,51 @@ export function TransactionsPage() {
       </Dialog>
 
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeForm()}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent aria-describedby={undefined}>
+          <div className="flex items-center justify-between">
             <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDesc}</DialogDescription>
-          </DialogHeader>
+            <div className="flex items-center gap-1">
+              {render.mode === 'edit' && render.transaction && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  aria-label="Delete transaction"
+                >
+                  <Trash2 className="size-5" />
+                </Button>
+              )}
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground"
+                  aria-label="Close"
+                >
+                  <X className="size-5" />
+                </Button>
+              </DialogClose>
+            </div>
+          </div>
           {showSkeleton ? (
-            <div className="space-y-4 py-4">
-              {/* Type */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-field w-full" />
-              </div>
-              {/* Currency & Amount */}
-              <div className="flex gap-4">
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-field w-full" />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-field w-full" />
-                </div>
-              </div>
-              {/* Description */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-field w-full" />
-              </div>
-              {/* Date */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-field w-full" />
+            <div className="space-y-4">
+              {/* Hero: type toggle → amount → currency pill */}
+              <div className="flex flex-col items-center gap-3">
+                <Skeleton className="h-9 w-full max-w-xs rounded-pill" />
+                <Skeleton className="h-12 w-48" />
+                <Skeleton className="h-7 w-16 rounded-pill" />
               </div>
               {/* Category */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-6 w-20" />
-                </div>
-                <Skeleton className="h-field w-full" />
-              </div>
-              {/* Actions */}
-              <div className="flex flex-col gap-2 pt-2">
-                <Skeleton className="h-field w-full rounded-pill" />
-                <Skeleton className="h-field w-full rounded-pill" />
+              <Skeleton className="h-field w-full" />
+              {/* Date */}
+              <Skeleton className="h-9 w-full rounded-pill" />
+              {/* Description */}
+              <Skeleton className="h-20 w-full rounded-md" />
+              {/* Save */}
+              <div className="-mx-6 -mb-6 mt-6 px-6 pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:px-0 sm:pb-0 sm:border-t">
                 <Skeleton className="h-field w-full rounded-pill" />
               </div>
             </div>
@@ -174,12 +228,21 @@ export function TransactionsPage() {
               categories={categories}
               transaction={render.transaction}
               onSuccess={closeForm}
-              onCancel={closeForm}
-              onDeleteSuccess={closeForm}
             />
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDelete}
+        title="Delete Transaction"
+        description="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        isLoading={deleteTx.isPending}
+      />
 
       <TransactionList
         transactions={transactions}

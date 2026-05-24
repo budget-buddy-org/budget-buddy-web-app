@@ -1,19 +1,16 @@
 import type { Category } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import type React from 'react';
+import { Trash2, X } from 'lucide-react';
+import type { SubmitEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { CategoryForm } from '@/components/categories/CategoryForm';
 import { CategoryRow } from '@/components/categories/CategoryRow';
 import { EditCategoryDialogBody } from '@/components/categories/EditCategoryDialogBody';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { ListSkeleton } from '@/components/ui/list-skeleton';
 import { PageContainer } from '@/components/ui/page-container';
 import { Pagination } from '@/components/ui/pagination';
@@ -61,6 +58,7 @@ export function CategoriesPage() {
   const [newName, setNewName] = useState('');
   const [newBudget, setNewBudget] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const createFieldError = getApiError(createCategory.error)?.errors?.[0]?.message;
 
@@ -80,6 +78,7 @@ export function CategoriesPage() {
       const snapshot = { name: category.name, monthlyBudget: category.monthlyBudget ?? null };
       deleteCategory.mutate(category.id, {
         onSuccess: () => {
+          setShowDeleteConfirm(false);
           closeEdit();
           const { dismiss } = toast({
             title: 'Category deleted',
@@ -113,35 +112,35 @@ export function CategoriesPage() {
     [closeEdit, createCategory, deleteCategory, toast],
   );
 
-  const handleCreate = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    if (!newName.trim()) return;
-    createCategory.mutate(
-      { name: newName.trim(), monthlyBudget: inputToMinorUnits(newBudget) },
-      {
-        onSuccess: () => {
-          setNewName('');
-          setNewBudget('');
-          setShowForm(false);
-          setPage(0);
-          toast({
-            title: 'Category created',
-            variant: 'success',
-          });
+  const handleCreate = useCallback(
+    (e: SubmitEvent) => {
+      e.preventDefault();
+      if (!newName.trim()) return;
+      createCategory.mutate(
+        { name: newName.trim(), monthlyBudget: inputToMinorUnits(newBudget) },
+        {
+          onSuccess: () => {
+            setNewName('');
+            setNewBudget('');
+            setShowForm(false);
+            setPage(0);
+            toast({ title: 'Category created', variant: 'success' });
+          },
+          onError: (error) => {
+            const apiError = getApiError(error);
+            if (!apiError?.errors) {
+              toast({
+                title: "Couldn't create category",
+                description: apiError?.detail || apiError?.title,
+                variant: 'destructive',
+              });
+            }
+          },
         },
-        onError: (error) => {
-          const apiError = getApiError(error);
-          if (!apiError?.errors) {
-            toast({
-              title: "Couldn't create category",
-              description: apiError?.detail || apiError?.title,
-              variant: 'destructive',
-            });
-          }
-        },
-      },
-    );
-  };
+      );
+    },
+    [newName, newBudget, createCategory, toast],
+  );
 
   const categories = data?.items ?? [];
 
@@ -167,23 +166,27 @@ export function CategoriesPage() {
           }
         }}
       >
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent aria-describedby={undefined}>
+          <div className="flex items-center justify-between">
             <DialogTitle>Add Category</DialogTitle>
-            <DialogDescription>Create a new category to group your transactions</DialogDescription>
-          </DialogHeader>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground"
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </Button>
+            </DialogClose>
+          </div>
           <CategoryForm
             name={newName}
             onNameChange={setNewName}
             monthlyBudget={newBudget}
             onMonthlyBudgetChange={setNewBudget}
             onSubmit={handleCreate}
-            onCancel={() => {
-              setShowForm(false);
-              setNewName('');
-              setNewBudget('');
-              createCategory.reset();
-            }}
             isPending={createCategory.isPending}
             error={createFieldError}
             isDisabled={!newName.trim()}
@@ -197,13 +200,37 @@ export function CategoriesPage() {
           if (!open) closeEdit();
         }}
       >
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent aria-describedby={undefined}>
+          <div className="flex items-center justify-between">
             <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Modify the name and budget of your category</DialogDescription>
-          </DialogHeader>
+            <div className="flex items-center gap-1">
+              {editRender.category && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  aria-label="Delete category"
+                >
+                  <Trash2 className="size-5" />
+                </Button>
+              )}
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground"
+                  aria-label="Close"
+                >
+                  <X className="size-5" />
+                </Button>
+              </DialogClose>
+            </div>
+          </div>
           {editRender.isLoading ? (
-            <div className="space-y-6 py-4">
+            <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-12" />
                 <Skeleton className="h-field w-full" />
@@ -212,9 +239,7 @@ export function CategoriesPage() {
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-field w-full" />
               </div>
-              <div className="flex flex-col gap-2 pt-2">
-                <Skeleton className="h-field w-full rounded-pill" />
-                <Skeleton className="h-field w-full rounded-pill" />
+              <div className="-mx-6 -mb-6 mt-6 px-6 pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:px-0 sm:pb-0 sm:border-t">
                 <Skeleton className="h-field w-full rounded-pill" />
               </div>
             </div>
@@ -224,13 +249,22 @@ export function CategoriesPage() {
                 key={editRender.category.id}
                 category={editRender.category}
                 onClose={closeEdit}
-                onDelete={() => editRender.category && handleDeleteCategory(editRender.category)}
-                isDeleting={deleteCategory.isPending}
               />
             )
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={() => editRender.category && handleDeleteCategory(editRender.category)}
+        title="Delete Category"
+        description="Are you sure you want to delete this category? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        isLoading={deleteCategory.isPending}
+      />
 
       <Card>
         <CardContent className="p-0">
