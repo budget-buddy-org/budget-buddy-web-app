@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,11 +14,9 @@ vi.mock('@/hooks/use-toast', () => ({
 
 const mockCreateTx = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false, error: null };
 const mockUpdateTx = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false, error: null };
-const mockDeleteTx = { mutate: vi.fn(), isPending: false };
 vi.mock('@/hooks/useTransactions', () => ({
   useCreateTransaction: () => mockCreateTx,
   useUpdateTransaction: () => mockUpdateTx,
-  useDeleteTransaction: () => mockDeleteTx,
 }));
 
 const mockCreateCategory = {
@@ -32,7 +30,102 @@ vi.mock('@/hooks/useCategories', () => ({
   useCreateCategory: () => mockCreateCategory,
 }));
 
-// Mock UI components to simplify testing
+// Mock the new sub-components with test-friendly shells exposing the
+// underlying state via plain inputs/selects we can drive from tests.
+vi.mock('@/components/transactions/HeroAmountInput', () => ({
+  HeroAmountInput: ({
+    type,
+    amount,
+    currency,
+    onTypeChange,
+    onAmountChange,
+    onCurrencyChange,
+    autoFocus,
+  }: {
+    type: 'EXPENSE' | 'INCOME';
+    amount: string;
+    currency: string;
+    onTypeChange: (v: 'EXPENSE' | 'INCOME') => void;
+    onAmountChange: (v: string) => void;
+    onCurrencyChange: (v: string) => void;
+    autoFocus?: boolean;
+  }) =>
+    React.createElement(
+      'div',
+      {},
+      React.createElement('input', {
+        'aria-label': 'amount-test',
+        placeholder: '0.00',
+        value: amount,
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => onAmountChange(e.target.value),
+        'data-autofocus': autoFocus ? 'true' : 'false',
+      }),
+      React.createElement(
+        'select',
+        {
+          'aria-label': 'currency-test',
+          value: currency,
+          onChange: (e: React.ChangeEvent<HTMLSelectElement>) => onCurrencyChange(e.target.value),
+        },
+        ['EUR', 'GBP', 'JPY', 'USD'].map((c) =>
+          React.createElement('option', { key: c, value: c }, c),
+        ),
+      ),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onTypeChange('EXPENSE'),
+          'aria-pressed': type === 'EXPENSE',
+        },
+        'Expense',
+      ),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onTypeChange('INCOME'),
+          'aria-pressed': type === 'INCOME',
+        },
+        'Income',
+      ),
+    ),
+}));
+
+vi.mock('@/components/transactions/CategoryCombobox', () => ({
+  CategoryCombobox: ({
+    categories,
+    value,
+    onChange,
+  }: {
+    categories: { id: string; name: string }[];
+    value: string;
+    onChange: (id: string) => void;
+  }) =>
+    React.createElement(
+      'select',
+      {
+        'aria-label': 'category-test',
+        value,
+        onChange: (e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value),
+      },
+      [
+        React.createElement('option', { key: '', value: '' }, 'None'),
+        ...categories.map((c) => React.createElement('option', { key: c.id, value: c.id }, c.name)),
+      ],
+    ),
+}));
+
+vi.mock('@/components/ui/date-quick-picker', () => ({
+  DateQuickPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) =>
+    React.createElement('input', {
+      'aria-label': 'date-test',
+      type: 'date',
+      value,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
+    }),
+}));
+
 vi.mock('@/components/ui/button', () => ({
   Button: ({
     children,
@@ -60,113 +153,6 @@ vi.mock('@/components/ui/button', () => ({
       children,
     ),
 }));
-vi.mock('@/components/ui/input', () => ({
-  Input: ({
-    value,
-    onChange,
-    placeholder,
-    autoFocus,
-  }: {
-    value: string;
-    onChange: React.ChangeEventHandler<HTMLInputElement>;
-    placeholder: string;
-    autoFocus: boolean;
-  }) => React.createElement('input', { value, onChange, placeholder, 'data-autofocus': autoFocus }),
-}));
-vi.mock('@/components/ui/select', () => ({
-  Select: ({
-    children,
-    value,
-    onChange,
-  }: {
-    children: React.ReactNode;
-    value: string;
-    onChange: React.ChangeEventHandler<HTMLSelectElement>;
-  }) => React.createElement('select', { value, onChange }, children),
-}));
-vi.mock('@/components/ui/amount-input', () => ({
-  AmountInput: ({
-    value,
-    onChange,
-    autoFocus,
-    placeholder,
-  }: {
-    value: string;
-    onChange: (val: string) => void;
-    autoFocus?: boolean;
-    placeholder?: string;
-  }) =>
-    React.createElement('input', {
-      type: 'number',
-      value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
-      'data-autofocus': autoFocus,
-      placeholder,
-    }),
-}));
-vi.mock('@/components/ui/date-picker', () => ({
-  DatePicker: ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: React.ChangeEventHandler<HTMLInputElement>;
-  }) => React.createElement('input', { type: 'date', value, onChange }),
-}));
-vi.mock('@/components/ui/transaction-type-toggle', () => ({
-  TransactionTypeToggle: ({
-    value,
-    onChange,
-  }: {
-    value: 'EXPENSE' | 'INCOME';
-    onChange: (val: 'EXPENSE' | 'INCOME') => void;
-  }) =>
-    React.createElement(
-      'div',
-      {},
-      React.createElement(
-        'button',
-        { type: 'button', onClick: () => onChange('EXPENSE'), 'aria-pressed': value === 'EXPENSE' },
-        'Expense',
-      ),
-      React.createElement(
-        'button',
-        { type: 'button', onClick: () => onChange('INCOME'), 'aria-pressed': value === 'INCOME' },
-        'Income',
-      ),
-    ),
-}));
-
-vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: { children: React.ReactNode }) =>
-    React.createElement('div', {}, children),
-  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) =>
-    React.createElement('div', {}, children),
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) =>
-    React.createElement('div', {}, children),
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) =>
-    React.createElement('button', { type: 'button', onClick }, children),
-}));
-
-vi.mock('@/components/ConfirmationDialog', () => ({
-  ConfirmationDialog: ({
-    isOpen,
-    onConfirm,
-    title,
-  }: {
-    isOpen: boolean;
-    onConfirm: () => void;
-    title: string;
-  }) =>
-    isOpen
-      ? React.createElement(
-          'div',
-          {},
-          React.createElement('span', {}, title),
-          React.createElement('button', { type: 'button', onClick: onConfirm }, 'Confirm Delete'),
-        )
-      : null,
-}));
 
 const categories = [
   { id: 'cat-1', name: 'Food' },
@@ -180,7 +166,6 @@ function renderForm(props: Partial<React.ComponentProps<typeof TransactionForm>>
   const defaultProps = {
     categories,
     onSuccess: vi.fn(),
-    onCancel: vi.fn(),
   };
   return render(
     React.createElement(
@@ -204,23 +189,24 @@ describe('TransactionForm', () => {
     useUserPreferencesStore.setState({ currency: null, dateFormat: 'medium', numberLocale: null });
   });
 
-  it('renders correctly', () => {
+  it('renders the three zones', () => {
     renderForm();
-    expect(screen.getByText(/^Category/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Add new/i })).toBeInTheDocument();
+    expect(screen.getByLabelText('amount-test')).toBeInTheDocument();
+    expect(screen.getByLabelText('category-test')).toBeInTheDocument();
+    expect(screen.getByLabelText('date-test')).toBeInTheDocument();
   });
 
   describe('default currency', () => {
     it('pre-fills currency from locale when no preference is set', () => {
       renderForm();
-      const [currencySelect] = screen.getAllByRole('combobox') as HTMLSelectElement[];
+      const currencySelect = screen.getByLabelText('currency-test') as HTMLSelectElement;
       expect(currencySelect.value).toBe(localeCurrency());
     });
 
     it('pre-fills currency from user preference when set', () => {
       useUserPreferencesStore.setState({ currency: 'GBP' });
       renderForm();
-      const [currencySelect] = screen.getAllByRole('combobox') as HTMLSelectElement[];
+      const currencySelect = screen.getByLabelText('currency-test') as HTMLSelectElement;
       expect(currencySelect.value).toBe('GBP');
     });
 
@@ -236,97 +222,32 @@ describe('TransactionForm', () => {
         categoryId: 'cat-1',
       };
       renderForm({ transaction });
-      const [currencySelect] = screen.getAllByRole('combobox') as HTMLSelectElement[];
+      const currencySelect = screen.getByLabelText('currency-test') as HTMLSelectElement;
       expect(currencySelect.value).toBe('EUR');
     });
   });
 
-  it('toggles between existing and new category', async () => {
+  it('creates a transaction with the selected category', async () => {
     renderForm();
     const user = userEvent.setup();
 
-    const addBtn = screen.getByRole('button', { name: /Add new/i });
-    await user.click(addBtn);
+    await user.type(screen.getByPlaceholderText(/Add a note/i), 'New Coffee');
+    await user.type(screen.getByLabelText('amount-test'), '5.50');
+    await user.selectOptions(screen.getByLabelText('category-test'), 'cat-1');
 
-    expect(screen.getByPlaceholderText(/New category name/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Choose existing/i })).toBeInTheDocument();
-
-    const backBtn = screen.getByRole('button', { name: /Choose existing/i });
-    await user.click(backBtn);
-
-    expect(screen.queryByPlaceholderText(/New category name/i)).not.toBeInTheDocument();
-  });
-
-  it('creates a new category then creates transaction', async () => {
-    const onSuccess = vi.fn();
-    renderForm({ onSuccess });
-    const user = userEvent.setup();
-
-    // Fill other fields
-    await user.type(screen.getByPlaceholderText(/Coffee/i), 'New Coffee');
-    const amountInput = screen.getAllByRole('spinbutton')[0]; // AmountInput is mocked as number input
-    await user.type(amountInput, '5.50');
-
-    // Toggle to new category
-    await user.click(screen.getByRole('button', { name: /Add new/i }));
-    await user.type(screen.getByPlaceholderText(/New category name/i), 'Drinks');
-
-    // Mock category creation
-    mockCreateCategory.mutateAsync.mockResolvedValueOnce({ id: 'cat-new', name: 'Drinks' });
-
-    // Click Save
     await user.click(screen.getByRole('button', { name: /Save/i }));
 
-    await waitFor(() =>
-      expect(mockCreateCategory.mutateAsync).toHaveBeenCalledWith({ name: 'Drinks' }),
-    );
-    await waitFor(() =>
-      expect(mockCreateTx.mutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          description: 'New Coffee',
-          amount: 550,
-          categoryId: 'cat-new',
-        }),
-        expect.any(Object),
-      ),
+    expect(mockCreateTx.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'New Coffee',
+        amount: 550,
+        categoryId: 'cat-1',
+      }),
+      expect.any(Object),
     );
   });
 
-  it('shows delete confirmation and deletes transaction', async () => {
-    const onSuccess = vi.fn();
-    const onDeleteSuccess = vi.fn();
-    const transaction = {
-      id: 'tx-1',
-      description: 'Old Coffee',
-      amount: 500,
-      currency: 'EUR',
-      type: 'EXPENSE' as const,
-      date: '2024-01-01',
-      categoryId: 'cat-1',
-    };
-    renderForm({ onSuccess, onDeleteSuccess, transaction });
-    const user = userEvent.setup();
-
-    // Click the delete button
-    await user.click(screen.getByRole('button', { name: /delete transaction/i }));
-
-    // Check if confirmation dialog is shown
-    expect(screen.getByText(/Delete Transaction/)).toBeInTheDocument();
-
-    // Mock delete success
-    mockDeleteTx.mutate.mockImplementationOnce(
-      (_id: string, options: { onSuccess: () => void }) => {
-        options.onSuccess();
-      },
-    );
-
-    // Confirm delete
-    await user.click(screen.getByText(/Confirm Delete/i));
-
-    expect(mockDeleteTx.mutate).toHaveBeenCalledWith('tx-1', expect.any(Object));
-    expect(onDeleteSuccess).toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
-  });
+  // Delete flow moved to TransactionsPage (trash icon in dialog header).
 
   describe('PATCH body construction', () => {
     const existingTransaction = {
@@ -343,8 +264,7 @@ describe('TransactionForm', () => {
       renderForm({ transaction: existingTransaction });
       const user = userEvent.setup();
 
-      // Clear description — user wants to remove it
-      const descInput = screen.getByPlaceholderText(/Coffee/i);
+      const descInput = screen.getByPlaceholderText(/Add a note/i);
       await user.clear(descInput);
 
       await user.click(screen.getByRole('button', { name: /Save/i }));
@@ -353,7 +273,6 @@ describe('TransactionForm', () => {
         expect.objectContaining({ description: null }),
         expect.any(Object),
       );
-      // Explicitly verify undefined is NOT sent — that would silently skip the field in JSON
       const calledWith = mockUpdateTx.mutate.mock.calls[0][0];
       expect(calledWith).not.toMatchObject({ description: undefined });
       expect('description' in calledWith).toBe(true);
@@ -363,7 +282,7 @@ describe('TransactionForm', () => {
       renderForm({ transaction: existingTransaction });
       const user = userEvent.setup();
 
-      const descInput = screen.getByPlaceholderText(/Coffee/i);
+      const descInput = screen.getByPlaceholderText(/Add a note/i);
       await user.clear(descInput);
       await user.type(descInput, 'New Description');
 
@@ -375,17 +294,12 @@ describe('TransactionForm', () => {
       );
     });
 
-    it('sends null for description when form is submitted without one (create)', async () => {
+    it('sends null for description on create when none provided', async () => {
       renderForm();
       const user = userEvent.setup();
 
-      // Fill required fields only — leave description empty
-      const amountInput = screen.getAllByRole('spinbutton')[0];
-      await user.type(amountInput, '5.00');
-
-      // Two comboboxes: currency (index 0) and category (index 1)
-      const [, categorySelect] = screen.getAllByRole('combobox');
-      await user.selectOptions(categorySelect, 'cat-1');
+      await user.type(screen.getByLabelText('amount-test'), '5.00');
+      await user.selectOptions(screen.getByLabelText('category-test'), 'cat-1');
 
       await user.click(screen.getByRole('button', { name: /Save/i }));
 
@@ -396,14 +310,11 @@ describe('TransactionForm', () => {
     });
   });
 
-  it('handles autoFocus correctly', () => {
-    // Create mode: should have autofocus
+  it('forwards autoFocus to HeroAmountInput in create mode but not in edit mode', () => {
     const { unmount } = renderForm();
-    const createInput = screen.getByPlaceholderText(/0\.00/i);
-    expect(createInput).toHaveAttribute('data-autofocus', 'true');
+    expect(screen.getByLabelText('amount-test')).toHaveAttribute('data-autofocus', 'true');
     unmount();
 
-    // Edit mode: should NOT have autofocus
     const transaction = {
       id: 'tx-1',
       description: 'Old Coffee',
@@ -414,7 +325,6 @@ describe('TransactionForm', () => {
       categoryId: 'cat-1',
     };
     renderForm({ transaction });
-    const editInput = screen.getByPlaceholderText(/0\.00/i);
-    expect(editInput).toHaveAttribute('data-autofocus', 'false');
+    expect(screen.getByLabelText('amount-test')).toHaveAttribute('data-autofocus', 'false');
   });
 });

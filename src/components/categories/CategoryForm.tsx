@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { AmountInput } from '@/components/ui/amount-input';
-import { FormActions } from '@/components/ui/form-actions';
+import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 
@@ -10,25 +10,18 @@ interface CategoryFormProps {
   monthlyBudget: string;
   onMonthlyBudgetChange: (value: string) => void;
   onSubmit: (e: SubmitEvent) => void;
-  onCancel: () => void;
-  onDelete?: () => void;
   isPending: boolean;
   error?: string;
   isEditing?: boolean;
   isDisabled?: boolean;
 }
 
-/**
- * A reusable form for creating or editing a category.
- */
 export function CategoryForm({
   name,
   onNameChange,
   monthlyBudget,
   onMonthlyBudgetChange,
   onSubmit,
-  onCancel,
-  onDelete,
   isPending,
   error,
   isEditing = false,
@@ -58,14 +51,11 @@ export function CategoryForm({
         />
       </FormField>
 
-      <FormActions
-        onCancel={onCancel}
-        onDelete={onDelete}
-        isPending={isPending}
-        isDisabled={isDisabled}
-        isEditing={isEditing}
-        deleteAriaLabel="Delete category"
-      />
+      <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 px-6 pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-background/95 backdrop-blur-md sm:static sm:mx-0 sm:mb-0 sm:px-0 sm:pb-0 sm:bg-transparent sm:backdrop-blur-none sm:border-t">
+        <Button type="submit" className="w-full" loading={isPending} disabled={isDisabled}>
+          Save
+        </Button>
+      </div>
     </form>
   );
 }

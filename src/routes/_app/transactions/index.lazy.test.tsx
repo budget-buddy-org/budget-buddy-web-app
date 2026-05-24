@@ -26,6 +26,8 @@ vi.mock('@/hooks/useTransactions', () => ({
   useTransactions: vi.fn(),
   useInfiniteTransactions: vi.fn(),
   useTransaction: vi.fn(),
+  useCreateTransaction: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDeleteTransaction: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
   TRANSACTIONS_PAGE_SIZE: 20,
 }));
 
