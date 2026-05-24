@@ -1,3 +1,9 @@
+## [4.17.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.4...v4.17.0) (2026-05-24)
+
+### Features
+
+* redesign transaction form with mobile-first bottom sheet UX ([#159](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/159)) ([8334316](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/8334316d14a3558efee3e32282060fb0b8ec101e))
+
 ## [4.16.4](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.3...v4.16.4) (2026-05-19)
 
 ### Bug Fixes
