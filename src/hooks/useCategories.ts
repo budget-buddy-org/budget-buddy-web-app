@@ -1,8 +1,4 @@
-import type {
-  CategoryUpdate,
-  CategoryWrite,
-  PaginatedCategories,
-} from '@budget-buddy-org/budget-buddy-contracts';
+import type { CategoryWrite, PaginatedCategories } from '@budget-buddy-org/budget-buddy-contracts';
 import {
   createCategory,
   deleteCategory,
@@ -74,7 +70,7 @@ export function useCreateCategory() {
 export function useUpdateCategory(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: CategoryUpdate) => {
+    mutationFn: async (body: CategoryWrite) => {
       const { data, error } = await updateCategory({
         path: { categoryId: id },
         body,

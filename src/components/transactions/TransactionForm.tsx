@@ -56,9 +56,8 @@ export function TransactionForm({ categories, onSuccess, transaction }: Transact
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    // Send null for description when cleared. The external TransactionWrite
-    // type doesn't accept null, so cast at the mutation call site.
-    const payload: Record<string, unknown> = {
+    // Send null for description when cleared so the API clears any existing note.
+    const payload: TransactionWrite = {
       description: form.description === '' ? null : form.description,
       amount: toMinorUnits(Number(form.amount)),
       type: form.type,
@@ -67,7 +66,7 @@ export function TransactionForm({ categories, onSuccess, transaction }: Transact
       categoryId: form.categoryId,
     };
 
-    currentMutation.mutate(payload as unknown as TransactionWrite, {
+    currentMutation.mutate(payload, {
       onSuccess: () => {
         toast({
           title: isEditing ? 'Transaction updated' : 'Transaction created',

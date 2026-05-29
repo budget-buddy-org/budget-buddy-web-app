@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@budget-buddy-org/budget-buddy-contracts':
-        specifier: ^4.0.0
-        version: 4.1.0
+        specifier: ^6.1.0
+        version: 6.1.0
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -776,8 +776,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@budget-buddy-org/budget-buddy-contracts@4.1.0':
-    resolution: {integrity: sha512-Cw1CE0cHBG1ExtZzWuCS7E/5aiAZY3kbePxg2RozyNwqOZ9PK7wANktjSa+8MZX/bVsnjSXKkfpooyhWJDYnOA==, tarball: https://npm.pkg.github.com/download/@budget-buddy-org/budget-buddy-contracts/4.1.0/9d3d6f8d112e5962fa3d87190ccd02a02c747ac4}
+  '@budget-buddy-org/budget-buddy-contracts@6.1.0':
+    resolution: {integrity: sha512-NPvgdmq/LWmXDgvNibvCFDHZWH1ZriK16MO4igPtVId6PdSOG5cKWn+ST+HnTJvYl5sLDbge9reydjn0yRsaGA==, tarball: https://npm.pkg.github.com/download/@budget-buddy-org/budget-buddy-contracts/6.1.0/d9f2caba7e473ddd3f7c1ec2817f8bc81be45991}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -5512,7 +5512,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@budget-buddy-org/budget-buddy-contracts@4.1.0': {}
+  '@budget-buddy-org/budget-buddy-contracts@6.1.0': {}
 
   '@colors/colors@1.5.0':
     optional: true

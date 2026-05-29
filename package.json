@@ -22,7 +22,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@budget-buddy-org/budget-buddy-contracts": "^4.0.0",
+    "@budget-buddy-org/budget-buddy-contracts": "^6.1.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-toast": "^1.2.15",
