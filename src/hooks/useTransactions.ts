@@ -1,7 +1,6 @@
 import type {
   PaginatedTransactions,
   TransactionType,
-  TransactionUpdate,
   TransactionWrite,
 } from '@budget-buddy-org/budget-buddy-contracts';
 import {
@@ -146,7 +145,7 @@ export function useCreateTransaction() {
 export function useUpdateTransaction(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: TransactionUpdate) => {
+    mutationFn: async (body: TransactionWrite) => {
       const { data, error } = await updateTransaction({
         path: { transactionId: id },
         body,

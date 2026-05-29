@@ -65,6 +65,8 @@ The application uses standalone functional API calls (e.g. `listTransactions`, `
 
 TanStack Query v5. All query/mutation logic lives in hooks under `src/hooks/`. Each domain hook file (e.g. `useTransactions.ts`, `useCategories.ts`) exports a `KEYS` object for consistent cache key management, plus hooks for list, detail, create, update, and delete. Delete mutations use optimistic updates with rollback via `onMutate`/`onError`.
 
+**Create and update share one body type.** As of contracts `6.1.0` there are no partial `*Update` types — both create and update mutations take the full `*Write` type (`CategoryWrite`, `TransactionWrite`) and the update endpoints are `PUT` (full replacement, not `PATCH`). Forms must always submit a complete body, resending unchanged fields. To clear an optional field, send `null` (e.g. `description: null`, `monthlyBudget: null`) — never omit it expecting the server to preserve the old value.
+
 - **Dashboard data sources:** The Dashboard composes three fetches that TanStack Query parallelises automatically:
   - `useCategoriesSummary({ month, currency })` ([src/hooks/useCategoriesSummary.ts](src/hooks/useCategoriesSummary.ts)) — server-side per-category aggregation (`spent`, `monthlyBudget`, `excludedTransactionCount`). Source of truth for the "Expenses by category" section.
   - `useMonthlySummary({ month, currency })` ([src/hooks/useMonthlySummary.ts](src/hooks/useMonthlySummary.ts)) — server-side monthly totals (`income`, `expense`, `balance`, `incomeCount`, `expenseCount`, `excludedTransactionCount`). Source of truth for the Balance / Income / Expenses cards.

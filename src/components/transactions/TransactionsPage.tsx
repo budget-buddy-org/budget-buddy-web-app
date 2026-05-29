@@ -88,7 +88,7 @@ export function TransactionsPage() {
       currency: tx.currency,
       date: tx.date,
       categoryId: tx.categoryId,
-    } as unknown as TransactionWrite;
+    };
     deleteTx.mutate(tx.id, {
       onSuccess: () => {
         const { dismiss } = toast({

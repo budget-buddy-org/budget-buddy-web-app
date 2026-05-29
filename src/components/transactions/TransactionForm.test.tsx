@@ -249,7 +249,9 @@ describe('TransactionForm', () => {
 
   // Delete flow moved to TransactionsPage (trash icon in dialog header).
 
-  describe('PATCH body construction', () => {
+  // Updates use PUT (full-body replacement) since contracts 6.1.0 — the form
+  // must submit a complete TransactionWrite, not a partial patch.
+  describe('Write body construction', () => {
     const existingTransaction = {
       id: 'tx-1',
       description: 'Old Description',
@@ -259,6 +261,28 @@ describe('TransactionForm', () => {
       date: '2024-01-01',
       categoryId: 'cat-1',
     };
+
+    it('sends a complete write body on update', async () => {
+      renderForm({ transaction: existingTransaction });
+      const user = userEvent.setup();
+
+      // Edit a single field; PUT semantics require all other fields to be resent.
+      const descInput = screen.getByPlaceholderText(/Add a note/i);
+      await user.clear(descInput);
+      await user.type(descInput, 'New Description');
+
+      await user.click(screen.getByRole('button', { name: /Save/i }));
+
+      const calledWith = mockUpdateTx.mutate.mock.calls[0][0];
+      expect(calledWith).toEqual({
+        description: 'New Description',
+        amount: 500,
+        type: 'EXPENSE',
+        currency: 'EUR',
+        date: '2024-01-01',
+        categoryId: 'cat-1',
+      });
+    });
 
     it('sends null for description when cleared (not undefined)', async () => {
       renderForm({ transaction: existingTransaction });

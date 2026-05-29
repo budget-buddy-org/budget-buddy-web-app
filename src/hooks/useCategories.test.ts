@@ -174,7 +174,7 @@ describe('useUpdateCategory', () => {
 
     const { result } = renderHook(() => useUpdateCategory('cat-1'), { wrapper });
 
-    result.current.mutate({ monthlyBudget: 50000 });
+    result.current.mutate({ name: 'Groceries', monthlyBudget: 50000 });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['categories-summary'] });
