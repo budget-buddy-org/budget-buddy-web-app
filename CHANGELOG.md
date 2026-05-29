@@ -1,3 +1,9 @@
+## [4.17.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.17.0...v4.17.1) (2026-05-29)
+
+### Bug Fixes
+
+* **deps:** adopt contracts 6.1.0 (unified Write body, PUT updates) ([#165](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/165)) ([6e7266e](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/6e7266ef4bbcf131524e11947ce7d40c7b7e4025))
+
 ## [4.17.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.16.4...v4.17.0) (2026-05-24)
 
 ### Features
