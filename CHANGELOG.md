@@ -1,3 +1,9 @@
+## [4.18.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.17.1...v4.18.0) (2026-05-30)
+
+### Features
+
+* **settings:** sync app settings and add account/data deletion ([#166](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/166)) ([e88f02d](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/e88f02d2d28d717e245cce52123c1821c2ba344e))
+
 ## [4.17.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.17.0...v4.17.1) (2026-05-29)
 
 ### Bug Fixes
