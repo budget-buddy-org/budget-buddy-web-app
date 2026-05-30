@@ -47,7 +47,7 @@ export function DangerZoneSection() {
         }
       },
       onError: () => {
-        setDeleteOpen(false);
+        // Leave the dialog open so the user can retry, matching the clear flow.
         toast({
           title: "Couldn't delete your account",
           description: 'Please try again in a moment.',

@@ -5,8 +5,10 @@ import {
   getCurrentUser,
 } from '@budget-buddy-org/budget-buddy-contracts';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CATEGORIES_KEYS } from '@/hooks/useCategories';
 import { CATEGORIES_SUMMARY_KEYS } from '@/hooks/useCategoriesSummary';
 import { TRANSACTIONS_SUMMARY_KEYS } from '@/hooks/useMonthlySummary';
+import { TRANSACTIONS_KEYS } from '@/hooks/useTransactions';
 
 export const CURRENT_USER_KEYS = {
   all: ['current-user'] as const,
@@ -39,8 +41,8 @@ export function useClearUserData() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['transactions'] });
-      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: TRANSACTIONS_KEYS.all });
+      qc.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
       qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
       qc.invalidateQueries({ queryKey: TRANSACTIONS_SUMMARY_KEYS.all });
     },

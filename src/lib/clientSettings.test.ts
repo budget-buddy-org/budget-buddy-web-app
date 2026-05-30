@@ -107,7 +107,7 @@ describe('parseWebSettings', () => {
     expect(parsed.showNavLabels).toBe(true);
   });
 
-  it('clamps hue/font to their inclusive bounds', () => {
+  it('accepts hue/font at their inclusive bounds and drops out-of-range values', () => {
     expect(parseWebSettings({ primaryHue: 0, fontSize: 12 })).toMatchObject({
       primaryHue: 0,
       fontSize: 12,
