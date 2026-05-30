@@ -80,11 +80,8 @@ export function getUserManager(): UserManager {
  */
 export function onOidcSigninCallback(user: unknown): void {
   const returnUrl =
-    user &&
-    typeof user === 'object' &&
-    'url_state' in user &&
-    typeof (user as { url_state: unknown }).url_state === 'string'
-      ? (user as { url_state: string }).url_state
+    user && typeof user === 'object' && 'url_state' in user && typeof user.url_state === 'string'
+      ? user.url_state
       : '/';
 
   window.history.replaceState({}, document.title, returnUrl);
