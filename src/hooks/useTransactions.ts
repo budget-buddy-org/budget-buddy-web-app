@@ -39,7 +39,7 @@ export interface TransactionFilters {
 
 export const TRANSACTIONS_PAGE_SIZE = 20;
 
-const KEYS = {
+export const TRANSACTIONS_KEYS = {
   all: ['transactions'] as const,
   lists: ['transactions', 'list'] as const,
   list: (filters: TransactionFilters) => ['transactions', 'list', filters] as const,
@@ -51,14 +51,14 @@ const KEYS = {
 // the dashboard reads from. Invalidate them together so summary cards stay in
 // sync after create/update/delete.
 function invalidateTransactionCaches(qc: QueryClient) {
-  qc.invalidateQueries({ queryKey: KEYS.all });
+  qc.invalidateQueries({ queryKey: TRANSACTIONS_KEYS.all });
   qc.invalidateQueries({ queryKey: TRANSACTIONS_SUMMARY_KEYS.all });
   qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
 }
 
 export const transactionsQueryOptions = (filters: TransactionFilters = {}) =>
   queryOptions({
-    queryKey: KEYS.list(filters),
+    queryKey: TRANSACTIONS_KEYS.list(filters),
     queryFn: async () => {
       const { data, error } = await listTransactions({
         query: {
@@ -78,7 +78,7 @@ export function useTransactions(filters: TransactionFilters = {}) {
 
 export const infiniteTransactionsQueryOptions = (filters: TransactionFilters = {}) => {
   return infiniteQueryOptions({
-    queryKey: KEYS.infinite(filters),
+    queryKey: TRANSACTIONS_KEYS.infinite(filters),
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
       const { data, error } = await listTransactions({
@@ -110,7 +110,7 @@ export function useInfiniteTransactions(filters: TransactionFilters = {}) {
 
 export const transactionDetailQueryOptions = (id: string) =>
   queryOptions({
-    queryKey: KEYS.detail(id),
+    queryKey: TRANSACTIONS_KEYS.detail(id),
     queryFn: async () => {
       const { data, error } = await getTransaction({
         path: { transactionId: id },
@@ -155,7 +155,7 @@ export function useUpdateTransaction(id: string) {
     },
     onSuccess: () => {
       invalidateTransactionCaches(qc);
-      qc.invalidateQueries({ queryKey: KEYS.detail(id) });
+      qc.invalidateQueries({ queryKey: TRANSACTIONS_KEYS.detail(id) });
     },
   });
 }
@@ -171,12 +171,12 @@ export function useDeleteTransaction() {
       return id;
     },
     onMutate: async (id) => {
-      await qc.cancelQueries({ queryKey: KEYS.all });
-      const previous = qc.getQueriesData({ queryKey: KEYS.all });
+      await qc.cancelQueries({ queryKey: TRANSACTIONS_KEYS.all });
+      const previous = qc.getQueriesData({ queryKey: TRANSACTIONS_KEYS.all });
 
       // Optimistically update every cached list view — removing the tx by id
       // is safe regardless of the filters each list was fetched with.
-      qc.setQueriesData<PaginatedTransactions>({ queryKey: KEYS.lists }, (old) => {
+      qc.setQueriesData<PaginatedTransactions>({ queryKey: TRANSACTIONS_KEYS.lists }, (old) => {
         if (!old) return old;
         const nextItems = old.items.filter((t) => t.id !== id);
         if (nextItems.length === old.items.length) return old;
@@ -221,7 +221,7 @@ export function useDeleteTransaction() {
     },
     onSuccess: (_data, id) => {
       // Also remove the specific detail query if it exists
-      qc.removeQueries({ queryKey: KEYS.detail(id) });
+      qc.removeQueries({ queryKey: TRANSACTIONS_KEYS.detail(id) });
     },
     onSettled: () => invalidateTransactionCaches(qc),
   });

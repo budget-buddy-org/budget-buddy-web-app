@@ -11,7 +11,7 @@ import { CATEGORIES_SUMMARY_KEYS } from '@/hooks/useCategoriesSummary';
 
 export const CATEGORIES_PAGE_SIZE = 200;
 
-const KEYS = {
+export const CATEGORIES_KEYS = {
   all: ['categories'] as const,
   list: (size: number, page: number) => ['categories', 'list', size, page] as const,
   detail: (id: string) => ['categories', id] as const,
@@ -19,7 +19,7 @@ const KEYS = {
 
 export const categoriesQueryOptions = (size = CATEGORIES_PAGE_SIZE, page = 0) =>
   queryOptions({
-    queryKey: KEYS.list(size, page),
+    queryKey: CATEGORIES_KEYS.list(size, page),
     queryFn: async () => {
       const { data, error } = await listCategories({
         query: { size, page },
@@ -35,7 +35,7 @@ export function useCategories(size = CATEGORIES_PAGE_SIZE, page = 0) {
 
 export const categoryDetailQueryOptions = (id: string) =>
   queryOptions({
-    queryKey: KEYS.detail(id),
+    queryKey: CATEGORIES_KEYS.detail(id),
     queryFn: async () => {
       const { data, error } = await getCategory({
         path: { categoryId: id },
@@ -61,7 +61,7 @@ export function useCreateCategory() {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
       qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
     },
   });
@@ -79,8 +79,8 @@ export function useUpdateCategory(id: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
-      qc.invalidateQueries({ queryKey: KEYS.detail(id) });
+      qc.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
+      qc.invalidateQueries({ queryKey: CATEGORIES_KEYS.detail(id) });
       qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
     },
   });
@@ -97,8 +97,8 @@ export function useDeleteCategory() {
       return id;
     },
     onMutate: async (id) => {
-      await qc.cancelQueries({ queryKey: KEYS.all });
-      const previous = qc.getQueriesData<PaginatedCategories>({ queryKey: KEYS.all });
+      await qc.cancelQueries({ queryKey: CATEGORIES_KEYS.all });
+      const previous = qc.getQueriesData<PaginatedCategories>({ queryKey: CATEGORIES_KEYS.all });
 
       // Optimistically update all paginated lists
       qc.setQueriesData<PaginatedCategories>({ queryKey: ['categories', 'list'] }, (old) =>
@@ -116,10 +116,10 @@ export function useDeleteCategory() {
     },
     onSuccess: (_data, id) => {
       // Also remove the specific detail query if it exists
-      qc.removeQueries({ queryKey: KEYS.detail(id) });
+      qc.removeQueries({ queryKey: CATEGORIES_KEYS.detail(id) });
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
       qc.invalidateQueries({ queryKey: CATEGORIES_SUMMARY_KEYS.all });
     },
   });

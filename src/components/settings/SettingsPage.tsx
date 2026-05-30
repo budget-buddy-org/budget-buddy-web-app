@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { AccountSection } from '@/components/settings/AccountSection';
+import { DangerZoneSection } from '@/components/settings/DangerZoneSection';
 import { FontSizeSection } from '@/components/settings/FontSizeSection';
 import { InterfaceSection } from '@/components/settings/InterfaceSection';
 import { PreferencesSection } from '@/components/settings/PreferencesSection';
@@ -20,6 +21,7 @@ export function SettingsPage() {
         <FontSizeSection />
         <InterfaceSection />
         <VersionSection />
+        <DangerZoneSection />
       </div>
     </PageContainer>
   );
