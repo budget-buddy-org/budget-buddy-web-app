@@ -5,7 +5,7 @@ const HUES = [210, 250, 280, 310, 335, 25, 50, 70, 160, 185] as const;
 function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) >>> 0; // keep unsigned 32-bit
+    hash = (hash * 31 + (str.codePointAt(i) ?? 0)) >>> 0; // keep unsigned 32-bit
   }
   return hash;
 }

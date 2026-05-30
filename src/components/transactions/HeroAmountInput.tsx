@@ -54,12 +54,11 @@ export function HeroAmountInput({
 
   const displayValue = amount ? Number.parseFloat(amount).toFixed(2) : '';
 
-  const valueColor =
-    amountError && displayValue
-      ? 'text-destructive'
-      : type === 'INCOME' && displayValue
-        ? 'text-income'
-        : 'text-foreground';
+  let valueColor = 'text-foreground';
+  if (displayValue) {
+    if (amountError) valueColor = 'text-destructive';
+    else if (type === 'INCOME') valueColor = 'text-income';
+  }
 
   return (
     <div className="flex flex-col items-center gap-3">

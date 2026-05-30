@@ -49,10 +49,10 @@ export function TransactionList({
         groups.push(currentGroup);
       }
       currentGroup.items.push(t);
-      if (t.currency !== currentGroup.currency) {
-        currentGroup.currency = '';
-      } else {
+      if (t.currency === currentGroup.currency) {
         currentGroup.balance += t.type === 'INCOME' ? t.amount : -t.amount;
+      } else {
+        currentGroup.currency = '';
       }
     }
     return groups;
@@ -96,30 +96,31 @@ export function TransactionList({
 
   return (
     <div className="space-y-4">
-      {groupedTransactions.map((group) => (
-        <Card key={group.date}>
-          <CardContent className="p-0">
-            <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
-              <span>{fmtRelativeDate(group.date)}</span>
-              <span className={cn(isBalanceHidden && 'privacy-blur')}>
-                {group.currency
-                  ? `${group.balance > 0 ? '+' : ''}${fmtCurrency(group.balance, group.currency)}`
-                  : 'N/A'}
-              </span>
-            </h2>
-            <ul className="divide-y">
-              {group.items.map((t) => (
-                <TransactionRow
-                  key={t.id}
-                  transaction={t}
-                  categoryName={t.categoryId ? categoryMap[t.categoryId] : undefined}
-                  onEdit={onEdit}
-                />
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ))}
+      {groupedTransactions.map((group) => {
+        const sign = group.balance > 0 ? '+' : '';
+        return (
+          <Card key={group.date}>
+            <CardContent className="p-0">
+              <h2 className="bg-muted px-4 py-1.5 text-xs font-semibold text-muted-foreground sticky top-0 z-10 flex items-center justify-between">
+                <span>{fmtRelativeDate(group.date)}</span>
+                <span className={cn(isBalanceHidden && 'privacy-blur')}>
+                  {group.currency ? `${sign}${fmtCurrency(group.balance, group.currency)}` : 'N/A'}
+                </span>
+              </h2>
+              <ul className="divide-y">
+                {group.items.map((t) => (
+                  <TransactionRow
+                    key={t.id}
+                    transaction={t}
+                    categoryName={t.categoryId ? categoryMap[t.categoryId] : undefined}
+                    onEdit={onEdit}
+                  />
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        );
+      })}
       {isFetchingMore && (
         <Card aria-hidden="true">
           <CardContent className="p-0">

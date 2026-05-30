@@ -22,6 +22,24 @@ async function hardReload() {
   }
 }
 
+// Resolve once a freshly-installed service worker is waiting, or after a timeout.
+function waitForWaitingWorker(registration: ServiceWorkerRegistration): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const timeout = setTimeout(resolve, SW_UPDATE_TIMEOUT);
+    const onUpdateFound = () => {
+      const installing = registration.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && registration.waiting) {
+          clearTimeout(timeout);
+          resolve();
+        }
+      });
+    };
+    registration.addEventListener('updatefound', onUpdateFound);
+  });
+}
+
 export function VersionCheck() {
   const { toast } = useToast();
   const lastCheckedVersion = useRef<string>(__APP_VERSION__);
@@ -130,20 +148,7 @@ export function VersionCheck() {
             return;
           }
 
-          await new Promise<void>((resolve) => {
-            const timeout = setTimeout(resolve, SW_UPDATE_TIMEOUT);
-            const onUpdateFound = () => {
-              const installing = registration.installing;
-              if (!installing) return;
-              installing.addEventListener('statechange', () => {
-                if (installing.state === 'installed' && registration.waiting) {
-                  clearTimeout(timeout);
-                  resolve();
-                }
-              });
-            };
-            registration.addEventListener('updatefound', onUpdateFound);
-          });
+          await waitForWaitingWorker(registration);
 
           if (registration.waiting) {
             updateServiceWorker(true);

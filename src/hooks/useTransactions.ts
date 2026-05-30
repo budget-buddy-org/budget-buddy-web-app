@@ -160,6 +160,27 @@ export function useUpdateTransaction(id: string) {
   });
 }
 
+// Remove a transaction by id from an infinite cache. Every page carries the same
+// meta.total, so on a successful removal we decrement total across all pages to keep
+// them consistent. Returns the original data unchanged if the id wasn't present.
+function removeFromInfiniteData(
+  data: InfiniteData<PaginatedTransactions>,
+  id: string,
+): InfiniteData<PaginatedTransactions> {
+  let removed = false;
+  const pages = data.pages.map((p) => {
+    const nextItems = p.items.filter((t) => t.id !== id);
+    if (nextItems.length === p.items.length) return p;
+    removed = true;
+    return { ...p, items: nextItems };
+  });
+  if (!removed) return data;
+  return {
+    ...data,
+    pages: pages.map((p) => ({ ...p, meta: { ...p.meta, total: Math.max(0, p.meta.total - 1) } })),
+  };
+}
+
 export function useDeleteTransaction() {
   const qc = useQueryClient();
   return useMutation({
@@ -190,24 +211,7 @@ export function useDeleteTransaction() {
       // Same for infinite caches (different shape: { pages, pageParams }).
       qc.setQueriesData<InfiniteData<PaginatedTransactions>>(
         { queryKey: ['transactions', 'infinite'] },
-        (old) => {
-          if (!old) return old;
-          let removed = false;
-          const pages = old.pages.map((p) => {
-            const nextItems = p.items.filter((t) => t.id !== id);
-            if (nextItems.length === p.items.length) return p;
-            removed = true;
-            return { ...p, items: nextItems };
-          });
-          if (!removed) return old;
-          return {
-            ...old,
-            pages: pages.map((p) => ({
-              ...p,
-              meta: { ...p.meta, total: Math.max(0, p.meta.total - 1) },
-            })),
-          };
-        },
+        (old) => (old ? removeFromInfiniteData(old, id) : old),
       );
 
       return { previous };

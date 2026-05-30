@@ -78,6 +78,13 @@ export function TransactionsPage() {
   const deleteTx = useDeleteTransaction();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const restoreTransaction = (snapshot: TransactionWrite) => {
+    createTx.mutate(snapshot, {
+      onSuccess: () => toast({ title: 'Transaction restored', variant: 'success' }),
+      onError: () => toast({ title: "Couldn't restore transaction", variant: 'destructive' }),
+    });
+  };
+
   const handleDelete = () => {
     const tx = render.transaction;
     if (!tx?.id) return;
@@ -99,14 +106,7 @@ export function TransactionsPage() {
             <ToastAction
               altText="Undo delete"
               onClick={() => {
-                createTx.mutate(snapshot, {
-                  onSuccess: () => {
-                    toast({ title: 'Transaction restored', variant: 'success' });
-                  },
-                  onError: () => {
-                    toast({ title: "Couldn't restore transaction", variant: 'destructive' });
-                  },
-                });
+                restoreTransaction(snapshot);
                 dismiss();
               }}
             >

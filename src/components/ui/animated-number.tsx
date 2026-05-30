@@ -44,7 +44,7 @@ export function AnimatedNumber({ value, duration = 600, format, className }: Pro
     let start: number | null = null;
 
     const tick = (now: number) => {
-      if (start === null) start = now;
+      start ??= now;
       const elapsed = now - start;
       const t = effectiveDuration > 0 ? Math.min(1, elapsed / effectiveDuration) : 1;
       const eased = EASE_OUT_CUBIC(t);

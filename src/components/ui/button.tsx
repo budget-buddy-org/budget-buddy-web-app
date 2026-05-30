@@ -54,7 +54,7 @@ function Button({
       disabled={loading || disabled}
       {...props}
     >
-      {asChild ? children : loading ? renderLoadingChildren(children) : children}
+      {!asChild && loading ? renderLoadingChildren(children) : children}
     </Comp>
   );
 }

@@ -85,12 +85,9 @@ export function CategoriesCard({
                   const color = getCategoryColor(row.name);
                   const hasBudget = row.monthlyBudget != null;
                   const budget = row.monthlyBudget ?? 0;
-                  const pct =
-                    budget > 0
-                      ? Math.min(100, Math.round((row.spent / budget) * 100))
-                      : row.spent > 0
-                        ? 100
-                        : 0;
+                  let pct = 0;
+                  if (budget > 0) pct = Math.min(100, Math.round((row.spent / budget) * 100));
+                  else if (row.spent > 0) pct = 100;
                   const overBudget = hasBudget && row.spent > budget;
                   return (
                     <li key={row.categoryId} className="-mx-1 rounded-md p-1">

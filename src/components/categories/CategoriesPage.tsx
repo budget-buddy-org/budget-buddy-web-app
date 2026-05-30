@@ -1,7 +1,7 @@
-import type { Category } from '@budget-buddy-org/budget-buddy-contracts';
+import type { Category, CategoryWrite } from '@budget-buddy-org/budget-buddy-contracts';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Trash2, X } from 'lucide-react';
-import type { SubmitEvent } from 'react';
+import type { ReactNode, SubmitEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { CategoryForm } from '@/components/categories/CategoryForm';
@@ -73,9 +73,22 @@ export function CategoriesPage() {
     navigate({ to: '/categories', search: {}, replace: true });
   }, [navigate]);
 
+  const restoreCategory = useCallback(
+    (snapshot: CategoryWrite) => {
+      createCategory.mutate(snapshot, {
+        onSuccess: () => toast({ title: 'Category restored', variant: 'success' }),
+        onError: () => toast({ title: "Couldn't restore category", variant: 'destructive' }),
+      });
+    },
+    [createCategory, toast],
+  );
+
   const handleDeleteCategory = useCallback(
     (category: Category) => {
-      const snapshot = { name: category.name, monthlyBudget: category.monthlyBudget ?? null };
+      const snapshot: CategoryWrite = {
+        name: category.name,
+        monthlyBudget: category.monthlyBudget ?? null,
+      };
       deleteCategory.mutate(category.id, {
         onSuccess: () => {
           setShowDeleteConfirm(false);
@@ -88,14 +101,7 @@ export function CategoriesPage() {
               <ToastAction
                 altText="Undo delete"
                 onClick={() => {
-                  createCategory.mutate(snapshot, {
-                    onSuccess: () => {
-                      toast({ title: 'Category restored', variant: 'success' });
-                    },
-                    onError: () => {
-                      toast({ title: "Couldn't restore category", variant: 'destructive' });
-                    },
-                  });
+                  restoreCategory(snapshot);
                   dismiss();
                 }}
               >
@@ -109,7 +115,7 @@ export function CategoriesPage() {
         },
       });
     },
-    [closeEdit, createCategory, deleteCategory, toast],
+    [closeEdit, deleteCategory, restoreCategory, toast],
   );
 
   const handleCreate = useCallback(
@@ -143,6 +149,26 @@ export function CategoriesPage() {
   );
 
   const categories = data?.items ?? [];
+
+  let categoriesBody: ReactNode;
+  if (isLoading) {
+    categoriesBody = <ListSkeleton count={6} />;
+  } else if (categories.length === 0) {
+    categoriesBody = <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>;
+  } else {
+    categoriesBody = (
+      <ul className="divide-y">
+        {categories.map((c) => (
+          <CategoryRow
+            key={c.id}
+            name={c.name}
+            monthlyBudget={c.monthlyBudget ?? null}
+            onStartEdit={() => openEdit(c.id)}
+          />
+        ))}
+      </ul>
+    );
+  }
 
   return (
     <PageContainer>
@@ -267,24 +293,7 @@ export function CategoriesPage() {
       />
 
       <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <ListSkeleton count={6} />
-          ) : categories.length === 0 ? (
-            <p className="px-6 py-4 text-sm text-muted-foreground">No categories yet.</p>
-          ) : (
-            <ul className="divide-y">
-              {categories.map((c) => (
-                <CategoryRow
-                  key={c.id}
-                  name={c.name}
-                  monthlyBudget={c.monthlyBudget ?? null}
-                  onStartEdit={() => openEdit(c.id)}
-                />
-              ))}
-            </ul>
-          )}
-        </CardContent>
+        <CardContent className="p-0">{categoriesBody}</CardContent>
       </Card>
 
       {!isLoading && categories.length > 0 && (

@@ -50,9 +50,9 @@ export function Sparkline({
   const path = points
     .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`)
     .join(' ');
-  const area = `${path} L${points[points.length - 1][0].toFixed(2)} ${HEIGHT - PADDING} L${points[0][0].toFixed(2)} ${HEIGHT - PADDING} Z`;
+  const last = points.at(-1) ?? points[0];
+  const area = `${path} L${last[0].toFixed(2)} ${HEIGHT - PADDING} L${points[0][0].toFixed(2)} ${HEIGHT - PADDING} Z`;
   const stroke = VARIANT_STROKE[variant];
-  const last = points[points.length - 1];
   const dotLeft = `${(last[0] / WIDTH) * 100}%`;
   const dotTop = `${(last[1] / HEIGHT) * 100}%`;
 

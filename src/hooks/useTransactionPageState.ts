@@ -96,7 +96,7 @@ export function useTransactionPageState() {
         categoryId: newFilters.categoryId || undefined,
         start: newFilters.start || undefined,
         end: newFilters.end || undefined,
-        sort: newFilters.sort !== 'desc' ? newFilters.sort : undefined,
+        sort: newFilters.sort === 'desc' ? undefined : newFilters.sort,
         type: newFilters.type || undefined,
         query: newFilters.query || undefined,
         amountMin: newFilters.amountMin,

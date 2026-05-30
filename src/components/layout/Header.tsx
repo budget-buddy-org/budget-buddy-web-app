@@ -23,7 +23,7 @@ export function Header() {
         to="/"
         className="font-semibold tracking-tight hover:opacity-80 active:opacity-60 transition-opacity motion-reduce:transition-none"
       >
-        Budget Buddy
+        <span>Budget Buddy</span>
         <span className="ml-1.5 text-xs font-normal text-muted-foreground">v{__APP_VERSION__}</span>
       </Link>
       <div className="flex items-center gap-1 sm:gap-2">
