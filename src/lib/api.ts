@@ -2,21 +2,23 @@ import { client } from '@budget-buddy-org/budget-buddy-contracts/client.gen';
 import type { User } from 'oidc-client-ts';
 import { getUserManager } from '@/lib/oidc';
 
-// Only proactively refresh when the token is basically gone. The SDK's
-// automaticSilentRenew already fires 60s before expiry; overlapping with it
-// causes duplicate refresh-token redemptions, which IdPs that enable
-// refresh-token rotation treat as token theft and invalidate the session.
-// This safety net only kicks in when the SDK's setTimeout was throttled or
-// killed in a backgrounded tab.
+// Only proactively refresh when the token is basically gone. In the normal case
+// the SDK's automaticSilentRenew (which fires ~60s before expiry) handles
+// renewal; this safety net only kicks in when that setTimeout was throttled or
+// killed in a backgrounded tab. Duplicate redemptions of a rotating refresh
+// token (which IdPs treat as theft and revoke the whole family) are prevented
+// globally by coalesceSilentRenew() in oidc.ts, which funnels every
+// signinSilent() — this module's, the SDK's, and the route guard's — through a
+// single in-flight redemption.
 const REFRESH_THRESHOLD_SECONDS = 10;
 
-// Match the SDK's automaticSilentRenew window so both paths share pendingSilentRenew
-// and only one refresh-token redemption occurs per expiry cycle.
+// On tab re-focus, refresh within the same ~60s window the SDK targets so the
+// token is fresh before the first API call fires.
 const VISIBILITY_REFRESH_THRESHOLD_SECONDS = 60;
 
-// Dedupe concurrent refreshes. Multiple in-flight API requests must share a
-// single signinSilent() call; otherwise we redeem the same refresh token N
-// times in parallel and get rotated out.
+// Dedupe this module's own concurrent refreshes onto one signinSilent() call.
+// (coalesceSilentRenew() in oidc.ts additionally dedupes across the SDK and the
+// route guard.)
 let pendingSilentRenew: Promise<User | null> | null = null;
 
 function refreshSilently(): Promise<User | null> {
@@ -79,16 +81,12 @@ client.interceptors.response.use(async (response, request) => {
 });
 
 // When a background tab is re-focused, the SDK's automaticSilentRenew timer may
-// have been throttled by the browser, leaving an expired token in storage. Both
-// the SDK's delayed timer and the first API request's getAuthToken() safety net
-// then call signinSilent() concurrently — redeeming the same refresh token twice.
-// IdPs with refresh-token rotation treat duplicate redemptions as token theft and
-// invalidate the entire session.
-//
-// A visibilitychange listener proactively refreshes within the same 60-second
-// window the SDK targets, before any API calls fire. Because it goes through
-// refreshSilently(), it shares pendingSilentRenew with both getAuthToken() and the
-// SDK's delayed timer, ensuring only one token redemption ever occurs.
+// have been throttled by the browser, leaving an expired token in storage. This
+// visibilitychange listener proactively refreshes within the same ~60s window the
+// SDK targets, before any API call fires, so requests never go out with a stale
+// token. Going through refreshSilently() (and ultimately coalesceSilentRenew() in
+// oidc.ts) guarantees this never races the SDK's delayed timer or getAuthToken()
+// into a duplicate refresh-token redemption.
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;

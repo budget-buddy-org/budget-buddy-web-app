@@ -1,5 +1,6 @@
+import type { UserManager } from 'oidc-client-ts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildOidcSettings, onOidcSigninCallback } from './oidc';
+import { buildOidcSettings, coalesceSilentRenew, onOidcSigninCallback } from './oidc';
 
 describe('buildOidcSettings', () => {
   it('builds settings from issuer and clientId with default scopes', () => {
@@ -91,6 +92,77 @@ describe('getUserManager / initUserManager', () => {
     );
 
     expect(freshGet()).toBe(mgr);
+  });
+});
+
+describe('coalesceSilentRenew', () => {
+  function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  }
+
+  it('merges overlapping calls into a single underlying redemption', async () => {
+    const d = deferred<{ access_token: string }>();
+    const original = vi.fn(() => d.promise);
+    const um = { signinSilent: original } as unknown as UserManager;
+
+    coalesceSilentRenew(um);
+
+    const calls = [um.signinSilent(), um.signinSilent(), um.signinSilent()];
+    expect(original).toHaveBeenCalledTimes(1);
+
+    d.resolve({ access_token: 'fresh' });
+    const results = await Promise.all(calls);
+    expect(results).toEqual([
+      { access_token: 'fresh' },
+      { access_token: 'fresh' },
+      { access_token: 'fresh' },
+    ]);
+  });
+
+  it('allows a fresh redemption once the previous one settles', async () => {
+    const first = deferred<{ access_token: string }>();
+    const second = deferred<{ access_token: string }>();
+    const original = vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
+    const um = { signinSilent: original } as unknown as UserManager;
+
+    coalesceSilentRenew(um);
+
+    const p1 = um.signinSilent();
+    first.resolve({ access_token: 'one' });
+    await p1;
+
+    const p2 = um.signinSilent();
+    second.resolve({ access_token: 'two' });
+    await p2;
+
+    expect(original).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears the in-flight promise after a rejection so renews can be retried', async () => {
+    const failing = deferred<{ access_token: string }>();
+    const succeeding = deferred<{ access_token: string }>();
+    const original = vi
+      .fn()
+      .mockReturnValueOnce(failing.promise)
+      .mockReturnValueOnce(succeeding.promise);
+    const um = { signinSilent: original } as unknown as UserManager;
+
+    coalesceSilentRenew(um);
+
+    const p1 = um.signinSilent();
+    failing.reject(new Error('rotation reuse'));
+    await expect(p1).rejects.toThrow('rotation reuse');
+
+    const p2 = um.signinSilent();
+    succeeding.resolve({ access_token: 'recovered' });
+    await expect(p2).resolves.toEqual({ access_token: 'recovered' });
+    expect(original).toHaveBeenCalledTimes(2);
   });
 });
 
