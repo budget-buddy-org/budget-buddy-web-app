@@ -12,7 +12,7 @@ type Props = {
 const EASE_OUT_CUBIC = (t: number) => 1 - (1 - t) ** 3;
 
 function prefersReducedMotion(): boolean {
-  if (typeof globalThis.window === 'undefined' || typeof globalThis.matchMedia !== 'function') {
+  if (globalThis.window === undefined || typeof globalThis.matchMedia !== 'function') {
     return false;
   }
   return globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;

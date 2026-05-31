@@ -13,7 +13,7 @@ function emitChange() {
 
 // Capture the event globally (fires once per page load, before any React
 // component may have mounted).
-if (typeof globalThis.window !== 'undefined') {
+if (globalThis.window !== undefined) {
   globalThis.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e as BeforeInstallPromptEvent;

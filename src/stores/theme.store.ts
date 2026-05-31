@@ -22,7 +22,7 @@ interface ThemeState {
 }
 
 function getSystemTheme(): 'light' | 'dark' {
-  if (typeof globalThis.window === 'undefined' || !globalThis.matchMedia) return 'light';
+  if (globalThis.window === undefined || !globalThis.matchMedia) return 'light';
   return globalThis.matchMedia(SYSTEM_THEME_MEDIA).matches ? 'dark' : 'light';
 }
 
@@ -55,8 +55,7 @@ export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
 let systemThemeCleanup: (() => void) | null = null;
 
 function attachSystemThemeListener(getState: () => ThemeState) {
-  if (systemThemeCleanup || typeof globalThis.window === 'undefined' || !globalThis.matchMedia)
-    return;
+  if (systemThemeCleanup || globalThis.window === undefined || !globalThis.matchMedia) return;
 
   const mediaQuery = globalThis.matchMedia(SYSTEM_THEME_MEDIA);
   const handleSystemThemeChange = () => {

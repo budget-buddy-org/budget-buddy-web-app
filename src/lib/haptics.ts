@@ -28,7 +28,7 @@ function isSupported(): boolean {
 
 function prefersReducedMotion(): boolean {
   if (cachedReducedMotion !== null) return cachedReducedMotion;
-  if (typeof globalThis.window === 'undefined' || typeof globalThis.matchMedia !== 'function') {
+  if (globalThis.window === undefined || typeof globalThis.matchMedia !== 'function') {
     cachedReducedMotion = false;
     return false;
   }

@@ -47,6 +47,6 @@ const localStorageMock = (() => {
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 // Mock scrollTo since it's not implemented in JSDOM
-if (typeof globalThis.window !== 'undefined') {
+if (globalThis.window !== undefined) {
   Element.prototype.scrollTo = vi.fn();
 }
