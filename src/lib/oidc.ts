@@ -1,4 +1,9 @@
-import { UserManager, type UserManagerSettings, WebStorageStateStore } from 'oidc-client-ts';
+import {
+  type User,
+  UserManager,
+  type UserManagerSettings,
+  WebStorageStateStore,
+} from 'oidc-client-ts';
 
 let _userManager: UserManager | null = null;
 
@@ -50,6 +55,31 @@ export function buildOidcSettings(
 }
 
 /**
+ * Coalesces concurrent silent-renew calls into a single in-flight refresh-token
+ * redemption.
+ *
+ * Zitadel (like most IdPs) rotates the refresh token on every redemption and
+ * treats a second redemption of the now-rotated token as token theft, revoking
+ * the entire token family. On an iOS PWA cold start several renew triggers can
+ * fire at once — the SDK's automaticSilentRenew, the route guard, the API
+ * request interceptor and the visibilitychange listener — each calling
+ * userManager.signinSilent(). Both react-oidc-context's navigator wrappers and
+ * the SDK's SilentRenewService invoke the public instance method, so wrapping it
+ * here funnels every path through one redemption. Sequential renews (the normal
+ * rotation cycle) are unaffected — only overlapping calls are merged.
+ */
+export function coalesceSilentRenew(userManager: UserManager): void {
+  const original = userManager.signinSilent.bind(userManager);
+  let inFlight: Promise<User | null> | null = null;
+  userManager.signinSilent = ((args?: Parameters<UserManager['signinSilent']>[0]) => {
+    inFlight ??= Promise.resolve(original(args)).finally(() => {
+      inFlight = null;
+    });
+    return inFlight;
+  }) as UserManager['signinSilent'];
+}
+
+/**
  * Initializes the shared UserManager with runtime-loaded OIDC config.
  * Must be called once in main.tsx after loadConfig() resolves, before rendering.
  */
@@ -59,6 +89,7 @@ export function initUserManager(
   extraScopes?: string,
 ): UserManager {
   _userManager = new UserManager(buildOidcSettings(issuer, clientId, extraScopes));
+  coalesceSilentRenew(_userManager);
   return _userManager;
 }
 
