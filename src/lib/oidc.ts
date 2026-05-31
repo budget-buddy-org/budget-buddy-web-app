@@ -84,5 +84,5 @@ export function onOidcSigninCallback(user: unknown): void {
       ? user.url_state
       : '/';
 
-  window.history.replaceState({}, document.title, returnUrl);
+  globalThis.history.replaceState({}, document.title, returnUrl);
 }

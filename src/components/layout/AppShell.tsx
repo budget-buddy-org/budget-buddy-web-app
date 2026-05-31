@@ -5,7 +5,7 @@ import { FABProvider } from '@/contexts/fab-provider';
 import { Header } from './Header';
 import { MobileNav, SidebarNav } from './MobileNav';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <FABProvider>
       <div className="flex min-h-dvh flex-col">

@@ -22,7 +22,7 @@ export function PageHeader({
   isSubtitleEssential,
   primaryAction,
   children,
-}: PageHeaderProps) {
+}: Readonly<PageHeaderProps>) {
   const showDescriptions = useThemeStore((s) => s.showDescriptions);
 
   // Register the primary action as the mobile FAB (clears on unmount)

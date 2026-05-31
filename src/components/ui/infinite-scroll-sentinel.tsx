@@ -13,7 +13,7 @@ export function InfiniteScrollSentinel({
   isFetchingNextPage,
   onLoadMore,
   total,
-}: InfiniteScrollSentinelProps) {
+}: Readonly<InfiniteScrollSentinelProps>) {
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {

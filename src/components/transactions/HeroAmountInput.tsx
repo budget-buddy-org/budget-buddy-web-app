@@ -29,7 +29,7 @@ export function HeroAmountInput({
   typeError,
   currencyError,
   autoFocus,
-}: HeroAmountInputProps) {
+}: Readonly<HeroAmountInputProps>) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

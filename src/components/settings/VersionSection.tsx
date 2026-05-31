@@ -16,7 +16,7 @@ export function VersionSection() {
         <Button
           variant="outline"
           className="cursor-pointer"
-          onClick={() => window.location.reload()}
+          onClick={() => globalThis.location.reload()}
         >
           <RefreshCw className="size-4" />
           Reload App

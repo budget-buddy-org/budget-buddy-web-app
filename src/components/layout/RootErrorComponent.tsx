@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
-export function RootErrorComponent({ error }: { error: Error }) {
+export function RootErrorComponent({ error }: Readonly<{ error: Error }>) {
   const router = useRouter();
   const [showDetails, setShowDetails] = useState(false);
 

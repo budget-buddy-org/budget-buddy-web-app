@@ -20,7 +20,7 @@ function AmountInput({
   error,
   allowZero = false,
   ...props
-}: AmountInputProps) {
+}: Readonly<AmountInputProps>) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Extract digits only
     const digits = e.target.value.replaceAll(/\D/g, '');

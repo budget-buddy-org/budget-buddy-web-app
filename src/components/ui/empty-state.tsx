@@ -14,7 +14,7 @@ interface EmptyStateProps {
 /**
  * A standard empty state component for lists and dashboards.
  */
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: Readonly<EmptyStateProps>) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
       {icon && <div className="rounded-pill bg-muted p-3">{icon}</div>}

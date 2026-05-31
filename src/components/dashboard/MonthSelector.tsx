@@ -32,14 +32,14 @@ export function MonthSelector({
   currentMonth,
   glassEffect,
   onChange,
-}: {
+}: Readonly<{
   year: number;
   month: number;
   currentYear: number;
   currentMonth: number;
   glassEffect: boolean;
   onChange: (year: number, month: number) => void;
-}) {
+}>) {
   const qc = useQueryClient();
   const preferredCurrency = useUserPreferencesStore((s) => s.currency);
   const currency = preferredCurrency ?? localeCurrency();
@@ -109,8 +109,8 @@ export function MonthSelector({
           break;
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    globalThis.addEventListener('keydown', handler);
+    return () => globalThis.removeEventListener('keydown', handler);
   }, [move, open]);
 
   const prefetchPeriod = useCallback(

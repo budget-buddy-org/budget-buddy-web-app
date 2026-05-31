@@ -24,7 +24,7 @@ describe('useThemeStore', () => {
     document.documentElement.style.removeProperty('--primary-hue');
     document.documentElement.style.removeProperty('--font-size-base');
 
-    Object.defineProperty(window, 'matchMedia', {
+    Object.defineProperty(globalThis, 'matchMedia', {
       configurable: true,
       writable: true,
       value: vi.fn().mockImplementation(() => ({

@@ -26,7 +26,7 @@ export function TransactionList({
   isFetchingMore = false,
   onResetFilters,
   onEdit,
-}: TransactionListProps) {
+}: Readonly<TransactionListProps>) {
   const { fmtCurrency, fmtRelativeDate } = useFormatters();
   const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
   const categoryMap = useMemo(

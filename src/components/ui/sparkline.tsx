@@ -17,12 +17,12 @@ export function Sparkline({
   isLoading = false,
   variant = 'balance',
   className,
-}: {
+}: Readonly<{
   values: number[];
   isLoading?: boolean;
   variant?: SparklineVariant;
   className?: string;
-}) {
+}>) {
   if (isLoading || values.length < 2) {
     return (
       <div

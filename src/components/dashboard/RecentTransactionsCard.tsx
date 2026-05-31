@@ -13,11 +13,11 @@ export function RecentTransactionsCard({
   transactions,
   isLoading,
   hasFetched,
-}: {
+}: Readonly<{
   transactions: Transaction[];
   isLoading: boolean;
   hasFetched: boolean;
-}) {
+}>) {
   const navigate = useNavigate();
   const { fmtDate } = useFormatters();
 

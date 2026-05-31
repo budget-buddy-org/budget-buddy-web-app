@@ -9,6 +9,6 @@ interface PageContainerProps {
 /**
  * Standard container for all top-level pages to ensure consistent spacing.
  */
-export function PageContainer({ children, className }: PageContainerProps) {
+export function PageContainer({ children, className }: Readonly<PageContainerProps>) {
   return <div className={cn('space-y-6', className)}>{children}</div>;
 }

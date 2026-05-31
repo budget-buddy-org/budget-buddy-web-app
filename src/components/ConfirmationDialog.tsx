@@ -30,7 +30,7 @@ export function ConfirmationDialog({
   cancelText = 'Cancel',
   variant = 'default',
   isLoading = false,
-}: ConfirmationDialogProps) {
+}: Readonly<ConfirmationDialogProps>) {
   const handleConfirm = () => {
     if (variant === 'destructive' && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate(50);

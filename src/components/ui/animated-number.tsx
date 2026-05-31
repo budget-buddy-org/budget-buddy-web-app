@@ -12,10 +12,10 @@ type Props = {
 const EASE_OUT_CUBIC = (t: number) => 1 - (1 - t) ** 3;
 
 function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (typeof globalThis.window === 'undefined' || typeof globalThis.matchMedia !== 'function') {
     return false;
   }
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /**
@@ -24,7 +24,7 @@ function prefersReducedMotion(): boolean {
  * changes animate. Reduced-motion settings collapse the animation to a single
  * frame so the value updates without movement.
  */
-export function AnimatedNumber({ value, duration = 600, format, className }: Props) {
+export function AnimatedNumber({ value, duration = 600, format, className }: Readonly<Props>) {
   const [display, setDisplay] = useState(value);
   // Updated synchronously inside `tick` so a mid-animation value change
   // animates from the *current* on-screen position, not a stale frame.

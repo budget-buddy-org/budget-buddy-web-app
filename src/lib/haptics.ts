@@ -28,11 +28,11 @@ function isSupported(): boolean {
 
 function prefersReducedMotion(): boolean {
   if (cachedReducedMotion !== null) return cachedReducedMotion;
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+  if (typeof globalThis.window === 'undefined' || typeof globalThis.matchMedia !== 'function') {
     cachedReducedMotion = false;
     return false;
   }
-  const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mql = globalThis.matchMedia('(prefers-reduced-motion: reduce)');
   cachedReducedMotion = mql.matches;
   // Live-update if the user changes the setting mid-session.
   mql.addEventListener?.('change', (e) => {

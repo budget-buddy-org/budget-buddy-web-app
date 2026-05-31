@@ -19,7 +19,7 @@ export function ListItem({
   className,
   as: Component = 'li',
   ariaLabel,
-}: ListItemProps) {
+}: Readonly<ListItemProps>) {
   const content = (
     <button
       type="button"

@@ -13,12 +13,12 @@ async function hardReload() {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((r) => r.unregister()));
     }
-    if ('caches' in window) {
+    if ('caches' in globalThis) {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
   } finally {
-    window.location.reload();
+    globalThis.location.reload();
   }
 }
 
@@ -60,7 +60,7 @@ export function VersionCheck() {
             altText="Reload app to update"
             onClick={() => {
               if (onReload) onReload();
-              else window.location.reload();
+              else globalThis.location.reload();
             }}
           >
             Reload
@@ -117,7 +117,7 @@ export function VersionCheck() {
   });
 
   // Handle updates from version.json. The SW may still be serving the old precache,
-  // so a plain window.location.reload() can come back as the same version. Nudge the
+  // so a plain location.reload() can come back as the same version. Nudge the
   // SW to update; if a waiting worker shows up, skip-waiting + reload via
   // updateServiceWorker(true). Otherwise fall back to a hard reload that unregisters
   // the SW and clears caches.

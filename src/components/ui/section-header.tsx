@@ -11,7 +11,7 @@ interface SectionHeaderProps {
  * A reusable section header with an optional icon.
  * Used primarily in Settings and multisection pages.
  */
-export function SectionHeader({ title, icon: Icon, className }: SectionHeaderProps) {
+export function SectionHeader({ title, icon: Icon, className }: Readonly<SectionHeaderProps>) {
   return (
     <div className={cn('flex items-center gap-2', className)}>
       {Icon && <Icon className="size-4 text-primary" />}

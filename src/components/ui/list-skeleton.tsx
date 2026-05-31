@@ -12,7 +12,11 @@ const SKELETON_KEYS = Array.from({ length: 20 }, (_, i) => `sk-${i}`);
 /**
  * A generic skeleton for lists of items (transactions, categories, etc.)
  */
-export function ListSkeleton({ count = 5, className, showIcon = false }: ListSkeletonProps) {
+export function ListSkeleton({
+  count = 5,
+  className,
+  showIcon = false,
+}: Readonly<ListSkeletonProps>) {
   return (
     <div className={cn('divide-y', className)}>
       {SKELETON_KEYS.slice(0, count).map((key) => (

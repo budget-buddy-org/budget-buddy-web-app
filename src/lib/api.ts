@@ -70,7 +70,7 @@ client.interceptors.response.use(async (response, request) => {
       const refreshed = await refreshSilently();
       if (!refreshed) {
         await getUserManager().signinRedirect({
-          url_state: window.location.pathname + window.location.search,
+          url_state: globalThis.location.pathname + globalThis.location.search,
         });
       }
     }

@@ -20,7 +20,7 @@ function yesterdayIso(): string {
   return toLocalIsoDate(d);
 }
 
-export function DateQuickPicker({ value, onChange, error, id }: DateQuickPickerProps) {
+export function DateQuickPicker({ value, onChange, error, id }: Readonly<DateQuickPickerProps>) {
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const numberLocale = useUserPreferencesStore((s) => s.numberLocale ?? browserLocale());
   const pickerRef = useRef<HTMLInputElement>(null);
@@ -83,12 +83,12 @@ function ChipTab({
   glassEffect,
   onClick,
   children,
-}: {
+}: Readonly<{
   selected: boolean;
   glassEffect: boolean | undefined;
   onClick: () => void;
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <button
       type="button"

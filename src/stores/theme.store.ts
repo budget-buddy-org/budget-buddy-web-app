@@ -22,8 +22,8 @@ interface ThemeState {
 }
 
 function getSystemTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined' || !window.matchMedia) return 'light';
-  return window.matchMedia(SYSTEM_THEME_MEDIA).matches ? 'dark' : 'light';
+  if (typeof globalThis.window === 'undefined' || !globalThis.matchMedia) return 'light';
+  return globalThis.matchMedia(SYSTEM_THEME_MEDIA).matches ? 'dark' : 'light';
 }
 
 function syncMetaThemeColor(resolved: 'light' | 'dark', primaryHue: number) {
@@ -55,9 +55,10 @@ export function applyTheme(theme: Theme, primaryHue: number, fontSize: number) {
 let systemThemeCleanup: (() => void) | null = null;
 
 function attachSystemThemeListener(getState: () => ThemeState) {
-  if (systemThemeCleanup || typeof window === 'undefined' || !window.matchMedia) return;
+  if (systemThemeCleanup || typeof globalThis.window === 'undefined' || !globalThis.matchMedia)
+    return;
 
-  const mediaQuery = window.matchMedia(SYSTEM_THEME_MEDIA);
+  const mediaQuery = globalThis.matchMedia(SYSTEM_THEME_MEDIA);
   const handleSystemThemeChange = () => {
     const { theme, primaryHue, fontSize } = getState();
     if (theme === 'system') {

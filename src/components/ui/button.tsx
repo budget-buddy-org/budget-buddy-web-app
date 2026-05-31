@@ -39,7 +39,7 @@ function Button({
   disabled,
   ref,
   ...props
-}: ButtonProps) {
+}: Readonly<ButtonProps>) {
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const Comp = asChild ? Slot : 'button';
   return (

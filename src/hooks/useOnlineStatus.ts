@@ -1,11 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
 function subscribe(callback: () => void) {
-  window.addEventListener('online', callback);
-  window.addEventListener('offline', callback);
+  globalThis.addEventListener('online', callback);
+  globalThis.addEventListener('offline', callback);
   return () => {
-    window.removeEventListener('online', callback);
-    window.removeEventListener('offline', callback);
+    globalThis.removeEventListener('online', callback);
+    globalThis.removeEventListener('offline', callback);
   };
 }
 
