@@ -1,3 +1,9 @@
+## [4.18.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.0...v4.18.1) (2026-05-31)
+
+### Bug Fixes
+
+* resolve SonarQube findings (security, correctness, code smells, style) ([#167](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/167)) ([fd5c98f](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/fd5c98fe33a96a657d858b85bb4e0ff2cee908e4)), closes [Array#at](https://github.com/budget-buddy-org/Array/issues/at)
+
 ## [4.18.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.17.1...v4.18.0) (2026-05-30)
 
 ### Features
