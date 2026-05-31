@@ -1,4 +1,5 @@
 # Budget Buddy — Web App
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=budget-buddy-org_budget-buddy-web-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=budget-buddy-org_budget-buddy-web-app)
 
 React 19 frontend for the Budget Buddy personal finance app. Features transaction and category management, a monthly spending dashboard with expenses by category, and real-time feedback with a global notification system.
 
