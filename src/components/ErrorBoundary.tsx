@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+function DefaultErrorFallback({ error, reset }: Readonly<{ error: Error; reset: () => void }>) {
   const [showDetails, setShowDetails] = useState(false);
 
   return (

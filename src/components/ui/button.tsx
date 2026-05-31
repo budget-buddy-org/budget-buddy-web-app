@@ -39,7 +39,7 @@ function Button({
   disabled,
   ref,
   ...props
-}: ButtonProps) {
+}: Readonly<ButtonProps>) {
   const glassEffect = useThemeStore((s) => s.glassEffect);
   const Comp = asChild ? Slot : 'button';
   return (
@@ -54,7 +54,7 @@ function Button({
       disabled={loading || disabled}
       {...props}
     >
-      {asChild ? children : loading ? renderLoadingChildren(children) : children}
+      {!asChild && loading ? renderLoadingChildren(children) : children}
     </Comp>
   );
 }

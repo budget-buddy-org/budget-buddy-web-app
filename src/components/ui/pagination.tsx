@@ -11,7 +11,13 @@ interface PaginationProps {
   className?: string;
 }
 
-export function Pagination({ page, total, size, onPageChange, className }: PaginationProps) {
+export function Pagination({
+  page,
+  total,
+  size,
+  onPageChange,
+  className,
+}: Readonly<PaginationProps>) {
   const totalPages = Math.max(1, Math.ceil(total / size));
 
   if (totalPages <= 1) {

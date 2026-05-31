@@ -37,7 +37,7 @@ export function Combobox({
   emptyLabel = 'No matches',
   ref,
   renderLeading,
-}: ComboboxProps) {
+}: Readonly<ComboboxProps>) {
   const reactId = useId();
   const listId = `${id ?? reactId}-list`;
   const containerRef = useRef<HTMLDivElement>(null);

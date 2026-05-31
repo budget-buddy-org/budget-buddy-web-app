@@ -26,7 +26,7 @@ export function CategoryForm({
   error,
   isEditing = false,
   isDisabled = false,
-}: CategoryFormProps) {
+}: Readonly<CategoryFormProps>) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormField label="Name" required error={error} htmlFor="category-name">

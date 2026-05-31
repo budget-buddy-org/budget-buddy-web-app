@@ -63,7 +63,7 @@ async function openDialog(triggerName: RegExp) {
   return { user, dialog };
 }
 
-const originalLocation = window.location;
+const originalLocation = globalThis.location;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -72,14 +72,14 @@ beforeEach(() => {
     removeUser,
     signoutRedirect,
   } as unknown as ReturnType<typeof useAuth>);
-  Object.defineProperty(window, 'location', {
+  Object.defineProperty(globalThis, 'location', {
     configurable: true,
     value: { href: '/', pathname: '/', search: '' },
   });
 });
 
 afterEach(() => {
-  Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+  Object.defineProperty(globalThis, 'location', { configurable: true, value: originalLocation });
 });
 
 describe('DangerZoneSection — clear data', () => {
@@ -127,7 +127,7 @@ describe('DangerZoneSection — delete account', () => {
     await user.click(within(dialog).getByRole('button', { name: /delete account/i }));
 
     await waitFor(() => expect(removeUser).toHaveBeenCalledTimes(1));
-    expect(window.location.href).toBe('/');
+    expect(globalThis.location.href).toBe('/');
   });
 
   it('shows a destructive toast and keeps the dialog open on failure', async () => {

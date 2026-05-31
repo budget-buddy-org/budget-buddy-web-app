@@ -21,7 +21,7 @@ export function CategoryCombobox({
   disabled,
   error,
   id,
-}: CategoryComboboxProps) {
+}: Readonly<CategoryComboboxProps>) {
   const { toast } = useToast();
   const createCategory = useCreateCategory();
 

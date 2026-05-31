@@ -7,8 +7,8 @@ describe('buildOidcSettings', () => {
 
     expect(settings.authority).toBe('https://issuer.example.com');
     expect(settings.client_id).toBe('web-client');
-    expect(settings.redirect_uri).toBe(`${window.location.origin}/auth/callback`);
-    expect(settings.post_logout_redirect_uri).toBe(`${window.location.origin}/`);
+    expect(settings.redirect_uri).toBe(`${globalThis.location.origin}/auth/callback`);
+    expect(settings.post_logout_redirect_uri).toBe(`${globalThis.location.origin}/`);
     expect(settings.response_type).toBe('code');
     // default scopes include openid and offline_access
     expect(settings.scope).toBe('openid profile email offline_access');
@@ -73,7 +73,7 @@ describe('getUserManager / initUserManager', () => {
   });
 
   afterEach(() => {
-    window.history.replaceState({}, '', '/');
+    globalThis.history.replaceState({}, '', '/');
   });
 
   it('throws before initUserManager is called', async () => {
@@ -96,32 +96,32 @@ describe('getUserManager / initUserManager', () => {
 
 describe('onOidcSigninCallback', () => {
   afterEach(() => {
-    window.history.replaceState({}, '', '/');
+    globalThis.history.replaceState({}, '', '/');
   });
 
   it('strips OIDC params from the URL after signin', () => {
-    window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
+    globalThis.history.replaceState({}, '', '/auth/callback?code=test&state=test');
 
     onOidcSigninCallback(undefined);
 
-    expect(window.location.pathname).toBe('/');
-    expect(window.location.search).toBe('');
+    expect(globalThis.location.pathname).toBe('/');
+    expect(globalThis.location.search).toBe('');
   });
 
   it('restores the original deep-link URL from url_state', () => {
-    window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
+    globalThis.history.replaceState({}, '', '/auth/callback?code=test&state=test');
 
     onOidcSigninCallback({ url_state: '/transactions?page=2' });
 
-    expect(window.location.pathname).toBe('/transactions');
-    expect(window.location.search).toBe('?page=2');
+    expect(globalThis.location.pathname).toBe('/transactions');
+    expect(globalThis.location.search).toBe('?page=2');
   });
 
   it('falls back to "/" when url_state is not a string', () => {
-    window.history.replaceState({}, '', '/auth/callback?code=test&state=test');
+    globalThis.history.replaceState({}, '', '/auth/callback?code=test&state=test');
 
     onOidcSigninCallback({ url_state: 42 });
 
-    expect(window.location.pathname).toBe('/');
+    expect(globalThis.location.pathname).toBe('/');
   });
 });

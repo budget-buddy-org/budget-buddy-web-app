@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
 export function useRegisterSW() {
+  const [needRefresh, setNeedRefresh] = useState(false);
+  const [offlineReady, setOfflineReady] = useState(false);
   return {
-    needRefresh: useState(false),
-    offlineReady: useState(false),
+    needRefresh: [needRefresh, setNeedRefresh] as const,
+    offlineReady: [offlineReady, setOfflineReady] as const,
     updateServiceWorker: () => Promise.resolve(),
   };
 }

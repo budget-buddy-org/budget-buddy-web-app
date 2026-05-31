@@ -150,9 +150,7 @@ export function localeCurrency(): string {
 
 let _currencyDisplayNames: Intl.DisplayNames | null = null;
 function getCurrencyDisplayNames(): Intl.DisplayNames {
-  if (!_currencyDisplayNames) {
-    _currencyDisplayNames = new Intl.DisplayNames([browserLocale()], { type: 'currency' });
-  }
+  _currencyDisplayNames ??= new Intl.DisplayNames([browserLocale()], { type: 'currency' });
   return _currencyDisplayNames;
 }
 

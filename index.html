@@ -16,27 +16,36 @@
     <title>Budget Buddy</title>
     <script>
       (function () {
+        var root = document.documentElement;
+
+        function applyHue(s, isDark) {
+          if (s.primaryHue === undefined) return;
+          root.style.setProperty('--primary-hue', s.primaryHue);
+          // Keep the live <meta name="theme-color"> in sync at first paint so the
+          // Android Chrome address bar doesn't flash the manifest-static blue.
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', 'hsl(' + s.primaryHue + ' 70% ' + (isDark ? 70 : 45) + '%)');
+        }
+
+        function applyTheme(s) {
+          var theme = s.theme || 'system';
+          var prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+          if (isDark) root.classList.add('dark');
+          root.style.colorScheme = isDark ? 'dark' : 'light';
+          applyHue(s, isDark);
+          if (s.fontSize !== undefined)
+            root.style.setProperty('--font-size-base', s.fontSize + 'px');
+        }
+
         try {
           var stored = localStorage.getItem('budget-buddy-theme');
-          if (stored) {
-            var s = JSON.parse(stored).state;
-            var theme = s.theme || 'system';
-            var isDark =
-              theme === 'dark' ||
-              (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isDark) document.documentElement.classList.add('dark');
-            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-            if (s.primaryHue !== undefined) {
-              document.documentElement.style.setProperty('--primary-hue', s.primaryHue);
-              // Keep the live <meta name="theme-color"> in sync at first paint so the
-              // Android Chrome address bar doesn't flash the manifest-static blue.
-              var meta = document.querySelector('meta[name="theme-color"]');
-              if (meta) meta.setAttribute('content', 'hsl(' + s.primaryHue + ' 70% ' + (isDark ? 70 : 45) + '%)');
-            }
-            if (s.fontSize !== undefined)
-              document.documentElement.style.setProperty('--font-size-base', s.fontSize + 'px');
-          }
-        } catch (e) {}
+          if (stored) applyTheme(JSON.parse(stored).state);
+        } catch (e) {
+          // Pre-hydration theming is best-effort; the React app re-applies the
+          // stored theme on mount, so a parse/storage failure here is non-fatal.
+          console.warn('Theme bootstrap failed:', e);
+        }
       })();
     </script>
     <style>

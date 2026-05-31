@@ -16,7 +16,7 @@ export function TransactionSearchBar({
   onQueryChange,
   onOpenFilters,
   isFiltered,
-}: TransactionSearchBarProps) {
+}: Readonly<TransactionSearchBarProps>) {
   const [local, setLocal] = useState(value);
   const [prevValue, setPrevValue] = useState(value);
   // Sync external value (e.g. URL reset) into local state during render.

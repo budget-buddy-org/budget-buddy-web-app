@@ -43,7 +43,7 @@ export function DangerZoneSection() {
           // The IdP end-session may reject a deleted account — clear the local
           // session and reload so the app falls back to the sign-in flow.
           await removeUser();
-          window.location.href = '/';
+          globalThis.location.href = '/';
         }
       },
       onError: () => {

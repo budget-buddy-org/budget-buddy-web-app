@@ -10,7 +10,12 @@ interface TransactionAmountProps {
   className?: string;
 }
 
-export function TransactionAmount({ amount, currency, type, className }: TransactionAmountProps) {
+export function TransactionAmount({
+  amount,
+  currency,
+  type,
+  className,
+}: Readonly<TransactionAmountProps>) {
   const { fmtCurrency } = useFormatters();
   const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
   const isIncome = type === 'INCOME';

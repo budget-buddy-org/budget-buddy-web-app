@@ -44,15 +44,13 @@ export async function loadConfig(): Promise<AppConfig> {
     }
   }
 
-  if (!config) {
-    config = {
-      VITE_API_URL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
-      VITE_OIDC_ISSUER: import.meta.env.VITE_OIDC_ISSUER ?? '',
-      VITE_OIDC_CLIENT_ID: import.meta.env.VITE_OIDC_CLIENT_ID ?? '',
-      VITE_OIDC_SCOPES: import.meta.env.VITE_OIDC_SCOPES ?? undefined,
-      VITE_OIDC_USER_MANAGEMENT_URL: import.meta.env.VITE_OIDC_USER_MANAGEMENT_URL ?? undefined,
-    };
-  }
+  config ??= {
+    VITE_API_URL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
+    VITE_OIDC_ISSUER: import.meta.env.VITE_OIDC_ISSUER ?? '',
+    VITE_OIDC_CLIENT_ID: import.meta.env.VITE_OIDC_CLIENT_ID ?? '',
+    VITE_OIDC_SCOPES: import.meta.env.VITE_OIDC_SCOPES ?? undefined,
+    VITE_OIDC_USER_MANAGEMENT_URL: import.meta.env.VITE_OIDC_USER_MANAGEMENT_URL ?? undefined,
+  };
 
   return config;
 }

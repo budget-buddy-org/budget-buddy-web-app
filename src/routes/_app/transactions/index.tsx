@@ -19,19 +19,20 @@ export interface TransactionSearch {
 const validAmount = (v: unknown): number | undefined =>
   typeof v === 'number' && Number.isFinite(v) && v >= 1 ? Math.floor(v) : undefined;
 
+const validSort = (v: unknown): 'asc' | 'desc' | undefined =>
+  v === 'asc' || v === 'desc' ? v : undefined;
+
+const validType = (v: unknown): 'EXPENSE' | 'INCOME' | '' | undefined =>
+  v === 'EXPENSE' || v === 'INCOME' || v === '' ? v : undefined;
+
 export const Route = createFileRoute('/_app/transactions/')({
   pendingComponent: TransactionsSkeleton,
   validateSearch: (search: Record<string, unknown>): TransactionSearch => ({
     categoryId: typeof search.categoryId === 'string' ? search.categoryId : undefined,
     start: typeof search.start === 'string' ? search.start : undefined,
     end: typeof search.end === 'string' ? search.end : undefined,
-    sort: search.sort === 'asc' ? 'asc' : search.sort === 'desc' ? 'desc' : undefined,
-    type:
-      search.type === 'EXPENSE' || search.type === 'INCOME'
-        ? search.type
-        : search.type === ''
-          ? ''
-          : undefined,
+    sort: validSort(search.sort),
+    type: validType(search.type),
     query: typeof search.query === 'string' && search.query.length > 0 ? search.query : undefined,
     amountMin: validAmount(search.amountMin),
     amountMax: validAmount(search.amountMax),

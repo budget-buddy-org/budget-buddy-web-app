@@ -11,7 +11,7 @@ export function ProtectedAppLayout() {
     void auth.signinRedirect({
       // Preserve the current URL so onOidcSigninCallback can restore it after
       // the IdP redirect, instead of always landing on "/".
-      url_state: window.location.pathname + window.location.search,
+      url_state: globalThis.location.pathname + globalThis.location.search,
     });
   }, [auth]);
 

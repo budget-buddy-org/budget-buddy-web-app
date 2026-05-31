@@ -7,7 +7,7 @@ export interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement>
   ref?: React.Ref<HTMLInputElement>;
 }
 
-function Switch({ className, checked, onCheckedChange, ref, ...props }: SwitchProps) {
+function Switch({ className, checked, onCheckedChange, ref, ...props }: Readonly<SwitchProps>) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onCheckedChange?.(e.target.checked);
   };

@@ -22,7 +22,11 @@ interface TransactionFormProps {
   transaction?: Transaction;
 }
 
-export function TransactionForm({ categories, onSuccess, transaction }: TransactionFormProps) {
+export function TransactionForm({
+  categories,
+  onSuccess,
+  transaction,
+}: Readonly<TransactionFormProps>) {
   const { toast } = useToast();
   const createTx = useCreateTransaction();
   const updateTx = useUpdateTransaction(transaction?.id ?? '');

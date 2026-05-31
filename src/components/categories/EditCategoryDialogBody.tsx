@@ -12,7 +12,10 @@ interface EditCategoryDialogBodyProps {
   onClose: () => void;
 }
 
-export function EditCategoryDialogBody({ category, onClose }: EditCategoryDialogBodyProps) {
+export function EditCategoryDialogBody({
+  category,
+  onClose,
+}: Readonly<EditCategoryDialogBodyProps>) {
   const { toast } = useToast();
   const updateCategory = useUpdateCategory(category.id);
 

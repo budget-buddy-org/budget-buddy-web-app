@@ -27,7 +27,7 @@ export function TransactionFilters({
   onFilterChange,
   onReset,
   onClose,
-}: TransactionFiltersProps) {
+}: Readonly<TransactionFiltersProps>) {
   // Edits are staged locally and committed on Done — the dialog covers the list, so live refetching is wasted work.
   const [prevFilters, setPrevFilters] = useState(filters);
   const [draft, setDraft] = useState<TransactionPageFilters>(filters);

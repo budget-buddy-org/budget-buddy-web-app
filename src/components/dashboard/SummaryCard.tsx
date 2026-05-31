@@ -11,10 +11,10 @@ import { useUserPreferencesStore } from '@/stores/user-preferences.store';
 export function SummaryCardDescription({
   className,
   children,
-}: {
+}: Readonly<{
   className?: string;
   children: ReactNode;
-}) {
+}>) {
   return (
     <p className={cn('flex items-center gap-1 text-xs text-muted-foreground', className)}>
       {children}
@@ -30,7 +30,7 @@ export function SummaryCard({
   className,
   linkSearch,
   children,
-}: {
+}: Readonly<{
   label: string;
   amount: number;
   currency?: string;
@@ -38,7 +38,7 @@ export function SummaryCard({
   className: string;
   linkSearch?: TransactionSearch;
   children?: ReactNode;
-}) {
+}>) {
   const { fmtCurrency } = useFormatters();
   const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
 
@@ -78,7 +78,7 @@ export function SummaryCard({
   return card;
 }
 
-export function SummaryCardSkeleton({ wide = false }: { wide?: boolean }) {
+export function SummaryCardSkeleton({ wide = false }: Readonly<{ wide?: boolean }>) {
   return (
     <Card glass className={cn('h-full', wide && 'col-span-2 md:col-span-1')}>
       <CardHeader className="pb-2">

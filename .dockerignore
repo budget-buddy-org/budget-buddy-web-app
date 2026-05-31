@@ -8,6 +8,14 @@ dist
 .git
 .gitignore
 
+# Environment files and secrets — never copy into the build context.
+# Runtime config is injected via envsubst at container start, not baked in.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
 # Editor and OS artefacts
 .DS_Store
 *.local

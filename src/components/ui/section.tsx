@@ -18,7 +18,13 @@ interface SectionProps {
  * into a single primitive. Default Card padding/spacing matches the established
  * Settings rhythm; pass `cardClassName` to override.
  */
-export function Section({ title, icon, children, cardClassName, className }: SectionProps) {
+export function Section({
+  title,
+  icon,
+  children,
+  cardClassName,
+  className,
+}: Readonly<SectionProps>) {
   return (
     <section className={cn('space-y-3', className)}>
       <SectionHeader title={title} icon={icon} />

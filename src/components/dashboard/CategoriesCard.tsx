@@ -21,14 +21,14 @@ export function CategoriesCard({
   firstDayOfPeriod,
   lastDayOfPeriod,
   currency,
-}: {
+}: Readonly<{
   summary: CategorySpendingSummary | undefined;
   isLoading: boolean;
   periodLabel: string;
   firstDayOfPeriod: string;
   lastDayOfPeriod: string;
   currency: string;
-}) {
+}>) {
   const { fmtCurrency } = useFormatters();
   const [showAll, setShowAll] = useState(false);
   const isBalanceHidden = useUserPreferencesStore((s) => s.isBalanceHidden);
@@ -85,12 +85,9 @@ export function CategoriesCard({
                   const color = getCategoryColor(row.name);
                   const hasBudget = row.monthlyBudget != null;
                   const budget = row.monthlyBudget ?? 0;
-                  const pct =
-                    budget > 0
-                      ? Math.min(100, Math.round((row.spent / budget) * 100))
-                      : row.spent > 0
-                        ? 100
-                        : 0;
+                  let pct = 0;
+                  if (budget > 0) pct = Math.min(100, Math.round((row.spent / budget) * 100));
+                  else if (row.spent > 0) pct = 100;
                   const overBudget = hasBudget && row.spent > budget;
                   return (
                     <li key={row.categoryId} className="-mx-1 rounded-md p-1">
@@ -210,7 +207,7 @@ export function CategoriesCard({
   );
 }
 
-function PacingNote({ spent, budget }: { spent: number; budget: number }) {
+function PacingNote({ spent, budget }: Readonly<{ spent: number; budget: number }>) {
   const status = pacingStatus({ spent, budget, progress: monthProgress() });
   if (status === 'noBudget' || status === 'over') return null;
   if (status === 'under') {

@@ -5,13 +5,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-  attestations: write    # for SBOM/provenance
-  id-token: write        # for keyless Cosign signing via OIDC
-  security-events: write # for uploading SARIF scan results
-
 env:
   IMAGE: ghcr.io/budget-buddy-org/budget-buddy-web-app
 
@@ -32,6 +25,11 @@ jobs:
             runner: ubuntu-24.04-arm
             cache-scope: buildx-arm64
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write       # push image by digest to GHCR
+      attestations: write   # for SBOM/provenance
+      id-token: write       # for keyless attestation via OIDC
     outputs:
       # Forward digests so downstream jobs can reference them.
       # Each matrix leg writes to a unique output via its PLATFORM env.
@@ -91,6 +89,10 @@ jobs:
   scan:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read         # pull image from GHCR to scan
+      security-events: write # upload SARIF scan results
     steps:
       - name: Download amd64 digest
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -152,6 +154,10 @@ jobs:
   merge:
     needs: [build, scan]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # push the multi-arch manifest list to GHCR
+      id-token: write  # for keyless Cosign signing via OIDC
     steps:
       - name: Download all digests
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
