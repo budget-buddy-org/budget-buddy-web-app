@@ -34,7 +34,7 @@ export function VersionSection() {
             variant="outline"
             size="sm"
             className="gap-2 cursor-pointer"
-            onClick={() => void promptInstall()}
+            onClick={() => promptInstall()}
           >
             <Download className="size-4" />
             Install
