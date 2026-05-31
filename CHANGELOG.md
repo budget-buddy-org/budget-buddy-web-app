@@ -1,3 +1,9 @@
+## [4.18.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.1...v4.18.2) (2026-05-31)
+
+### Bug Fixes
+
+* **auth:** redeem refresh token before redirect on iOS PWA cold start ([#170](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/170)) ([8fbc4f4](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/8fbc4f42910dc0ddd6124b69b6b9859dab56f409))
+
 ## [4.18.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.0...v4.18.1) (2026-05-31)
 
 ### Bug Fixes
