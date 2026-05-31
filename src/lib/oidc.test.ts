@@ -95,17 +95,17 @@ describe('getUserManager / initUserManager', () => {
   });
 });
 
-describe('coalesceSilentRenew', () => {
-  function deferred<T>() {
-    let resolve!: (value: T) => void;
-    let reject!: (reason?: unknown) => void;
-    const promise = new Promise<T>((res, rej) => {
-      resolve = res;
-      reject = rej;
-    });
-    return { promise, resolve, reject };
-  }
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
 
+describe('coalesceSilentRenew', () => {
   it('merges overlapping calls into a single underlying redemption', async () => {
     const d = deferred<{ access_token: string }>();
     const original = vi.fn(() => d.promise);
