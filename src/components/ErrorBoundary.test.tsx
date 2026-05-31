@@ -9,7 +9,7 @@ vi.mock('@/lib/error-logger', () => ({
 const { logError } = await import('@/lib/error-logger');
 
 // A component that throws when `shouldThrow` is true
-function Bomb({ shouldThrow }: { shouldThrow: boolean }) {
+function Bomb({ shouldThrow }: Readonly<{ shouldThrow: boolean }>) {
   if (shouldThrow) throw new Error('test explosion');
   return <div>safe content</div>;
 }

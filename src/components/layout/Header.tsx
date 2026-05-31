@@ -49,7 +49,7 @@ export function Header() {
           className="hidden cursor-pointer md:inline-flex"
           onClick={() => {
             queryClient.clear();
-            void signoutRedirect();
+            signoutRedirect();
           }}
         >
           <LogOut className="size-4" />

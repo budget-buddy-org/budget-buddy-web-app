@@ -33,7 +33,7 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(({ id, title, description, action, variant, duration, ...props }) => {
-        const v = (variant ?? 'default') as keyof typeof VARIANT_ICONS;
+        const v = variant ?? 'default';
         const Icon = VARIANT_ICONS[v];
         return (
           <Toast key={id} variant={variant} duration={duration ?? VARIANT_DURATIONS[v]} {...props}>

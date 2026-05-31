@@ -16,7 +16,7 @@ export function AccountSection() {
     // Drop cached server state before redirecting so a different user signing
     // in next won't briefly see the previous account's data.
     queryClient.clear();
-    void signoutRedirect();
+    signoutRedirect();
   };
 
   return (

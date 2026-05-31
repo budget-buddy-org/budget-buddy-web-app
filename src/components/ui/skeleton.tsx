@@ -1,7 +1,7 @@
 import type * as React from 'react';
 import { cn } from '@/lib/cn';
 
-function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function Skeleton({ className, ...props }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return (
     <div
       data-testid="skeleton"

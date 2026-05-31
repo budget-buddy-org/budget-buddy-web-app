@@ -259,7 +259,7 @@ export function TransactionsPage() {
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           onLoadMore={() => {
-            void fetchNextPage();
+            fetchNextPage();
           }}
           total={transactions.length}
         />
