@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { scrollToTop } from './scroll';
 
+function mockReducedMotion(matches: boolean) {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches })),
+  );
+}
+
 describe('scrollToTop', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
-
-  function mockReducedMotion(matches: boolean) {
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn(() => ({ matches })),
-    );
-  }
 
   it('scrolls to the top smoothly by default', () => {
     mockReducedMotion(false);
