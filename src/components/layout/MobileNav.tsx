@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { useFABContext } from '@/hooks/use-fab';
 import { cn } from '@/lib/cn';
 import { haptic } from '@/lib/haptics';
+import { scrollToTop } from '@/lib/scroll';
 import { useThemeStore } from '@/stores/theme.store';
 
 const NAV_ITEMS = [
@@ -20,7 +21,7 @@ export function MobileNav() {
   const handleTap = useCallback(
     (to: string) => {
       if (to === currentPath) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollToTop();
       } else {
         haptic('tap');
       }

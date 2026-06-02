@@ -31,6 +31,7 @@ import {
   useInfiniteTransactions,
   useTransaction,
 } from '@/hooks/useTransactions';
+import { scrollToTop } from '@/lib/scroll';
 
 export function TransactionsPage() {
   const { toast } = useToast();
@@ -73,6 +74,15 @@ export function TransactionsPage() {
 
   const dialogTitle = render.mode === 'edit' ? 'Edit Transaction' : 'Add Transaction';
   const showSkeleton = isDialogOpen && isEditing && isTransactionLoading && !editingTransaction;
+
+  // After a successful save, close the dialog. For new transactions, also scroll
+  // to the top so the freshly created (newest-first) entry is in view — editing
+  // leaves the existing row in place, so we don't move the viewport then.
+  const handleFormSuccess = () => {
+    const wasAdding = !isEditing;
+    closeForm();
+    if (wasAdding) scrollToTop();
+  };
 
   const createTx = useCreateTransaction();
   const deleteTx = useDeleteTransaction();
@@ -227,7 +237,7 @@ export function TransactionsPage() {
               key={render.mode === 'edit' ? (render.transaction?.id ?? 'edit') : 'add'}
               categories={categories}
               transaction={render.transaction}
-              onSuccess={closeForm}
+              onSuccess={handleFormSuccess}
             />
           )}
         </DialogContent>

@@ -118,7 +118,6 @@ export function TransactionForm({
         amountError={!!amountError}
         typeError={!!getFieldError('type')}
         currencyError={!!getFieldError('currency')}
-        autoFocus={!isEditing}
       />
       {amountError && (
         <p className="text-xs font-medium text-destructive text-center -mt-2">{amountError}</p>
