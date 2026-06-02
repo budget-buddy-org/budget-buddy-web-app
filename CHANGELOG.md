@@ -1,3 +1,9 @@
+## [4.18.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.2...v4.18.3) (2026-06-02)
+
+### Bug Fixes
+
+* scroll to top after create, stop auto-focusing amount input ([#171](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/171)) ([aa30db0](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/aa30db0350f11fabd3080a086fbfa7eb96393edd))
+
 ## [4.18.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.1...v4.18.2) (2026-05-31)
 
 ### Bug Fixes
