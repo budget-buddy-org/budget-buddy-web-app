@@ -1,6 +1,5 @@
 import { ChevronDown } from 'lucide-react';
 import type * as React from 'react';
-import { useEffect, useRef } from 'react';
 import { TransactionTypeToggle } from '@/components/ui/transaction-type-toggle';
 import { cn } from '@/lib/cn';
 import { ISO_CURRENCIES } from '@/lib/formatters';
@@ -15,7 +14,6 @@ interface HeroAmountInputProps {
   amountError?: boolean;
   typeError?: boolean;
   currencyError?: boolean;
-  autoFocus?: boolean;
 }
 
 export function HeroAmountInput({
@@ -28,16 +26,7 @@ export function HeroAmountInput({
   amountError,
   typeError,
   currencyError,
-  autoFocus,
 }: Readonly<HeroAmountInputProps>) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (autoFocus) {
-      inputRef.current?.focus();
-    }
-  }, [autoFocus]);
-
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replaceAll(/\D/g, '');
     if (!digits) {
@@ -71,7 +60,6 @@ export function HeroAmountInput({
 
       {/* Amount — full-width centred so the number is always the focal point */}
       <input
-        ref={inputRef}
         type="text"
         inputMode="decimal"
         placeholder="0.00"

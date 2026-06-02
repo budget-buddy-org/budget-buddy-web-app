@@ -27,6 +27,7 @@ import {
 import { useLatchedValue } from '@/hooks/useLatchedValue';
 import { getApiError } from '@/lib/api-error';
 import { inputToMinorUnits } from '@/lib/category-budget';
+import { scrollToTop } from '@/lib/scroll';
 
 export function CategoriesPage() {
   const search = useSearch({ from: '/_app/categories/' });
@@ -52,7 +53,7 @@ export function CategoriesPage() {
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   }, []);
 
   const [newName, setNewName] = useState('');
@@ -130,6 +131,7 @@ export function CategoriesPage() {
             setNewBudget('');
             setShowForm(false);
             setPage(0);
+            scrollToTop();
             toast({ title: 'Category created', variant: 'success' });
           },
           onError: (error) => {

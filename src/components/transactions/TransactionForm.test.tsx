@@ -40,7 +40,6 @@ vi.mock('@/components/transactions/HeroAmountInput', () => ({
     onTypeChange,
     onAmountChange,
     onCurrencyChange,
-    autoFocus,
   }: {
     type: 'EXPENSE' | 'INCOME';
     amount: string;
@@ -48,7 +47,6 @@ vi.mock('@/components/transactions/HeroAmountInput', () => ({
     onTypeChange: (v: 'EXPENSE' | 'INCOME') => void;
     onAmountChange: (v: string) => void;
     onCurrencyChange: (v: string) => void;
-    autoFocus?: boolean;
   }) =>
     React.createElement(
       'div',
@@ -58,7 +56,6 @@ vi.mock('@/components/transactions/HeroAmountInput', () => ({
         placeholder: '0.00',
         value: amount,
         onChange: (e: React.ChangeEvent<HTMLInputElement>) => onAmountChange(e.target.value),
-        'data-autofocus': autoFocus ? 'true' : 'false',
       }),
       React.createElement(
         'select',
@@ -334,21 +331,8 @@ describe('TransactionForm', () => {
     });
   });
 
-  it('forwards autoFocus to HeroAmountInput in create mode but not in edit mode', () => {
-    const { unmount } = renderForm();
-    expect(screen.getByLabelText('amount-test')).toHaveAttribute('data-autofocus', 'true');
-    unmount();
-
-    const transaction = {
-      id: 'tx-1',
-      description: 'Old Coffee',
-      amount: 500,
-      currency: 'EUR',
-      type: 'EXPENSE' as const,
-      date: '2024-01-01',
-      categoryId: 'cat-1',
-    };
-    renderForm({ transaction });
-    expect(screen.getByLabelText('amount-test')).toHaveAttribute('data-autofocus', 'false');
+  it('does not auto-focus the amount input on open so the keyboard stays dismissed', () => {
+    renderForm();
+    expect(screen.getByLabelText('amount-test')).not.toHaveFocus();
   });
 });
