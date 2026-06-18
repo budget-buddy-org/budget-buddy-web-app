@@ -13,7 +13,9 @@ export function SettingsPage() {
   return (
     <PageContainer>
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
-      <div className="grid gap-6 md:max-w-2xl">
+      {/* Single column up to lg, then a balanced two-column grid that fills the
+          desktop canvas. Danger Zone spans the full width on its own row. */}
+      <div className="mx-auto grid max-w-2xl gap-6 lg:max-w-none lg:grid-cols-2 lg:items-start">
         <AccountSection />
         <PreferencesSection />
         <ThemeSection />
@@ -21,7 +23,9 @@ export function SettingsPage() {
         <FontSizeSection />
         <InterfaceSection />
         <VersionSection />
-        <DangerZoneSection />
+        <div className="lg:col-span-2">
+          <DangerZoneSection />
+        </div>
       </div>
     </PageContainer>
   );

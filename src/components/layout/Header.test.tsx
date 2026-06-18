@@ -1,17 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { useAuth } from 'react-oidc-context';
 import { describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
-
-vi.mock('react-oidc-context', () => ({
-  useAuth: vi.fn(),
-}));
-
-vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: vi.fn(() => ({
-    clear: vi.fn(),
-  })),
-}));
 
 let mockIsActive = false;
 
@@ -33,20 +22,12 @@ vi.stubGlobal('__APP_VERSION__', '1.0.0');
 
 describe('Header', () => {
   it('renders correctly', () => {
-    vi.mocked(useAuth).mockReturnValue({
-      signoutRedirect: vi.fn(),
-    } as unknown as ReturnType<typeof useAuth>);
-
     render(<Header />);
     expect(screen.getByText(/Budget Buddy/)).toBeInTheDocument();
     expect(screen.getByText(/v1.0.0/)).toBeInTheDocument();
   });
 
   it('shows active state for settings icon when isActive is true', () => {
-    vi.mocked(useAuth).mockReturnValue({
-      signoutRedirect: vi.fn(),
-    } as unknown as ReturnType<typeof useAuth>);
-
     mockIsActive = true;
     render(<Header />);
 

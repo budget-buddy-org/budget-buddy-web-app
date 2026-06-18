@@ -92,7 +92,9 @@ export function SidebarNav({ className }: Readonly<{ className?: string }>) {
           key={to}
           to={to}
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:bg-accent/80 motion-reduce:transition-none focus-visible:focus-ring focus-visible:focus-ring-offset"
-          activeProps={{ className: 'bg-accent text-foreground font-medium' }}
+          activeProps={{
+            className: 'bg-primary/10 text-primary font-medium ring-1 ring-primary/20',
+          }}
           activeOptions={{ exact: to === '/', includeSearch: false }}
         >
           <Icon className="size-4" />

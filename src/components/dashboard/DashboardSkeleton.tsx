@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function DashboardSkeleton() {
   return (
-    <PageContainer>
+    <PageContainer size="wide">
       <PageHeader
         title="Dashboard"
         isSubtitleEssential
@@ -20,8 +20,14 @@ export function DashboardSkeleton() {
         <SummaryCardSkeleton />
       </div>
 
-      <CategoriesCardSkeleton />
-      <RecentTransactionsCardSkeleton />
+      <div className="grid gap-6 lg:grid-cols-5 lg:items-start">
+        <div className="lg:col-span-3">
+          <CategoriesCardSkeleton />
+        </div>
+        <div className="lg:col-span-2">
+          <RecentTransactionsCardSkeleton />
+        </div>
+      </div>
     </PageContainer>
   );
 }
