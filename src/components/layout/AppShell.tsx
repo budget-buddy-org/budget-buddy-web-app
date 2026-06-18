@@ -3,7 +3,8 @@ import { ApiUnavailableBanner } from '@/components/ApiUnavailableBanner';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { FABProvider } from '@/contexts/fab-provider';
 import { Header } from './Header';
-import { MobileNav, SidebarNav } from './MobileNav';
+import { MobileNav } from './MobileNav';
+import { Sidebar } from './Sidebar';
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -20,20 +21,16 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
         <Header />
         <div className="flex flex-1">
           {/* Sidebar — visible on md+ */}
-          <aside
-            aria-label="Sidebar navigation"
-            className="hidden w-56 shrink-0 border-r md:block sticky top-14 self-start h-[calc(100dvh-3.5rem)] overflow-y-auto"
-          >
-            <SidebarNav className="p-4" />
-          </aside>
+          <Sidebar />
 
-          {/* Main content — extra bottom padding on mobile to clear floating nav */}
+          {/* Main content — extra bottom padding on mobile to clear floating nav.
+              Width/centering is owned by PageContainer per page. */}
           <main
             id="main"
             aria-label="Main content"
-            className="flex-1 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0"
+            className="min-w-0 flex-1 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0"
           >
-            <div className="mx-auto max-w-2xl px-4 py-6 md:max-w-4xl md:px-6">{children}</div>
+            <div className="px-4 py-6 md:px-6 lg:py-8">{children}</div>
           </main>
         </div>
 
