@@ -1,3 +1,9 @@
+## [4.19.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.3...v4.19.0) (2026-06-18)
+
+### Features
+
+* optimize desktop layout with bento dashboard and nav rail ([#176](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/176)) ([17b99be](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/17b99be7feb06e33a6718f1b805b39a789b9ae4f))
+
 ## [4.18.3](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.2...v4.18.3) (2026-06-02)
 
 ### Bug Fixes
