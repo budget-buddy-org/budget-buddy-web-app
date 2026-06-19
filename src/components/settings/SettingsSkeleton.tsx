@@ -8,7 +8,7 @@ export function SettingsSkeleton() {
     <PageContainer>
       <PageHeader title="Settings" subtitle="Manage your application appearance and preferences." />
 
-      <div className="mx-auto grid max-w-2xl gap-6 lg:max-w-none lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <section key={i} className="space-y-3">
             <div className="flex items-center gap-2">

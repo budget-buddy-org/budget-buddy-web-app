@@ -1,15 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { LogOut } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
-import { Button } from '@/components/ui/button';
 import { SidebarNav } from './MobileNav';
 
-/**
- * Desktop navigation rail (md+). A sticky column with the primary nav at the
- * top and account actions pinned to a footer at the bottom — the sign-out that
- * used to be a stray icon in the header now lives here, next to the nav it
- * belongs with. Hidden on mobile, where {@link MobileNav} takes over.
- */
 export function Sidebar() {
   const { signoutRedirect } = useAuth();
   const queryClient = useQueryClient();
@@ -21,11 +14,11 @@ export function Sidebar() {
     >
       <SidebarNav className="flex-1 p-4" />
       <div className="border-t p-3">
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           title="Sign out"
           aria-label="Sign out"
-          className="w-full cursor-pointer justify-start gap-3 px-3 text-muted-foreground hover:text-foreground"
+          className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:bg-accent/80 motion-reduce:transition-none focus-visible:focus-ring focus-visible:focus-ring-offset"
           onClick={() => {
             queryClient.clear();
             signoutRedirect();
@@ -33,7 +26,7 @@ export function Sidebar() {
         >
           <LogOut className="size-4" />
           Sign out
-        </Button>
+        </button>
       </div>
     </aside>
   );

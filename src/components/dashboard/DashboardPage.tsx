@@ -89,7 +89,7 @@ export function DashboardPage() {
   const periodLabel = `${MONTH_NAMES_SHORT[selectedMonth]} ${selectedYear}`;
 
   return (
-    <PageContainer size="wide">
+    <PageContainer>
       <PageHeader
         title="Dashboard"
         isSubtitleEssential
@@ -191,29 +191,20 @@ export function DashboardPage() {
         </p>
       )}
 
-      {/* On large screens the two insight cards sit side-by-side (3:2) instead
-          of stacking, filling the wider canvas. Collapses to the single-column
-          stack at md and below — mobile spacing is unchanged. */}
-      <div className="grid gap-6 lg:grid-cols-5 lg:items-start">
-        <div className="lg:col-span-3">
-          <CategoriesCard
-            summary={summaryData}
-            isLoading={summaryLoading}
-            periodLabel={periodLabel}
-            firstDayOfPeriod={firstDayOfPeriod}
-            lastDayOfPeriod={lastDayOfPeriod}
-            currency={currency}
-          />
-        </div>
+      <CategoriesCard
+        summary={summaryData}
+        isLoading={summaryLoading}
+        periodLabel={periodLabel}
+        firstDayOfPeriod={firstDayOfPeriod}
+        lastDayOfPeriod={lastDayOfPeriod}
+        currency={currency}
+      />
 
-        <div className="lg:col-span-2">
-          <RecentTransactionsCard
-            transactions={recent}
-            isLoading={recentLoading}
-            hasFetched={!!recentData}
-          />
-        </div>
-      </div>
+      <RecentTransactionsCard
+        transactions={recent}
+        isLoading={recentLoading}
+        hasFetched={!!recentData}
+      />
     </PageContainer>
   );
 }
