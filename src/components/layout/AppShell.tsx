@@ -23,14 +23,13 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           {/* Sidebar — visible on md+ */}
           <Sidebar />
 
-          {/* Main content — extra bottom padding on mobile to clear floating nav.
-              Width/centering is owned by PageContainer per page. */}
+          {/* Main content — extra bottom padding on mobile to clear floating nav */}
           <main
             id="main"
             aria-label="Main content"
             className="min-w-0 flex-1 pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0"
           >
-            <div className="px-4 py-6 md:px-6 lg:py-8">{children}</div>
+            <div className="mx-auto max-w-2xl px-4 py-6 md:max-w-4xl md:px-6">{children}</div>
           </main>
         </div>
 
