@@ -1,3 +1,9 @@
+## [4.19.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.19.0...v4.19.1) (2026-06-19)
+
+### Bug Fixes
+
+* revert bento desktop layout, make sign-out match nav items ([#177](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/177)) ([2f26744](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/2f26744545e0551cd5c673945a168338e5f1a503)), closes [#176](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/176) [#176](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/176)
+
 ## [4.19.0](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.18.3...v4.19.0) (2026-06-18)
 
 ### Features
