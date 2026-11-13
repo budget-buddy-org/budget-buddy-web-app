@@ -1,8 +1,10 @@
-import '@testing-library/jest-dom';
 import 'vitest-axe/extend-expect';
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
+import * as domMatchers from '@testing-library/jest-dom/matchers';
 import { expect, vi } from 'vitest';
 import * as axeMatchers from 'vitest-axe/matchers';
 
+expect.extend(domMatchers);
 expect.extend(axeMatchers);
 
 // Mock OIDC environment variables for tests
@@ -15,12 +17,9 @@ vi.stubEnv('VITE_OIDC_SCOPES', 'openid profile email offline_access');
 vi.stubGlobal('__APP_VERSION__', '0.0.0-test');
 
 declare module 'vitest' {
-  export interface Assertion<T> extends axeMatchers.AxeMatchers {
-    _branded?: T;
-  }
-  export interface AsymmetricMatchersContaining extends axeMatchers.AxeMatchers {
-    _branded?: boolean;
-  }
+  interface Assertion<R extends void | Promise<void> = void, T = unknown>
+    extends TestingLibraryMatchers<R, T>,
+      axeMatchers.AxeMatchers {}
 }
 
 // Provide localStorage for Zustand persist middleware in jsdom

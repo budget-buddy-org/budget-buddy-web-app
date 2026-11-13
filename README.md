@@ -8,8 +8,8 @@ React 19 frontend for the Budget Buddy personal finance app. Features transactio
 
 ## Prerequisites
 
-- Node.js 20+
-- pnpm
+- Node.js 24.15+
+- pnpm 12.18+
 - A running [budget-buddy-api](../budget-buddy-api/) instance (or `VITE_API_URL` pointed elsewhere)
 - GitHub Packages read access for `@budget-buddy-org/budget-buddy-contracts`
 

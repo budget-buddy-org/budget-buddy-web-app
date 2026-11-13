@@ -19,7 +19,7 @@ export default {
         { type: 'ops', release: false },
       ],
     }],
-    ['@semantic-release/release-notes-generator', { preset: 'conventionalcommits' }],
+    ['@semantic-release/release-notes-generator', { config: './release-notes-preset.mjs' }],
     ['@semantic-release/changelog', { changelogFile: 'CHANGELOG.md' }],
     ['@semantic-release/npm', { npmPublish: false }],
     '@semantic-release/github',

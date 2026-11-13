@@ -15,6 +15,8 @@ export function createReactiveSearchMock<
     for (const fn of listeners) fn();
   };
 
+  // Each test module creates this mock once, so its hook identity stays stable during renders.
+  // biome-ignore lint/correctness/noComponentHookFactories: Isolated test mock hook.
   const useSearch = (): S => {
     const [, force] = React.useReducer((n: number) => n + 1, 0);
     React.useEffect(() => {

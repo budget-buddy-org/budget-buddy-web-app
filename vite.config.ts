@@ -92,7 +92,7 @@ export default defineConfig({
       name: 'generate-version-json',
       closeBundle() {
         const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-        const distPath = path.resolve(__dirname, 'dist');
+        const distPath = path.resolve(import.meta.dirname, 'dist');
         if (fs.existsSync(distPath)) {
           fs.writeFileSync(
             path.join(distPath, 'version.json'),
@@ -104,7 +104,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   build: {

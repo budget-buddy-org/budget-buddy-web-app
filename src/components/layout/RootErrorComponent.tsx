@@ -1,9 +1,11 @@
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
-export function RootErrorComponent({ error }: Readonly<{ error: Error }>) {
+export function RootErrorComponent({ error }: Readonly<{ error: unknown }>) {
   const router = useRouter();
   const [showDetails, setShowDetails] = useState(false);
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack : undefined;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
@@ -32,10 +34,10 @@ export function RootErrorComponent({ error }: Readonly<{ error: Error }>) {
 
         {showDetails && (
           <div className="mt-4 text-left">
-            <p className="mb-1 text-sm font-medium text-destructive">{error.message}</p>
-            {error.stack && (
+            <p className="mb-1 text-sm font-medium text-destructive">{message}</p>
+            {stack && (
               <pre className="max-h-40 overflow-auto rounded bg-muted p-4 text-xs text-muted-foreground">
-                {error.stack}
+                {stack}
               </pre>
             )}
           </div>
