@@ -1,3 +1,10 @@
+## [4.19.2](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.19.1...v4.19.2) (2026-11-14)
+
+### Bug Fixes
+
+* allow release job to read GitHub Packages ([#190](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/190)) ([0c45427](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/0c45427e5a355a1242fdf035cf0b591b71c937a9))
+* update web dependencies and toolchain ([#189](https://github.com/budget-buddy-org/budget-buddy-web-app/issues/189)) ([03214cc](https://github.com/budget-buddy-org/budget-buddy-web-app/commit/03214cc42b6cc382baa3c3edb2283adde6dea6a6))
+
 ## [4.19.1](https://github.com/budget-buddy-org/budget-buddy-web-app/compare/v4.19.0...v4.19.1) (2026-06-19)
 
 ### Bug Fixes
