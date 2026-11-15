@@ -66,7 +66,7 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.29-alpine AS production
+FROM nginx:1.31.8-alpine AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
@@ -83,8 +83,9 @@ COPY --link nginx.conf /etc/nginx/conf.d/default.conf
 # so it can be cached independently.
 COPY --link --from=builder /app/dist /usr/share/nginx/html
 
-# Install gettext for envsubst
-RUN apk add --no-cache gettext
+# Apply available base-package security fixes and install envsubst.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache gettext
 
 # Copy and set the entrypoint for runtime configuration injection
 COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
