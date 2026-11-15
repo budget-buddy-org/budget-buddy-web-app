@@ -7,6 +7,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      dry-run-release:
+        description: Preview release from this ref
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,79 +19,18 @@ permissions:
 
 jobs:
   commitlint:
-    uses: budget-buddy-org/ci-workflows/.github/workflows/commitlint.yml@7a37d06338527f3ba0029328af408cc17e0c561a
+    uses: budget-buddy-org/ci-workflows/.github/workflows/commitlint.yml@b70aceef21adb495e9e2d03fced5c7abb8b6aa44
 
   ci:
     needs: commitlint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
-        with:
-          cache: true
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: 24
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: '@budget-buddy-org'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Build
-        run: pnpm build
-
-      - name: Test
-        run: pnpm test
+    uses: budget-buddy-org/ci-workflows/.github/workflows/web-ci.yml@b70aceef21adb495e9e2d03fced5c7abb8b6aa44
 
   release:
     needs: [ci, commitlint]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-      packages: read
-      issues: write
-      pull-requests: write
-
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.RELEASE_BOT_ID }}
-          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
-
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
-
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
-        with:
-          cache: true
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: 24
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: '@budget-buddy-org'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release
-        run: pnpm exec semantic-release
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.dry-run-release)
+    uses: budget-buddy-org/ci-workflows/.github/workflows/release.yml@b70aceef21adb495e9e2d03fced5c7abb8b6aa44
+    with:
+      dry-run: ${{ github.event_name == 'workflow_dispatch' }}
+    secrets:
+      RELEASE_BOT_ID: ${{ secrets.RELEASE_BOT_ID }}
+      RELEASE_BOT_PRIVATE_KEY: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
