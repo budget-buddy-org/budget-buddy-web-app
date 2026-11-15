@@ -89,7 +89,11 @@ RUN apk upgrade --no-cache \
 
 # Copy and set the entrypoint for runtime configuration injection
 COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && sed -i 's|/var/run/nginx.pid|/tmp/nginx.pid|' /etc/nginx/nginx.conf \
+    && chown -R nginx:nginx /var/cache/nginx /etc/nginx/snippets /usr/share/nginx/html
+
+USER nginx
 
 EXPOSE 80
 
