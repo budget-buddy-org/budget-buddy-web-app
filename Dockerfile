@@ -14,11 +14,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:24-alpine AS base
+ARG NODE_VERSION=26.13.1
+FROM node:${NODE_VERSION}-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm && corepack prepare pnpm@12.18.0 --activate
+# CI supplies both versions from the shared policy; local builds use packageManager.
+ARG PNPM_VERSION
+RUN --mount=type=bind,source=package.json,target=/tmp/package.json \
+    version="${PNPM_VERSION:-$(node -p "require('/tmp/package.json').packageManager.split('@')[1].split('+')[0]")}" \
+    && npm install --global "pnpm@$version"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — deps: resolve and install npm packages
@@ -61,7 +66,7 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.29-alpine AS production
+FROM nginx:1.31.8-alpine AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
@@ -78,12 +83,17 @@ COPY --link nginx.conf /etc/nginx/conf.d/default.conf
 # so it can be cached independently.
 COPY --link --from=builder /app/dist /usr/share/nginx/html
 
-# Install gettext for envsubst
-RUN apk add --no-cache gettext
+# Apply available base-package security fixes and install envsubst.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache gettext
 
 # Copy and set the entrypoint for runtime configuration injection
 COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && sed -i 's|^pid[[:space:]].*;|pid /tmp/nginx.pid;|; /^user[[:space:]]/d' /etc/nginx/nginx.conf \
+    && chown -R nginx:nginx /var/cache/nginx /etc/nginx/snippets /usr/share/nginx/html
+
+USER nginx
 
 EXPOSE 80
 
