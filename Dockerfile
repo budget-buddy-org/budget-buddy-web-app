@@ -14,11 +14,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:24-alpine AS base
+ARG NODE_VERSION=26.13.1
+FROM node:${NODE_VERSION}-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm && corepack prepare pnpm@12.18.0 --activate
+# CI supplies both versions from the shared policy; local builds use packageManager.
+ARG PNPM_VERSION
+RUN --mount=type=bind,source=package.json,target=/tmp/package.json \
+    version="${PNPM_VERSION:-$(node -p "require('/tmp/package.json').packageManager.split('@')[1].split('+')[0]")}" \
+    && npm install --global "pnpm@$version"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — deps: resolve and install npm packages
