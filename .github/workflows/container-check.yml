@@ -1,0 +1,24 @@
+name: Container checks
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'docker/**'
+      - 'nginx*'
+      - 'src/**'
+      - 'public/**'
+      - 'vite.config.*'
+      - 'tsconfig*'
+      - '.npmrc'
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+jobs:
+  image:
+    uses: budget-buddy-org/ci-workflows/.github/workflows/web-image-check.yml@0b05bd0245bda46e60f8998361a8ed05772368ff
