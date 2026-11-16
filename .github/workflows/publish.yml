@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.event.release.tag_name || github.ref }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-metadata@ad780d45400f3a82e82a817a8ad4cd1f5f89c989
+      - uses: budget-buddy-org/ci-workflows/.github/actions/image-metadata@235bd4425fe8005786d300dee35a35bd2ba90b96
         id: metadata
         with:
           version-file: package.json
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.prepare.outputs.source-sha }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/setup-container@ad780d45400f3a82e82a817a8ad4cd1f5f89c989
+      - uses: budget-buddy-org/ci-workflows/.github/actions/setup-container@235bd4425fe8005786d300dee35a35bd2ba90b96
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -83,20 +83,8 @@ jobs:
         env:
           IMAGE_REF: ${{ needs.prepare.outputs.image }}@${{ steps.build.outputs.digest }}
           PLATFORM: ${{ matrix.platform }}
-        run: |
-          docker run --detach --name web-smoke --platform "$PLATFORM" \
-            --publish 127.0.0.1::80 \
-            --env VITE_API_URL=https://api.example.test \
-            --env VITE_OIDC_ISSUER=https://identity.example.test \
-            "$IMAGE_REF"
-          trap 'docker logs web-smoke; docker rm --force web-smoke' EXIT
-          port=$(docker port web-smoke 80/tcp | awk -F: '{print $NF}')
-          url="http://127.0.0.1:$port"
-          curl --fail --retry 10 --retry-connrefused --retry-delay 1 "$url/" > /dev/null
-          curl --fail --silent "$url/config.json" | jq -e '.VITE_API_URL == "https://api.example.test"'
-          curl --fail --silent "$url/transactions" > /dev/null
-          [[ "$(docker exec web-smoke id -u)" != '0' ]]
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@ad780d45400f3a82e82a817a8ad4cd1f5f89c989
+        run: sh docker/smoke-test.sh
+      - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@235bd4425fe8005786d300dee35a35bd2ba90b96
         with:
           digest: ${{ steps.build.outputs.digest }}
           platform: ${{ matrix.platform }}
@@ -109,7 +97,7 @@ jobs:
       packages: write
       security-events: write
       id-token: write
-    uses: budget-buddy-org/ci-workflows/.github/workflows/publish-image.yml@ad780d45400f3a82e82a817a8ad4cd1f5f89c989
+    uses: budget-buddy-org/ci-workflows/.github/workflows/publish-image.yml@235bd4425fe8005786d300dee35a35bd2ba90b96
     with:
       version: ${{ needs.prepare.outputs.version }}
       source-sha: ${{ needs.prepare.outputs.source-sha }}
