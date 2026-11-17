@@ -141,7 +141,7 @@ Biome (single quotes, 2-space indent, 100-char width) for lint + format; ESLint 
 
 ### Commits & Releases
 
-[Conventional Commits](https://www.conventionalcommits.org/), enforced by a `commit-msg` husky hook (commitlint). Format `type(scope): subject` (scope optional).
+PR titles use Conventional Commits, validated by shared CI. Squash merges use the PR title; branch commits are free form. Use `type(scope): subject` (scope optional) and `!` in the title for breaking changes. Release tooling and configuration live in ci-workflows.
 
 | Type | When | Bump |
 |---|---|---|
