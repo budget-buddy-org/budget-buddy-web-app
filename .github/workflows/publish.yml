@@ -71,7 +71,6 @@ jobs:
             org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
             org.opencontainers.image.revision=${{ needs.prepare.outputs.source-sha }}
           build-args: |
-            NODE_VERSION=${{ needs.prepare.outputs.node-version }}
             PNPM_VERSION=${{ needs.prepare.outputs.pnpm-version }}
           secrets: github_token=${{ github.token }}
           sbom: true

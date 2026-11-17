@@ -9,13 +9,14 @@
 # The VITE_API_URL is no longer injected at build time. Pass it as a runtime
 # environment variable to the container instead:
 #
-#   docker run -e VITE_API_URL=https://api.example.com -p 8080:80 budget-buddy-web-app
+#   docker run -e VITE_API_URL=https://api.example.com -p 8080:8080 budget-buddy-web-app
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
-ARG NODE_VERSION=26.13.1
-FROM node:${NODE_VERSION}-alpine AS base
+FROM cgr.dev/chainguard/node:latest-dev AS base
+
+USER root
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -48,7 +49,6 @@ RUN --mount=type=secret,id=github_token \
     echo "//npm.pkg.github.com/:_authToken=$(cat /run/secrets/github_token)" >> ~/.npmrc \
     && pnpm fetch \
     && pnpm install --frozen-lockfile --offline \
-    && sed -i '/npm\.pkg\.github\.com/d' ~/.npmrc
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — builder: compile the Vite SPA
@@ -66,7 +66,9 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.31.8-alpine AS production
+FROM cgr.dev/chainguard/nginx:latest-dev AS production
+
+USER root
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
@@ -84,22 +86,20 @@ COPY --link nginx.conf /etc/nginx/conf.d/default.conf
 COPY --link --from=builder /app/dist /usr/share/nginx/html
 
 # Apply available base-package security fixes and install envsubst.
-RUN apk upgrade --no-cache \
-    && apk add --no-cache gettext
+RUN apk add --no-cache gettext-envsubst
 
 # Copy and set the entrypoint for runtime configuration injection
 COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && sed -i 's|^pid[[:space:]].*;|pid /tmp/nginx.pid;|; /^user[[:space:]]/d' /etc/nginx/nginx.conf \
-    && chown -R nginx:nginx /var/cache/nginx /etc/nginx/snippets /usr/share/nginx/html
+    && chown -R nginx:nginx /etc/nginx/snippets /usr/share/nginx/html
 
 USER nginx
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
 # Lightweight liveness check — wget is already included in nginx:alpine.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://localhost/ || exit 1
+    CMD wget -q --spider http://127.0.0.1:8080/ || exit 1
