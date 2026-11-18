@@ -83,7 +83,12 @@ jobs:
         env:
           IMAGE_REF: ${{ needs.prepare.outputs.image }}@${{ steps.build.outputs.digest }}
           PLATFORM: ${{ matrix.platform }}
-        run: sh docker/smoke-test.sh
+          IMAGE_VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          sh docker/smoke-test.sh
+          docker run --rm --network none --platform "$PLATFORM" --entrypoint cat "$IMAGE_REF" \
+            /usr/share/nginx/html/version.json | jq --exit-status --arg version "$IMAGE_VERSION" '.version == $version'
       - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@9024fa25dcdd7ca4c6307da15afc9de49172f160
         with:
           digest: ${{ steps.build.outputs.digest }}
