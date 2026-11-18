@@ -105,3 +105,10 @@ Multi-stage Docker image published to `ghcr.io/budget-buddy-org/budget-buddy-web
 See [CLAUDE.md](./CLAUDE.md) for detailed guidance on the project structure, auth flow, adding features, and conventions.
 
 The app consumes `@budget-buddy-org/budget-buddy-contracts` for typed API clients and model types. Currency amounts are stored as **minor units** (`1299` = €12.99).
+
+### TypeScript tooling
+
+Compilation uses TypeScript 7 through the `@typescript/native` npm alias.
+The `typescript` alias supplies Microsoft's TypeScript 6 compatibility API for
+tools that require it (the client generator and ESLint). Keep both until those
+tools support the native compiler API.
