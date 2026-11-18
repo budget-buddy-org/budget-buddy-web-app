@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.event.release.tag_name || github.ref }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-metadata@f7140d62236354f8698c220180658c573fa2b6ec
+      - uses: budget-buddy-org/ci-workflows/.github/actions/image-metadata@9024fa25dcdd7ca4c6307da15afc9de49172f160
         id: metadata
         with:
           version-file: package.json
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.prepare.outputs.source-sha }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/setup-container@f7140d62236354f8698c220180658c573fa2b6ec
+      - uses: budget-buddy-org/ci-workflows/.github/actions/setup-container@9024fa25dcdd7ca4c6307da15afc9de49172f160
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -84,7 +84,7 @@ jobs:
           IMAGE_REF: ${{ needs.prepare.outputs.image }}@${{ steps.build.outputs.digest }}
           PLATFORM: ${{ matrix.platform }}
         run: sh docker/smoke-test.sh
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@f7140d62236354f8698c220180658c573fa2b6ec
+      - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@9024fa25dcdd7ca4c6307da15afc9de49172f160
         with:
           digest: ${{ steps.build.outputs.digest }}
           platform: ${{ matrix.platform }}
@@ -97,7 +97,7 @@ jobs:
       packages: write
       security-events: write
       id-token: write
-    uses: budget-buddy-org/ci-workflows/.github/workflows/publish-image.yml@f7140d62236354f8698c220180658c573fa2b6ec
+    uses: budget-buddy-org/ci-workflows/.github/workflows/publish-image.yml@9024fa25dcdd7ca4c6307da15afc9de49172f160
     with:
       version: ${{ needs.prepare.outputs.version }}
       source-sha: ${{ needs.prepare.outputs.source-sha }}

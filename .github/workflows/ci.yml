@@ -19,15 +19,15 @@ permissions:
 
 jobs:
   commitlint:
-    uses: budget-buddy-org/ci-workflows/.github/workflows/pr-title.yml@f7140d62236354f8698c220180658c573fa2b6ec
+    uses: budget-buddy-org/ci-workflows/.github/workflows/pr-title.yml@9024fa25dcdd7ca4c6307da15afc9de49172f160
 
   ci:
-    uses: budget-buddy-org/ci-workflows/.github/workflows/web-ci.yml@f7140d62236354f8698c220180658c573fa2b6ec
+    uses: budget-buddy-org/ci-workflows/.github/workflows/web-ci.yml@9024fa25dcdd7ca4c6307da15afc9de49172f160
 
   release:
     needs: ci
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.dry-run-release)
-    uses: budget-buddy-org/ci-workflows/.github/workflows/release.yml@f7140d62236354f8698c220180658c573fa2b6ec
+    uses: budget-buddy-org/ci-workflows/.github/workflows/release.yml@9024fa25dcdd7ca4c6307da15afc9de49172f160
     with:
       profile: web-app
       dry-run: ${{ github.event_name == 'workflow_dispatch' }}
