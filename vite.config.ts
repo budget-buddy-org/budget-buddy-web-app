@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
@@ -6,10 +7,15 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 
+const appVersion = process.env.APP_VERSION
+  || process.env.CF_PAGES_COMMIT_SHA
+  || execFileSync('git', ['describe', '--tags', '--always', '--dirty'], { encoding: 'utf8' })
+    .trim().replace(/^v(?=\d)/, '');
+
 export default defineConfig({
   base: '/',
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.8.0'),
+    __APP_VERSION__: JSON.stringify(appVersion),
   },
   plugins: [
     tanstackRouter({
@@ -91,12 +97,11 @@ export default defineConfig({
     {
       name: 'generate-version-json',
       closeBundle() {
-        const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
         const distPath = path.resolve(import.meta.dirname, 'dist');
         if (fs.existsSync(distPath)) {
           fs.writeFileSync(
             path.join(distPath, 'version.json'),
-            JSON.stringify({ version: pkg.version }, null, 2)
+            JSON.stringify({ version: appVersion }, null, 2)
           );
         }
       }

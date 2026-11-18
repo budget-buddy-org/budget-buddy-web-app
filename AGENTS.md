@@ -129,7 +129,7 @@ When changing the `AppConfig` shape, update **both** `functions/config.json.ts` 
 
 ### Version Updates
 
-`VersionCheck` (mounted in `RootComponent`, renders null) polls `/version.json` every 5 min and on tab focus; when it differs from `__APP_VERSION__` (injected at build from `package.json`) it shows a persistent reload toast. The build emits `dist/version.json` via a Vite plugin.
+`VersionCheck` (mounted in `RootComponent`, renders null) polls `/version.json` every 5 min and on tab focus; when it differs from `__APP_VERSION__` (injected from `APP_VERSION`, the Cloudflare commit, or Git for local builds) it shows a persistent reload toast. The build emits `dist/version.json` via a Vite plugin.
 
 ### Testing
 
@@ -152,4 +152,4 @@ PR titles use Conventional Commits, validated by shared CI. Squash merges use th
 | `feat!` / `BREAKING CHANGE:` footer | breaking change | major |
 | `chore`, `docs`, `test`, `refactor`, `style`, `build`, `ci`, `ops` | everything else | none |
 
-Releases are automated: merging to `main` runs semantic-release (version bump, `CHANGELOG.md`, GitHub release), which triggers the Docker build + GHCR push.
+Releases are automated: merging to `main` runs the shared application release profile (Git tag and GitHub release), which triggers the Docker build + GHCR push.

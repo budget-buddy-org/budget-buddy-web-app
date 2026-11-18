@@ -15,90 +15,14 @@ on:
         default: false
 permissions:
   contents: read
-concurrency:
-  group: image-build-${{ github.repository }}-${{ github.event.release.tag_name || inputs.ref || github.ref }}
-  cancel-in-progress: false
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      image: ${{ steps.metadata.outputs.image }}
-      version: ${{ steps.metadata.outputs.version }}
-      source-sha: ${{ steps.metadata.outputs.source-sha }}
-      node-version: ${{ steps.metadata.outputs.node-version }}
-      pnpm-version: ${{ steps.metadata.outputs.pnpm-version }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref || github.event.release.tag_name || github.ref }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-metadata@f7140d62236354f8698c220180658c573fa2b6ec
-        id: metadata
-        with:
-          version-file: package.json
-          ref: ${{ inputs.ref || github.event.release.tag_name || github.ref }}
-          publish: ${{ github.event_name == 'release' || inputs.publish }}
-  build:
-    needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            arch: amd64
-            runner: ubuntu-latest
-          - platform: linux/arm64
-            arch: arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 35
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.prepare.outputs.source-sha }}
-      - uses: budget-buddy-org/ci-workflows/.github/actions/setup-container@f7140d62236354f8698c220180658c573fa2b6ec
-      - name: Build and push by digest
-        id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          platforms: ${{ matrix.platform }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
-            org.opencontainers.image.revision=${{ needs.prepare.outputs.source-sha }}
-          build-args: |
-            NODE_VERSION=${{ needs.prepare.outputs.node-version }}
-            PNPM_VERSION=${{ needs.prepare.outputs.pnpm-version }}
-          secrets: github_token=${{ github.token }}
-          sbom: true
-          provenance: mode=max
-          outputs: type=image,name=${{ needs.prepare.outputs.image }},push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=gha,scope=buildx-${{ matrix.arch }}
-          cache-to: type=gha,scope=buildx-${{ matrix.arch }},mode=max
-      - name: Verify native container startup and runtime configuration
-        env:
-          IMAGE_REF: ${{ needs.prepare.outputs.image }}@${{ steps.build.outputs.digest }}
-          PLATFORM: ${{ matrix.platform }}
-        run: sh docker/smoke-test.sh
-      - uses: budget-buddy-org/ci-workflows/.github/actions/image-record@f7140d62236354f8698c220180658c573fa2b6ec
-        with:
-          digest: ${{ steps.build.outputs.digest }}
-          platform: ${{ matrix.platform }}
-          version: ${{ needs.prepare.outputs.version }}
-          source-sha: ${{ needs.prepare.outputs.source-sha }}
   publish:
-    needs: [prepare, build]
     permissions:
       contents: read
       packages: write
       security-events: write
       id-token: write
-    uses: budget-buddy-org/ci-workflows/.github/workflows/publish-image.yml@f7140d62236354f8698c220180658c573fa2b6ec
+    uses: budget-buddy-org/ci-workflows/.github/workflows/web-publish.yml@ca6bffbd7f206e9fe5d612fcf40fe061678cc5dd
     with:
-      version: ${{ needs.prepare.outputs.version }}
-      source-sha: ${{ needs.prepare.outputs.source-sha }}
+      ref: ${{ inputs.ref || github.event.release.tag_name || github.ref }}
       publish: ${{ github.event_name == 'release' || inputs.publish }}

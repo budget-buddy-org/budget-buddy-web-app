@@ -61,7 +61,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN pnpm build
+ARG APP_VERSION=0.0.0-dev
+RUN APP_VERSION="$APP_VERSION" pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx

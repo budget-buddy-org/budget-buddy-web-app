@@ -1,7 +1,6 @@
 {
   "name": "budget-buddy-web-app",
   "private": true,
-  "version": "4.19.2",
   "packageManager": "pnpm@12.21.0",
   "engines": {
     "node": ">=24.15.0",

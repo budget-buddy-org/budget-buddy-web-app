@@ -112,3 +112,10 @@ Compilation uses TypeScript 7 through the `@typescript/native` npm alias.
 The `typescript` alias supplies Microsoft's TypeScript 6 compatibility API for
 tools that require it (the client generator and ESLint). Keep both until those
 tools support the native compiler API.
+
+### Releases
+
+Git tags and GitHub Releases are the version and release-note sources.
+Application releases do not create version-bump or changelog commits.
+Production image builds receive the verified release version from shared CI.
+Local builds use a development version; web preview builds use the source revision.
