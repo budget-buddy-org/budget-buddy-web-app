@@ -5,11 +5,15 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
+import { resolveAppVersion } from './src/lib/app-version.ts';
+
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
+const appVersion = resolveAppVersion(process.env.APP_VERSION, process.env.npm_package_version || pkg.version);
 
 export default defineConfig({
   base: '/',
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.8.0'),
+    __APP_VERSION__: JSON.stringify(appVersion),
   },
   plugins: [
     tanstackRouter({
@@ -91,12 +95,11 @@ export default defineConfig({
     {
       name: 'generate-version-json',
       closeBundle() {
-        const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
         const distPath = path.resolve(import.meta.dirname, 'dist');
         if (fs.existsSync(distPath)) {
           fs.writeFileSync(
             path.join(distPath, 'version.json'),
-            JSON.stringify({ version: pkg.version }, null, 2)
+            JSON.stringify({ version: appVersion }, null, 2)
           );
         }
       }
