@@ -33,8 +33,7 @@
       "!src/index.css",
       "!release.config.js",
       "!commitlint.config.js",
-      "!AGENTS.md",
-      "!CLAUDE.md"
+      "!AGENTS.md"
     ]
   }
 }

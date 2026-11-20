@@ -8,8 +8,8 @@ React 19 frontend for the Budget Buddy personal finance app. Features transactio
 
 ## Prerequisites
 
-- Node.js 24.15+
-- pnpm 12.18+
+- Node.js version from `.node-version` (also satisfies the `package.json` engine)
+- pnpm version pinned in `package.json`
 - A running [budget-buddy-api](../budget-buddy-api/) instance (or `VITE_API_URL` pointed elsewhere)
 - GitHub Packages read access for `@budget-buddy-org/budget-buddy-contracts`
 
@@ -59,9 +59,9 @@ pnpm preview      # Preview production build locally
 
 ## Docker
 
-Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.29-alpine).
+Multi-stage build: Chainguard Node `latest-dev` builds the Vite bundle, then Chainguard nginx `latest-dev` serves it. The nginx development variant is used at runtime because it provides the shell, `envsubst`, and `wget` needed for runtime configuration injection and the container health check; nginx runs as its built-in non-root user on port `8080`.
 
-Runtime configuration is injected via `docker-entrypoint.sh` from environment variables using `envsubst`.
+Dependencies are installed with the pnpm store cache and a BuildKit secret for GitHub Packages. Runtime configuration is injected by `docker/docker-entrypoint.sh` using `envsubst`.
 
 ```bash
 # Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
@@ -69,20 +69,18 @@ docker build \
   --secret id=github_token,env=GITHUB_TOKEN \
   -t budget-buddy-web-app .
 
-# Run locally with Docker Compose (app available at http://localhost:3000)
-# VITE_API_URL and OIDC vars are injected into the container at runtime
-GITHUB_TOKEN=$(gh auth token) \
-VITE_API_URL=http://localhost:8080 \
-VITE_OIDC_ISSUER=https://issuer.example.com \
-VITE_OIDC_CLIENT_ID=web-client \
-VITE_OIDC_USER_MANAGEMENT_URL=https://issuer.example.com/ui/console/users/me \
-VITE_OIDC_JWT_AUD=test-audience \
-docker compose up --build
+# Run locally (app available at http://localhost:3000)
+docker run --rm -p 3000:8080 \
+  -e VITE_API_URL=http://localhost:8081 \
+  -e VITE_OIDC_ISSUER=https://issuer.example.com \
+  -e VITE_OIDC_CLIENT_ID=web-client \
+  -e VITE_OIDC_USER_MANAGEMENT_URL=https://issuer.example.com/ui/console/users/me \
+  budget-buddy-web-app
 ```
 
-`VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, and `VITE_OIDC_USER_MANAGEMENT_URL` are injected into the container at runtime — no need to rebuild the image when these values change.
+`VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, `VITE_OIDC_SCOPES`, and `VITE_OIDC_USER_MANAGEMENT_URL` can be set at runtime — no image rebuild is needed when these values change.
 
-Pre-built images are published to `ghcr.io/budget-buddy-org/budget-buddy-web-app` on every merge to `main` and every GitHub Release.
+Pre-built images are published to `ghcr.io/budget-buddy-org/budget-buddy-web-app` when a GitHub Release is published.
 
 ## Deployment targets
 
@@ -98,10 +96,10 @@ Static `dist/` is served from Cloudflare's edge. Runtime configuration is served
 
 ### Self-hosted (Docker on Raspberry Pi)
 
-Multi-stage Docker image published to `ghcr.io/budget-buddy-org/budget-buddy-web-app`, served by nginx with runtime config injected by `docker/docker-entrypoint.sh`. Deployed via `../budget-buddy-deployment/deploy.sh`. See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the Pi-side environment setup.
+The multi-platform Docker image is published to `ghcr.io/budget-buddy-org/budget-buddy-web-app`. It is served by Chainguard nginx, with runtime configuration injected by `docker/docker-entrypoint.sh`.
 
 ## Architecture notes
 
-See [CLAUDE.md](./CLAUDE.md) for detailed guidance on the project structure, auth flow, adding features, and conventions.
+See [AGENTS.md](./AGENTS.md) for repository conventions and development guidance.
 
 The app consumes `@budget-buddy-org/budget-buddy-contracts` for typed API clients and model types. Currency amounts are stored as **minor units** (`1299` = €12.99).

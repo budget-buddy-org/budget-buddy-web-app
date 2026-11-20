@@ -13,7 +13,7 @@ This file provides guidance for AI agents (Claude Code, Junie, etc.) when workin
 ```bash
 echo "//npm.pkg.github.com/:_authToken=ghp_<your-token>" >> ~/.npmrc
 pnpm install
-cp .env.example .env.local   # set VITE_API_URL if needed
+cp .env.example .env.local   # set VITE_API_URL and required OIDC vars
 pnpm dev                      # Vite dev server at http://localhost:5173
 ```
 
@@ -126,6 +126,8 @@ Two deployment targets ship from the same release:
 - **Self-hosted (Pi)** — Docker image to GHCR, nginx + `docker/docker-entrypoint.sh` injecting config via `envsubst` from `public/config.json.template`.
 
 When changing the `AppConfig` shape, update **both** `functions/config.json.ts` and `public/config.json.template` so the targets don't drift.
+
+The multi-platform image uses Chainguard Node and nginx development variants. The nginx runtime listens on port `8080` as UID `65532`; the development variant provides the shell, `envsubst`, and `wget` required by runtime config generation and the health check.
 
 ### Version Updates
 
