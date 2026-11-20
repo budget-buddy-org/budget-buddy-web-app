@@ -8,3 +8,4 @@ allowBuilds:
 # / workbox-build update their transitive ranges.
 overrides:
   'serialize-javascript@<7.0.5': '^7.0.5'
+  'workbox-build>glob': '14.0.2'
