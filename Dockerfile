@@ -56,6 +56,7 @@ RUN --mount=type=secret,id=github_token \
 FROM base AS builder
 
 WORKDIR /app
+ARG APP_VERSION
 
 # Reuse the fully-populated node_modules from the deps stage.
 COPY --from=deps /app/node_modules ./node_modules
