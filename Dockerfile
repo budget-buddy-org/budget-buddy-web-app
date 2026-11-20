@@ -74,33 +74,37 @@ FROM cgr.dev/chainguard/nginx:latest-dev AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
-# The development variant provides envsubst and a shell for runtime config
-# generation; nginx itself still runs as the image's non-root user.
+# The development variant provides envsubst, a shell, and su-exec. The entrypoint
+# renders runtime config as root, then drops to UID 65532 before starting nginx.
 USER root
-RUN apk add --no-cache gettext-envsubst \
+RUN apk add --no-cache gettext-envsubst su-exec \
     && mkdir -p /etc/nginx/snippets \
-    && sed -i '/^user[[:space:]]/d' /etc/nginx/nginx.conf \
-    && chown -R 65532:65532 /etc/nginx/snippets /usr/share/nginx/html
+    && sed -i '/^user[[:space:]]/d; s|^[[:space:]]*error_log .*;|error_log stderr notice;|; s|^[[:space:]]*access_log .*;|access_log off;|' /etc/nginx/nginx.conf \
+    && chown 0:0 /etc/nginx/snippets /usr/share/nginx/html \
+    && chmod 0555 /etc/nginx/snippets /usr/share/nginx/html
 
-COPY --link --chown=65532:65532 nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
+COPY --link --chown=0:0 --chmod=0444 nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
 
 # Replace default config with our SPA-aware configuration.
-COPY --link nginx.conf /etc/nginx/conf.d/default.conf
+COPY --link --chown=0:0 --chmod=0444 nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy the compiled assets. --link decouples this layer from the builder stage
 # so it can be cached independently.
-COPY --link --chown=65532:65532 --from=builder /app/dist /usr/share/nginx/html
+COPY --link --chown=0:0 --from=builder /app/dist /usr/share/nginx/html
+RUN find /usr/share/nginx/html -type d -exec chmod 0555 {} + \
+    && find /usr/share/nginx/html -type f -exec chmod 0444 {} + \
+    && touch /usr/share/nginx/html/config.json \
+    && chown 65532:65532 /usr/share/nginx/html/config.json \
+    && chmod 0644 /usr/share/nginx/html/config.json
 
 # Copy and set the entrypoint for runtime configuration injection
-COPY --link --chown=65532:65532 --chmod=755 docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-
-USER 65532
+COPY --link --chown=0:0 --chmod=0555 docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["nginx", "-c", "/etc/nginx/nginx.conf", "-e", "/dev/stderr", "-g", "daemon off;"]
+CMD ["nginx", "-c", "/etc/nginx/nginx.conf", "-g", "daemon off;"]
 
 # wget is available in the Chainguard nginx development variant.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://localhost:8080/ || exit 1
+    CMD su-exec 65532:65532 wget -q --spider http://localhost:8080/ || exit 1
