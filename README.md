@@ -59,7 +59,7 @@ pnpm preview      # Preview production build locally
 
 ## Docker
 
-Multi-stage build: Chainguard Node `latest-dev` builds the Vite bundle, then Chainguard nginx `latest-dev` serves it. The nginx development variant provides the shell and `envsubst` needed for runtime configuration injection. The entrypoint renders runtime files as root, then drops to UID `65532` before nginx starts on port `8080`.
+Multi-stage build: Chainguard Node `latest-dev` builds the Vite bundle, then Chainguard nginx `latest-dev` serves it. The nginx development variant provides the shell and `envsubst` needed for runtime configuration injection. The final image and nginx run as UID `65532`; the entrypoint writes the runtime CSP include under the UID-owned, mode-`0700` `/run/nginx` directory before nginx starts on port `8080`.
 
 Dependencies are installed with the pnpm store cache and a BuildKit secret for GitHub Packages. Runtime configuration is injected by `docker/docker-entrypoint.sh` using `envsubst`.
 

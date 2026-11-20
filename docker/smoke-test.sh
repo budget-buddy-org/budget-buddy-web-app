@@ -13,6 +13,7 @@ curl --fail --retry 10 --retry-connrefused --retry-delay 1 "$url/" > /dev/null
 curl --fail --silent "$url/config.json" | jq -e '.VITE_API_URL == "https://api.example.test"'
 curl --fail --silent --head "$url/" | grep -Fi 'frame-src https://identity.example.test'
 curl --fail --silent "$url/transactions" > /dev/null
+[ "$(docker inspect --format '{{.Config.User}}' web-smoke)" = '65532' ]
 [ "$(docker exec web-smoke awk '/^Uid:/ {print $2}' /proc/1/status)" = '65532' ]
 docker exec --user 65532 web-smoke sh -c '
   set -e
@@ -24,6 +25,12 @@ docker exec --user 65532 web-smoke sh -c '
     [ "$(stat -c %u "$file")" = "0" ]
     [ ! -w "$file" ]
   done
+  [ "$(stat -c %u /run/nginx)" = "65532" ]
+  [ "$(stat -c %a /run/nginx)" = "700" ]
+  [ "$(stat -c %u /run/nginx/security-headers.conf)" = "65532" ]
+  [ "$(stat -c %a /run/nginx/security-headers.conf)" = "400" ]
+  [ -r /run/nginx/security-headers.conf ]
+  [ ! -w /run/nginx/security-headers.conf ]
   [ "$(stat -c %u /usr/share/nginx/html)" = "0" ]
   [ ! -w /usr/share/nginx/html ]
   [ "$(stat -c %u /usr/share/nginx/html/config.json)" = "65532" ]

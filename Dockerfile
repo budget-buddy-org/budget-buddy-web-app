@@ -74,14 +74,20 @@ FROM cgr.dev/chainguard/nginx:latest-dev AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
-# The development variant provides envsubst, a shell, and su-exec. The entrypoint
-# renders runtime config as root, then drops to UID 65532 before starting nginx.
+# The development variant provides envsubst and a shell for runtime configuration.
 USER root
-RUN apk add --no-cache gettext-envsubst su-exec \
+RUN apk add --no-cache gettext-envsubst \
     && mkdir -p /etc/nginx/snippets \
-    && sed -i '/^user[[:space:]]/d; s|^[[:space:]]*error_log .*;|error_log stderr notice;|; s|^[[:space:]]*access_log .*;|access_log off;|' /etc/nginx/nginx.conf \
+    && mkdir -p /run/nginx \
+    && sed -i \
+      -e '/^user[[:space:]]/d' \
+      -e 's|^[[:space:]]*error_log .*;|error_log stderr notice;|' \
+      -e 's|^[[:space:]]*access_log .*;|access_log off;|' \
+      /etc/nginx/nginx.conf \
     && chown 0:0 /etc/nginx/snippets /usr/share/nginx/html \
-    && chmod 0555 /etc/nginx/snippets /usr/share/nginx/html
+    && chmod 0555 /etc/nginx/snippets /usr/share/nginx/html \
+    && chown 65532:65532 /run/nginx \
+    && chmod 0700 /run/nginx
 
 COPY --link --chown=0:0 --chmod=0444 nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
 
@@ -100,6 +106,8 @@ RUN find /usr/share/nginx/html -type d -exec chmod 0555 {} + \
 # Copy and set the entrypoint for runtime configuration injection
 COPY --link --chown=0:0 --chmod=0555 docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
+USER 65532
+
 EXPOSE 8080
 
 ENTRYPOINT ["docker-entrypoint.sh"]
@@ -107,4 +115,4 @@ CMD ["nginx", "-c", "/etc/nginx/nginx.conf", "-g", "daemon off;"]
 
 # wget is available in the Chainguard nginx development variant.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD su-exec 65532:65532 wget -q --spider http://localhost:8080/ || exit 1
+    CMD wget -q --spider http://localhost:8080/ || exit 1

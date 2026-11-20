@@ -127,7 +127,7 @@ Two deployment targets ship from the same release:
 
 When changing the `AppConfig` shape, update **both** `functions/config.json.ts` and `public/config.json.template` so the targets don't drift.
 
-The multi-platform image uses Chainguard Node and nginx development variants. The entrypoint renders runtime configuration as root, then starts nginx on port `8080` as UID `65532`. Static files and nginx configuration remain root-owned/read-only; only the generated `config.json` is writable by the runtime UID.
+The multi-platform image uses Chainguard Node and nginx development variants. The final image runs as UID `65532`; the entrypoint renders runtime configuration and the CSP include without elevating privileges. Static files and nginx configuration remain root-owned/read-only. The generated `config.json` is writable by the runtime UID, while the CSP include is written under `/run/nginx` (owned by UID `65532`, mode `0700`).
 
 ### Version Updates
 
