@@ -9,20 +9,23 @@
 # The VITE_API_URL is no longer injected at build time. Pass it as a runtime
 # environment variable to the container instead:
 #
-#   docker run -e VITE_API_URL=https://api.example.com -p 8080:80 budget-buddy-web-app
+#   docker run -e VITE_API_URL=https://api.example.com -p 8080:8080 budget-buddy-web-app
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
 ARG NODE_VERSION=26.13.1
-FROM node:${NODE_VERSION}-alpine AS base
+FROM cgr.dev/chainguard/node:latest-dev AS base
+ARG NODE_VERSION
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 # CI supplies both versions from the shared policy; local builds use packageManager.
 ARG PNPM_VERSION
+USER root
 RUN --mount=type=bind,source=package.json,target=/tmp/package.json \
-    version="${PNPM_VERSION:-$(node -p "require('/tmp/package.json').packageManager.split('@')[1].split('+')[0]")}" \
+    test "$(node --version)" = "v${NODE_VERSION}" \
+    && version="${PNPM_VERSION:-$(node -p "require('/tmp/package.json').packageManager.split('@')[1].split('+')[0]")}" \
     && npm install --global "pnpm@$version"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -67,40 +70,49 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.31.8-alpine AS production
+FROM cgr.dev/chainguard/nginx:latest-dev AS production
 
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
 
-# Create the snippets directory and copy the security-headers template.
-# docker-entrypoint.sh runs envsubst at startup to produce the final
-# security-headers.conf with the runtime OIDC issuer baked into the CSP.
-RUN mkdir -p /etc/nginx/snippets
-COPY --link nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
+# The development variant provides envsubst and a shell for runtime configuration.
+USER root
+RUN apk add --no-cache gettext-envsubst \
+    && mkdir -p /etc/nginx/snippets \
+    && mkdir -p /run/nginx \
+    && sed -i \
+      -e '/^user[[:space:]]/d' \
+      -e 's|^[[:space:]]*error_log .*;|error_log stderr notice;|' \
+      -e 's|^[[:space:]]*access_log .*;|access_log off;|' \
+      /etc/nginx/nginx.conf \
+    && chown 0:0 /etc/nginx/snippets /usr/share/nginx/html \
+    && chmod 0555 /etc/nginx/snippets /usr/share/nginx/html \
+    && chown 65532:65532 /run/nginx \
+    && chmod 0700 /run/nginx
+
+COPY --link --chown=0:0 --chmod=0444 nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
 
 # Replace default config with our SPA-aware configuration.
-COPY --link nginx.conf /etc/nginx/conf.d/default.conf
+COPY --link --chown=0:0 --chmod=0444 nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy the compiled assets. --link decouples this layer from the builder stage
 # so it can be cached independently.
-COPY --link --from=builder /app/dist /usr/share/nginx/html
-
-# Apply available base-package security fixes and install envsubst.
-RUN apk upgrade --no-cache \
-    && apk add --no-cache gettext
+COPY --link --chown=0:0 --from=builder /app/dist /usr/share/nginx/html
+RUN find /usr/share/nginx/html -type d -exec chmod 0555 {} + \
+    && find /usr/share/nginx/html -type f -exec chmod 0444 {} + \
+    && touch /usr/share/nginx/html/config.json \
+    && chown 65532:65532 /usr/share/nginx/html/config.json \
+    && chmod 0644 /usr/share/nginx/html/config.json
 
 # Copy and set the entrypoint for runtime configuration injection
-COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && sed -i 's|^pid[[:space:]].*;|pid /tmp/nginx.pid;|; /^user[[:space:]]/d' /etc/nginx/nginx.conf \
-    && chown -R nginx:nginx /var/cache/nginx /etc/nginx/snippets /usr/share/nginx/html
+COPY --link --chown=0:0 --chmod=0555 docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-USER nginx
+USER 65532
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-c", "/etc/nginx/nginx.conf", "-g", "daemon off;"]
 
-# Lightweight liveness check — wget is already included in nginx:alpine.
+# wget is available in the Chainguard nginx development variant.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://localhost/ || exit 1
+    CMD wget -q --spider http://localhost:8080/ || exit 1

@@ -27,7 +27,6 @@ coverage
 
 # Docker files themselves (not needed in the build context)
 Dockerfile
-docker-compose.yml
 .dockerignore
 
 # Docs
