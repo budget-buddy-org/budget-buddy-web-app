@@ -6,6 +6,9 @@ allowBuilds:
 # Fixes GHSA-5c6j-r48x-rmvq (RCE) and GHSA-qj8w-gfj5-8c6v (CPU DoS).
 # Build-time only; not shipped to users. Drop this once vite-plugin-pwa
 # / workbox-build update their transitive ranges.
+minimumReleaseAgeExclude:
+  - '@budget-buddy-org/budget-buddy-contracts@7.0.0'
+
 overrides:
   'serialize-javascript@<7.0.5': '^7.0.5'
   'workbox-build>glob': '14.0.2'
