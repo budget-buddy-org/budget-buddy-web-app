@@ -59,9 +59,9 @@ pnpm preview      # Preview production build locally
 
 ## Docker
 
-Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (nginx:1.29-alpine).
+Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (Chainguard nginx).
 
-Runtime configuration is injected via `docker-entrypoint.sh` from environment variables using `envsubst`.
+The `docker/docker-entrypoint.sh` script uses jq and envsubst to generate JSON and CSP from runtime environment variables before starting nginx.
 
 ```bash
 # Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
@@ -69,15 +69,13 @@ docker build \
   --secret id=github_token,env=GITHUB_TOKEN \
   -t budget-buddy-web-app .
 
-# Run locally with Docker Compose (app available at http://localhost:3000)
-# VITE_API_URL and OIDC vars are injected into the container at runtime
-GITHUB_TOKEN=$(gh auth token) \
-VITE_API_URL=http://localhost:8080 \
-VITE_OIDC_ISSUER=https://issuer.example.com \
-VITE_OIDC_CLIENT_ID=web-client \
-VITE_OIDC_USER_MANAGEMENT_URL=https://issuer.example.com/ui/console/users/me \
-VITE_OIDC_JWT_AUD=test-audience \
-docker compose up --build
+# Run locally (app available at http://localhost:3000)
+docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=32m \
+  --cap-drop ALL --security-opt no-new-privileges \
+  -p 3000:8080 \
+  -e VITE_API_URL=http://localhost:8080 \
+  -e VITE_OIDC_ISSUER=https://issuer.example.com \
+  -e VITE_OIDC_CLIENT_ID=web-client budget-buddy-web-app
 ```
 
 `VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, and `VITE_OIDC_USER_MANAGEMENT_URL` are injected into the container at runtime — no need to rebuild the image when these values change.
@@ -90,7 +88,7 @@ The app supports two deployment targets in parallel — neither path blocks the 
 
 ### Cloudflare Pages (managed)
 
-Static `dist/` is served from Cloudflare's edge. Runtime configuration is served by a Pages Function ([functions/config.json.ts](./functions/config.json.ts)) that reads CF environment variables — same shape as the Docker `envsubst` model, no rebuild needed when env values change.
+Static `dist/` is served from Cloudflare's edge. Runtime configuration is served by a Pages Function ([functions/config.json.ts](./functions/config.json.ts)) that reads CF environment variables — same shape as the Docker runtime configuration model, no rebuild needed when env values change.
 
 - Required CF Pages env vars (set per Production / Preview environment in the dashboard): `VITE_API_URL`, `VITE_OIDC_ISSUER`, `VITE_OIDC_CLIENT_ID`, `VITE_OIDC_SCOPES`, `VITE_OIDC_USER_MANAGEMENT_URL`.
 - HTTP headers and SPA fallback come from [public/_headers](./public/_headers) and [public/_redirects](./public/_redirects).
@@ -105,3 +103,11 @@ Multi-stage Docker image published to `ghcr.io/budget-buddy-org/budget-buddy-web
 See [CLAUDE.md](./CLAUDE.md) for detailed guidance on the project structure, auth flow, adding features, and conventions.
 
 The app consumes `@budget-buddy-org/budget-buddy-contracts` for typed API clients and model types. Currency amounts are stored as **minor units** (`1299` = €12.99).
+
+### Hardened container runtime
+
+The image uses digest-pinned Chainguard Node for builds and Chainguard nginx `latest-dev` with jq and envsubst at runtime. The development variant supplies the shell needed for startup configuration; there is no additional language/toolchain. Weekly Dependabot Docker updates refresh image digests. Node is checked against the shared `NODE_VERSION` policy, so update its digest and policy version together.
+
+The startup script JSON-encodes environment values, validates API/issuer URLs before generating CSP, and replaces itself with nginx for graceful shutdown. Configuration is written into an atomically created private temporary directory. The container runs as UID/GID 65532 on port 8080 and only `/tmp` needs write access. Deployment uses a read-only filesystem, bounded tmpfs, dropped capabilities and no-new-privileges.
+
+The exec health check uses `wget` against `/healthz`. CI smoke-tests runtime configuration, JSON escaping, CSP, SPA routing and shutdown on each architecture before scanning the image. Deploy the new image and companion deployment changes together because previous images listen on port 80.

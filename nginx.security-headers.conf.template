@@ -1,4 +1,4 @@
-# Generated at container startup by docker-entrypoint.sh via envsubst.
+# Generated at container startup by the runtime launcher.
 # $VITE_OIDC_ISSUER and $VITE_API_URL are substituted at runtime so the CSP
 # always reflects the actual IdP and API origin — no image rebuild required.
 

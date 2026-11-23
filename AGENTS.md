@@ -123,7 +123,7 @@ Runtime config lets `VITE_API_URL` etc. change without rebuilding. `src/lib/conf
 
 Two deployment targets ship from the same release:
 - **Cloudflare Pages** — static `dist/`; runtime config served by `functions/config.json.ts`. Headers in `public/_headers`, SPA fallback in `public/_redirects`.
-- **Self-hosted (Pi)** — Docker image to GHCR, nginx + `docker/docker-entrypoint.sh` injecting config via `envsubst` from `public/config.json.template`.
+- **Self-hosted (Pi)** — Docker image to GHCR, Chainguard nginx `latest-dev` + `docker/docker-entrypoint.sh` using jq/envsubst to generate runtime JSON and CSP inside a private directory under `/tmp`.
 
 When changing the `AppConfig` shape, update **both** `functions/config.json.ts` and `public/config.json.template` so the targets don't drift.
 
