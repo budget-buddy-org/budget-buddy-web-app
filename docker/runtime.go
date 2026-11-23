@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -22,7 +23,7 @@ func origin(value string) (string, error) {
 	return u.Scheme + "://" + u.Host, nil
 }
 
-func configure() error {
+func configure(directory string) error {
 	config := map[string]string{}
 	for _, key := range []string{"VITE_API_URL", "VITE_OIDC_ISSUER", "VITE_OIDC_CLIENT_ID", "VITE_OIDC_SCOPES", "VITE_OIDC_USER_MANAGEMENT_URL"} {
 		config[key] = os.Getenv(key)
@@ -39,10 +40,7 @@ func configure() error {
 	if err != nil {
 		return err
 	}
-	if err = os.MkdirAll("/tmp/web", 0700); err != nil {
-		return err
-	}
-	if err = os.WriteFile("/tmp/web/config.json", data, 0600); err != nil {
+	if err = os.WriteFile(filepath.Join(directory, "config.json"), data, 0600); err != nil {
 		return err
 	}
 	template, err := os.ReadFile("/etc/nginx/security-headers.conf.template")
@@ -50,7 +48,23 @@ func configure() error {
 		return err
 	}
 	headers := strings.NewReplacer("$VITE_API_URL", api, "$VITE_OIDC_ISSUER", issuer).Replace(string(template))
-	return os.WriteFile("/tmp/web/security-headers.conf", []byte(headers), 0600)
+	if err = os.WriteFile(filepath.Join(directory, "security-headers.conf"), []byte(headers), 0600); err != nil {
+		return err
+	}
+	server, err := os.ReadFile("/etc/nginx/conf.d/default.conf")
+	if err != nil {
+		return err
+	}
+	serverConfig := strings.ReplaceAll(string(server), "/tmp/web/", directory+"/")
+	if err = os.WriteFile(filepath.Join(directory, "server.conf"), []byte(serverConfig), 0600); err != nil {
+		return err
+	}
+	mainConfig, err := os.ReadFile("/etc/nginx/nginx.conf")
+	if err != nil {
+		return err
+	}
+	generated := strings.ReplaceAll(string(mainConfig), "/etc/nginx/conf.d/*.conf", filepath.Join(directory, "server.conf"))
+	return os.WriteFile(filepath.Join(directory, "nginx.conf"), []byte(generated), 0600)
 }
 
 func run() error {
@@ -66,10 +80,17 @@ func run() error {
 		}
 		return nil
 	}
-	if err := configure(); err != nil {
+	// MkdirTemp atomically creates a private 0700 directory, avoiding predictable
+	// paths and pre-existing symlinks in the shared temporary directory.
+	directory, err := os.MkdirTemp("", "budget-buddy-web-")
+	if err != nil {
 		return err
 	}
-	return syscall.Exec("/usr/sbin/nginx", []string{"nginx", "-e", "/dev/stderr", "-g", "daemon off;"}, os.Environ())
+	defer os.RemoveAll(directory)
+	if err := configure(directory); err != nil {
+		return err
+	}
+	return syscall.Exec("/usr/sbin/nginx", []string{"nginx", "-c", filepath.Join(directory, "nginx.conf"), "-e", "/dev/stderr", "-g", "daemon off;"}, os.Environ())
 }
 
 func main() {
