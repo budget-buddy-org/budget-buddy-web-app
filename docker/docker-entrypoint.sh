@@ -18,7 +18,8 @@ jq -n '{
 # Allow HTTP(S) origins only, so runtime values cannot inject nginx directives
 # or CSP sources. Keep full URLs in config.json but use origins in the CSP.
 origin() {
-  jq -ner --arg value "$1" '
+  local origin_url="$1"
+  jq -ner --arg value "$origin_url" '
     if $value == "" then "\u0027self\u0027"
     elif $value | test("^https?://[A-Za-z0-9.\\[\\]:-]+(?:/[^\\s\\\"\u0027;\\\\]*)?$")
     then $value | capture("^(?<origin>https?://[^/]+)").origin
