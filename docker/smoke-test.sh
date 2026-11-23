@@ -16,11 +16,18 @@ curl --fail --silent "$url/config.json" | jq -e '.VITE_API_URL == "https://api.e
 curl --fail --silent "$url/config.json" | jq -e '.VITE_OIDC_CLIENT_ID == "client\"with\\escaping"'
 curl --fail --silent "$url/transactions" > /dev/null
 [ "$(docker inspect --format '{{.Config.User}}' web-smoke)" = '65532:65532' ]
-docker exec web-smoke /usr/local/bin/runtime healthcheck
-if docker exec web-smoke /bin/sh -c true >/dev/null 2>&1; then
-  echo 'Runtime must not contain a shell' >&2
-  exit 1
-fi
+docker exec web-smoke wget -q -T 3 -O /dev/null http://127.0.0.1:8080/healthz
 curl --fail --silent --head "$url/" | grep -i 'content-security-policy:.*https://identity.example.test'
 docker stop --time 5 web-smoke >/dev/null
 [ "$(docker inspect --format '{{.State.ExitCode}}' web-smoke)" = '0' ]
+
+# Reject values that could introduce CSP sources or nginx directives.
+for invalid_url in 'javascript:alert(1)' 'https://user:password@host' 'https://host";' 'https://$hostname' 'https://host other'; do
+  if docker run --rm --platform "$PLATFORM" --read-only \
+    --tmpfs /tmp:rw,noexec,nosuid,size=32m --cap-drop ALL \
+    --security-opt no-new-privileges --env "VITE_API_URL=$invalid_url" \
+    "$IMAGE_REF" > /dev/null 2>&1; then
+    echo 'Startup accepted an unsafe URL' >&2
+    exit 1
+  fi
+done

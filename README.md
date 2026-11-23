@@ -61,7 +61,7 @@ pnpm preview      # Preview production build locally
 
 Multi-stage build: `base` → `deps` (pnpm install with BuildKit secret + pnpm store cache) → `builder` (Vite build) → `production` (Chainguard nginx).
 
-The compiled `docker/runtime.go` launcher generates JSON and CSP from runtime environment variables before starting nginx.
+The `docker/docker-entrypoint.sh` script uses jq and envsubst to generate JSON and CSP from runtime environment variables before starting nginx.
 
 ```bash
 # Build image — GITHUB_TOKEN passed as a BuildKit secret (never stored in any layer)
@@ -96,7 +96,7 @@ Static `dist/` is served from Cloudflare's edge. Runtime configuration is served
 
 ### Self-hosted (Docker on Raspberry Pi)
 
-Multi-stage Docker image published to `ghcr.io/budget-buddy-org/budget-buddy-web-app`, served by nginx with runtime config injected by `docker/runtime.go`. Deployed via `../budget-buddy-deployment/deploy.sh`. See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the Pi-side environment setup.
+Multi-stage Docker image published to `ghcr.io/budget-buddy-org/budget-buddy-web-app`, served by nginx with runtime config injected by `docker/docker-entrypoint.sh`. Deployed via `../budget-buddy-deployment/deploy.sh`. See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the Pi-side environment setup.
 
 ## Architecture notes
 
@@ -106,15 +106,8 @@ The app consumes `@budget-buddy-org/budget-buddy-contracts` for typed API client
 
 ### Hardened container runtime
 
-The image uses digest-pinned Chainguard Node and Go build stages and minimal Chainguard nginx at runtime. Node is checked against the shared `NODE_VERSION` policy. Update the Node digest and policy version together; refresh all image digests through reviewed dependency updates. Rebuild releases to incorporate patches.
+The image uses digest-pinned Chainguard Node for builds and Chainguard nginx `latest-dev` with jq and envsubst at runtime. The development variant supplies the shell needed for startup configuration; there is no additional language/toolchain. Weekly Dependabot Docker updates refresh image digests. Node is checked against the shared `NODE_VERSION` policy, so update its digest and policy version together.
 
-The compiled launcher JSON-encodes runtime configuration, validates API/issuer URLs before generating CSP, and replaces itself with nginx so shutdown signals reach nginx directly. The runtime contains no shell or package manager and runs as UID/GID 65532 on port 8080. Only `/tmp` needs to be writable:
+The startup script JSON-encodes environment values, validates API/issuer URLs before generating CSP, and replaces itself with nginx for graceful shutdown. Configuration is written into an atomically created private temporary directory. The container runs as UID/GID 65532 on port 8080 and only `/tmp` needs write access. Deployment uses a read-only filesystem, bounded tmpfs, dropped capabilities and no-new-privileges.
 
-```sh
-docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=32m \
-  --cap-drop ALL --security-opt no-new-privileges \
-  -p 8080:8080 -e VITE_API_URL=https://api.example.com \
-  -e VITE_OIDC_ISSUER=https://identity.example.com budget-buddy-web-app
-```
-
-Use `/usr/local/bin/runtime healthcheck` for exec health checks; shell health checks are unsupported. Deployment must route web traffic to container port 8080. CI runs launcher tests during image builds, then checks startup, runtime config, CSP and SPA routing on each native architecture before scanning the image.
+The exec health check uses `wget` against `/healthz`. CI smoke-tests runtime configuration, JSON escaping, CSP, SPA routing and shutdown on each architecture before scanning the image. Deploy the new image and companion deployment changes together because previous images listen on port 80.

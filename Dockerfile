@@ -71,23 +71,16 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM --platform=$BUILDPLATFORM cgr.dev/chainguard/go:latest@sha256:b42c64f7559093cf20910fc6fe750884dd55c74057a16cbeedbba42c4f9b31f8 AS runtime-builder
+FROM cgr.dev/chainguard/nginx:latest-dev@sha256:d0877fa54f95806e6663a58661c166be548ae47473b87ae45b2633a4e08685f1 AS production
 USER root
-WORKDIR /src
-COPY docker/runtime*.go ./
-RUN GO111MODULE=off go test .
-ARG TARGETOS
-ARG TARGETARCH
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /runtime runtime.go
-
-FROM cgr.dev/chainguard/nginx:latest@sha256:c1642395cc75f39c931d66d939f7e78cbdf671d6cfd821616632b0639c3c6d63 AS production
+RUN apk add --no-cache gettext-envsubst jq
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
-COPY --from=runtime-builder /runtime /usr/local/bin/runtime
+COPY --chmod=755 docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY nginx.security-headers.conf.template /etc/nginx/security-headers.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html
 USER 65532:65532
 EXPOSE 8080
-ENTRYPOINT ["/usr/local/bin/runtime"]
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["/usr/local/bin/runtime", "healthcheck"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-T", "3", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
