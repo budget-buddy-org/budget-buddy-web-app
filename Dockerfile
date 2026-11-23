@@ -9,13 +9,17 @@
 # The VITE_API_URL is no longer injected at build time. Pass it as a runtime
 # environment variable to the container instead:
 #
-#   docker run -e VITE_API_URL=https://api.example.com -p 8080:80 budget-buddy-web-app
+#   docker run -e VITE_API_URL=https://api.example.com -p 8080:8080 budget-buddy-web-app
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Base — shared pnpm setup reused by deps and builder
 # ─────────────────────────────────────────────────────────────────────────────
 ARG NODE_VERSION=26.13.1
-FROM node:${NODE_VERSION}-alpine AS base
+FROM cgr.dev/chainguard/node:latest-dev@sha256:8e8d45dd674724ccc71aed270223c3e2efc74edde6c841158d618d2baaaf5527 AS base
+
+USER root
+ARG NODE_VERSION
+RUN test "$(node --version)" = "v${NODE_VERSION}"
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -43,12 +47,12 @@ COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # 3. pnpm fetch downloads every package listed in the lockfile into the store
 #    without touching node_modules — this is the network-heavy step.
 # 4. pnpm install --offline creates node_modules purely from the local store.
-RUN --mount=type=secret,id=github_token \
+RUN --mount=type=secret,id=github_token,required=true \
     --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    echo "//npm.pkg.github.com/:_authToken=$(cat /run/secrets/github_token)" >> ~/.npmrc \
-    && pnpm fetch \
-    && pnpm install --frozen-lockfile --offline \
-    && sed -i '/npm\.pkg\.github\.com/d' ~/.npmrc
+    --mount=type=tmpfs,target=/tmp/npm-auth \
+    printf '//npm.pkg.github.com/:_authToken=%s\n' "$(cat /run/secrets/github_token)" > /tmp/npm-auth/npmrc \
+    && NPM_CONFIG_USERCONFIG=/tmp/npm-auth/npmrc pnpm fetch \
+    && NPM_CONFIG_USERCONFIG=/tmp/npm-auth/npmrc pnpm install --frozen-lockfile --offline
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — builder: compile the Vite SPA
@@ -67,40 +71,23 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — production: serve the static bundle with Nginx
 # ─────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.31.8-alpine AS production
+FROM --platform=$BUILDPLATFORM cgr.dev/chainguard/go:latest@sha256:b42c64f7559093cf20910fc6fe750884dd55c74057a16cbeedbba42c4f9b31f8 AS runtime-builder
+USER root
+WORKDIR /src
+COPY docker/runtime*.go ./
+RUN GO111MODULE=off go test .
+ARG TARGETOS
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /runtime runtime.go
 
+FROM cgr.dev/chainguard/nginx:latest@sha256:c1642395cc75f39c931d66d939f7e78cbdf671d6cfd821616632b0639c3c6d63 AS production
 LABEL org.opencontainers.image.source="https://github.com/budget-buddy-org/budget-buddy-web-app"
-
-# Create the snippets directory and copy the security-headers template.
-# docker-entrypoint.sh runs envsubst at startup to produce the final
-# security-headers.conf with the runtime OIDC issuer baked into the CSP.
-RUN mkdir -p /etc/nginx/snippets
-COPY --link nginx.security-headers.conf.template /etc/nginx/snippets/security-headers.conf.template
-
-# Replace default config with our SPA-aware configuration.
-COPY --link nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy the compiled assets. --link decouples this layer from the builder stage
-# so it can be cached independently.
-COPY --link --from=builder /app/dist /usr/share/nginx/html
-
-# Apply available base-package security fixes and install envsubst.
-RUN apk upgrade --no-cache \
-    && apk add --no-cache gettext
-
-# Copy and set the entrypoint for runtime configuration injection
-COPY --link docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && sed -i 's|^pid[[:space:]].*;|pid /tmp/nginx.pid;|; /^user[[:space:]]/d' /etc/nginx/nginx.conf \
-    && chown -R nginx:nginx /var/cache/nginx /etc/nginx/snippets /usr/share/nginx/html
-
-USER nginx
-
-EXPOSE 80
-
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
-
-# Lightweight liveness check — wget is already included in nginx:alpine.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://localhost/ || exit 1
+COPY --from=runtime-builder /runtime /usr/local/bin/runtime
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.security-headers.conf.template /etc/nginx/security-headers.conf.template
+COPY --from=builder /app/dist /usr/share/nginx/html
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/runtime"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["/usr/local/bin/runtime", "healthcheck"]
